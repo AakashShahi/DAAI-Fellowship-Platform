@@ -18,6 +18,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("MONGODB_URL", "MONGO_URI"),
     )
     DATABASE_NAME: str = "daai_fellowship"
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: int = 5000
 
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"

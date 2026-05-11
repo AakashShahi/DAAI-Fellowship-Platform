@@ -1,21 +1,25 @@
 import logging
 
 from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.config import settings
 from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
 
-client: AsyncIOMotorClient | None = None
-db: AsyncIOMotorDatabase | None = None
+client: AsyncMongoClient | None = None
+db: AsyncDatabase | None = None
 
 
-async def init_db() -> AsyncIOMotorDatabase:
+async def init_db() -> AsyncDatabase:
     global client, db
 
-    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    client = AsyncMongoClient(
+        settings.MONGODB_URL,
+        serverSelectionTimeoutMS=settings.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+    )
     db = client[settings.DATABASE_NAME]
 
     await client.admin.command("ping")
@@ -29,13 +33,13 @@ async def close_mongo_connection():
     global client, db
 
     if client is not None:
-        client.close()
+        await client.close()
         client = None
         db = None
         logger.info("MongoDB disconnected")
 
 
-def get_database() -> AsyncIOMotorDatabase:
+def get_database() -> AsyncDatabase:
     if db is None:
         raise RuntimeError("Database has not been initialized")
 
