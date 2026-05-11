@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import ValidationError
 
 from app.dependencies.auth_dependency import current_user
 from app.models.user_model import User
@@ -8,6 +11,31 @@ from app.services.auth_service import AuthService
 from app.utils.jwt import create_access_token
 
 router = APIRouter()
+
+
+async def parse_login_credentials(request: Request) -> UserLogin:
+    content_type = request.headers.get("content-type", "")
+
+    try:
+        is_form_request = content_type.startswith(
+            "application/x-www-form-urlencoded"
+        ) or content_type.startswith("multipart/form-data")
+
+        if is_form_request:
+            form_data = await request.form()
+            payload: dict[str, Any] = {
+                "email": form_data.get("email") or form_data.get("username"),
+                "password": form_data.get("password"),
+            }
+        else:
+            payload = await request.json()
+
+        return UserLogin.model_validate(payload)
+    except (ValidationError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Login requires email and password",
+        ) from exc
 
 
 @router.post(
@@ -22,7 +50,7 @@ async def register(user_data: UserCreate):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin = Depends(parse_login_credentials)):
     auth_service = AuthService()
     user = await auth_service.authenticate(credentials)
     user_response = AuthService.to_response(user)
