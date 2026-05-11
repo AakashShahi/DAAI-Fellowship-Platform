@@ -9,6 +9,7 @@ passlib[bcrypt]
 bcrypt
 python-multipart
 pydantic
+pydantic-settings
 email-validator
 redis
 celery
