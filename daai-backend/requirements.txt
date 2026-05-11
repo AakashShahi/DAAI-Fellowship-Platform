@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+beanie
+motor
+pymongo
+python-jose
+passlib[bcrypt]
+bcrypt
+python-multipart
+pydantic
+email-validator
+redis
+celery
