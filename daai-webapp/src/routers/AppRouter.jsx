@@ -16,6 +16,9 @@ import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import TrainersPage from '../pages/admin/TrainersPage'
 import Login from '../pages/Login'
+import QuizAttemptPage from '../pages/quizzes/QuizAttemptPage'
+import QuizListPage from '../pages/quizzes/QuizListPage'
+import QuizResultPage from '../pages/quizzes/QuizResultPage'
 import Register from '../pages/Register'
 import useAuthStore from '../store/authStore'
 
@@ -67,7 +70,7 @@ function DashboardRedirect() {
   return <Navigate to={dashboardPath} replace />
 }
 
-function RoleDashboard({ eyebrow, title, description }) {
+function RoleDashboard({ eyebrow, title, description, children }) {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
@@ -98,6 +101,8 @@ function RoleDashboard({ eyebrow, title, description }) {
             ? `Signed in as ${user.email}`
             : 'You are signed in and ready to continue.'}
         </p>
+
+        {children}
       </section>
     </main>
   )
@@ -114,12 +119,49 @@ function TrainerDashboard() {
 }
 
 function FellowDashboard() {
+  const fellowActions = [
+    {
+      title: 'Take Quizzes',
+      description: 'Practice QA, Salesforce, and AWS quiz categories.',
+      to: '/quizzes',
+      cta: 'Start quiz',
+    },
+    {
+      title: 'View Quiz Attempts / Results',
+      description: 'Review quiz results after completing an attempt.',
+      to: '/quizzes',
+      cta: 'View quizzes',
+    },
+    {
+      title: 'Learning Progress',
+      description: 'Track your fellowship learning milestones.',
+      to: '/fellow/dashboard',
+      cta: 'Coming soon',
+    },
+    {
+      title: 'Opportunities',
+      description: 'Explore fellowship opportunities and next steps.',
+      to: '/fellow/dashboard',
+      cta: 'Coming soon',
+    },
+  ]
+
   return (
     <RoleDashboard
       eyebrow="Fellow Dashboard"
       title="Continue your fellowship journey"
       description="Access your learning updates, opportunities, and fellowship progress."
-    />
+    >
+      <div className="dashboard-actions">
+        {fellowActions.map((action) => (
+          <Link key={action.title} className="dashboard-action-card" to={action.to}>
+            <span>{action.title}</span>
+            <p>{action.description}</p>
+            <strong>{action.cta}</strong>
+          </Link>
+        ))}
+      </div>
+    </RoleDashboard>
   )
 }
 
@@ -160,6 +202,30 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <DashboardRedirect />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes"
+          element={
+            <ProtectedRoute>
+              <QuizListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/:category"
+          element={
+            <ProtectedRoute>
+              <QuizAttemptPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/:category/result"
+          element={
+            <ProtectedRoute>
+              <QuizResultPage />
             </ProtectedRoute>
           }
         />

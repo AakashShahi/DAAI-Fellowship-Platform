@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
 from app.api.v1.router import api_router
+from app.api.v1.routes import quiz_routes
 
 
 @asynccontextmanager
@@ -47,3 +48,4 @@ async def root():
 
 
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(quiz_routes.router, prefix="/api/quizzes", tags=["Quizzes"])
