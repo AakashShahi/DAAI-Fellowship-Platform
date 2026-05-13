@@ -16,6 +16,7 @@ import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import TrainersPage from '../pages/admin/TrainersPage'
 import Login from '../pages/Login'
+import QuizAttemptsPage from '../pages/quizzes/QuizAttemptsPage'
 import QuizAttemptPage from '../pages/quizzes/QuizAttemptPage'
 import QuizListPage from '../pages/quizzes/QuizListPage'
 import QuizResultPage from '../pages/quizzes/QuizResultPage'
@@ -210,6 +211,22 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <QuizListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/attempts"
+          element={
+            <ProtectedRoute>
+              <QuizAttemptsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/attempts/:attemptId"
+          element={
+            <ProtectedRoute>
+              <QuizResultPage />
             </ProtectedRoute>
           }
         />

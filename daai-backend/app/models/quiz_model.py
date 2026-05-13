@@ -13,6 +13,11 @@ class QuizCategory(str, Enum):
     AWS_SOLUTIONS_ARCHITECT = "aws-solutions-architect"
 
 
+class QuizDifficulty(str, Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+
+
 QUIZ_CATEGORY_LABELS: dict[QuizCategory, str] = {
     QuizCategory.QA: "QA",
     QuizCategory.SALESFORCE: "Salesforce",
@@ -26,6 +31,8 @@ class QuizQuestion(Document):
     question: str = Field(min_length=1)
     options: list[str] = Field(min_length=2)
     correct_answer: str = Field(min_length=1)
+    explanation: str = ""
+    difficulty: QuizDifficulty = QuizDifficulty.EASY
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

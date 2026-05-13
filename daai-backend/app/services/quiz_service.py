@@ -9,6 +9,7 @@ from app.models.quiz_model import (
 )
 from app.repositories.quiz_repository import QuizRepository
 from app.schema.quiz_schema import (
+    QuizAnswerResultResponse,
     QuizAttemptResponse,
     QuizAttemptSummaryResponse,
     QuizCategoryResponse,
@@ -154,6 +155,15 @@ class QuizService:
             category_title=QUIZ_CATEGORY_LABELS[attempt.category],
             score=attempt.score,
             total_questions=attempt.total_questions,
-            answers=attempt.answers,
+            answers=[
+                QuizAnswerResultResponse(
+                    question_id=answer.question_id,
+                    question=answer.question,
+                    selected_answer=answer.selected_answer,
+                    correct_answer=answer.correct_answer,
+                    is_correct=answer.is_correct,
+                )
+                for answer in attempt.answers
+            ],
             submitted_at=attempt.submitted_at,
         )
