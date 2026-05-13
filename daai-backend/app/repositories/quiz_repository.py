@@ -14,6 +14,12 @@ class QuizRepository:
                 QuizQuestion.question == question_data["question"],
             )
             if existing_question:
+                existing_question.options = question_data["options"]
+                existing_question.correct_answer = question_data["correct_answer"]
+                existing_question.explanation = question_data["explanation"]
+                existing_question.difficulty = question_data["difficulty"]
+                existing_question.is_active = question_data["is_active"]
+                await existing_question.save()
                 continue
 
             try:

@@ -1,20 +1,70 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { getQuizByCategory } from '../../data/quizData'
+import {
+  getQuizCategories,
+  getQuizQuestions,
+  submitQuiz,
+} from '../../services/quizService'
 
 export default function QuizAttemptPage() {
   const { category } = useParams()
   const navigate = useNavigate()
-  const quiz = getQuizByCategory(category)
+  const [quizTitle, setQuizTitle] = useState(category)
+  const [questions, setQuestions] = useState([])
   const [selectedAnswers, setSelectedAnswers] = useState({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [notFound, setNotFound] = useState(false)
 
   const answeredCount = useMemo(
     () => Object.keys(selectedAnswers).length,
     [selectedAnswers],
   )
 
-  if (!quiz) {
+  useEffect(() => {
+    let isMounted = true
+
+    const loadQuiz = async () => {
+      setIsLoading(true)
+      setError('')
+      setNotFound(false)
+      setSelectedAnswers({})
+
+      try {
+        const [categories, questionData] = await Promise.all([
+          getQuizCategories(),
+          getQuizQuestions(category),
+        ])
+        const matchedCategory = categories.find((item) => item.slug === category)
+
+        if (isMounted) {
+          setQuizTitle(matchedCategory?.title ?? category)
+          setQuestions(questionData)
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          if (loadError?.response?.status === 404) {
+            setNotFound(true)
+          } else {
+            setError('Unable to load quiz questions.')
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadQuiz()
+
+    return () => {
+      isMounted = false
+    }
+  }, [category])
+
+  if (notFound) {
     return <Navigate to="/quizzes" replace />
   }
 
@@ -26,38 +76,31 @@ export default function QuizAttemptPage() {
     setError('')
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    if (answeredCount !== quiz.questions.length) {
+    if (answeredCount !== questions.length) {
       setError('Please answer all questions before submitting.')
       return
     }
 
-    const answers = quiz.questions.map((question) => {
-      const selectedAnswer = selectedAnswers[question.id]
-      const isCorrect = selectedAnswer === question.correctAnswer
+    setIsSubmitting(true)
+    setError('')
 
-      return {
-        id: question.id,
-        question: question.question,
-        selectedAnswer,
-        correctAnswer: question.correctAnswer,
-        isCorrect,
-      }
-    })
-
-    const score = answers.filter((answer) => answer.isCorrect).length
-    const result = {
-      category,
-      title: quiz.title,
-      totalQuestions: quiz.questions.length,
-      score,
-      answers,
+    try {
+      const result = await submitQuiz(category, selectedAnswers)
+      sessionStorage.setItem(`quiz-result:${category}`, JSON.stringify(result))
+      navigate(`/quizzes/${category}/result`, { state: { result } })
+    } catch (submitError) {
+      const detail = submitError?.response?.data?.detail
+      setError(
+        typeof detail === 'string'
+          ? detail
+          : 'Unable to submit quiz. Please try again.',
+      )
+    } finally {
+      setIsSubmitting(false)
     }
-
-    sessionStorage.setItem(`quiz-result:${category}`, JSON.stringify(result))
-    navigate(`/quizzes/${category}/result`, { state: { result } })
   }
 
   return (
@@ -74,18 +117,31 @@ export default function QuizAttemptPage() {
             Quiz Attempt
           </p>
           <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
-            {quiz.title}
+            {quizTitle}
           </h1>
           <p className="mt-3 text-sm font-medium">
-            Answer all questions and submit to see your score.
+            Questions are loaded from the backend. Your score will be calculated
+            and saved by the server.
           </p>
           <p className="mt-4 text-sm font-black text-[#24140e]">
-            {answeredCount} of {quiz.questions.length} answered
+            {answeredCount} of {questions.length} answered
           </p>
         </div>
 
+        {isLoading ? (
+          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+            Loading questions...
+          </p>
+        ) : null}
+
+        {!isLoading && !error && questions.length === 0 ? (
+          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+            No questions found for this category.
+          </p>
+        ) : null}
+
         <div className="space-y-4">
-          {quiz.questions.map((question, questionIndex) => (
+          {questions.map((question, questionIndex) => (
             <fieldset
               key={question.id}
               className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]"
@@ -133,13 +189,13 @@ export default function QuizAttemptPage() {
           </p>
           <button
             type="submit"
-            className="rounded-md bg-[#f26322] px-5 py-3 text-sm font-black text-white transition hover:bg-[#d94f13]"
+            disabled={isSubmitting || isLoading || questions.length === 0}
+            className="rounded-md bg-[#f26322] px-5 py-3 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Submit Quiz
+            {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
           </button>
         </div>
       </form>
     </main>
   )
 }
-
