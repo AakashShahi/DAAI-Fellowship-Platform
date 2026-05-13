@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
 
 from app.models.quiz_model import (
+    QUIZ_CATEGORY_DESCRIPTIONS,
+    QUIZ_CATEGORY_DIFFICULTY_LABELS,
     QUIZ_CATEGORY_LABELS,
     QuizAnswerResult,
     QuizAttempt,
@@ -41,6 +43,8 @@ class QuizService:
             QuizCategoryResponse(
                 slug=category.value,
                 title=QUIZ_CATEGORY_LABELS[category],
+                description=QUIZ_CATEGORY_DESCRIPTIONS[category],
+                difficulty_label=QUIZ_CATEGORY_DIFFICULTY_LABELS[category],
             )
             for category in QuizCategory
         ]

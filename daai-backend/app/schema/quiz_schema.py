@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 class QuizCategoryResponse(BaseModel):
     slug: str
     title: str
+    description: str
+    difficulty_label: str
 
 
 class QuizQuestionResponse(BaseModel):

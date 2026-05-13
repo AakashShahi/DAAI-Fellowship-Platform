@@ -88,18 +88,23 @@ export default function QuizListPage() {
               to={`/quizzes/${category.slug}`}
               className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-xl font-black text-[#24140e]">
                     {category.title}
                   </h2>
                   <p className="mt-2 text-sm font-medium text-[#6f5f57]">
-                    Practice beginner-friendly questions from this track.
+                    {category.description}
                   </p>
                 </div>
-                <span className="rounded-full bg-[#fff1e8] px-3 py-1 text-xs font-black text-[#f26322]">
-                  {questionCounts[category.slug] ?? 0} questions
-                </span>
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <span className="rounded-full bg-[#fff1e8] px-3 py-1 text-xs font-black text-[#f26322]">
+                    {category.difficulty_label}
+                  </span>
+                  <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-[#6f5f57]">
+                    {questionCounts[category.slug] ?? 0} questions
+                  </span>
+                </div>
               </div>
             </Link>
           ))}
