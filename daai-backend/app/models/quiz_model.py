@@ -50,6 +50,7 @@ class QuizAnswerResult(BaseModel):
     question: str
     selected_answer: str
     correct_answer: str
+    explanation: str = ""
     is_correct: bool
 
 

@@ -90,6 +90,7 @@ class QuizService:
                     question=question.question,
                     selected_answer=selected_answer,
                     correct_answer=question.correct_answer,
+                    explanation=question.explanation,
                     is_correct=selected_answer == question.correct_answer,
                 )
             )
@@ -161,6 +162,7 @@ class QuizService:
                     question=answer.question,
                     selected_answer=answer.selected_answer,
                     correct_answer=answer.correct_answer,
+                    explanation=answer.explanation,
                     is_correct=answer.is_correct,
                 )
                 for answer in attempt.answers
