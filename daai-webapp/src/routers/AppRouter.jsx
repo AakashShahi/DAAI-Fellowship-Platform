@@ -5,6 +5,16 @@ import {
   Route,
   Routes,
 } from 'react-router-dom'
+import DashboardLayout from '../layouts/DashboardLayout'
+import AdminDashboard from '../pages/admin/AdminDashboard'
+import ApplicationsPage from '../pages/admin/ApplicationsPage'
+import CohortsPage from '../pages/admin/CohortsPage'
+import EmployersPage from '../pages/admin/EmployersPage'
+import FellowsPage from '../pages/admin/FellowsPage'
+import OpportunitiesPage from '../pages/admin/OpportunitiesPage'
+import ReportsPage from '../pages/admin/ReportsPage'
+import SettingsPage from '../pages/admin/SettingsPage'
+import TrainersPage from '../pages/admin/TrainersPage'
 import Login from '../pages/Login'
 import useAuthStore from '../store/authStore'
 
@@ -56,7 +66,7 @@ function DashboardRedirect() {
   return <Navigate to={dashboardPath} replace />
 }
 
-function DashboardLayout({ eyebrow, title, description }) {
+function RoleDashboard({ eyebrow, title, description }) {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
@@ -92,19 +102,9 @@ function DashboardLayout({ eyebrow, title, description }) {
   )
 }
 
-function AdminDashboard() {
-  return (
-    <DashboardLayout
-      eyebrow="Admin Dashboard"
-      title="Manage the fellowship platform"
-      description="Review users, cohorts, trainers, fellows, employers, and platform operations from the admin workspace."
-    />
-  )
-}
-
 function TrainerDashboard() {
   return (
-    <DashboardLayout
+    <RoleDashboard
       eyebrow="Trainer Dashboard"
       title="Guide fellows and learning progress"
       description="Track assigned fellows, sessions, learning activities, and training support from one place."
@@ -114,7 +114,7 @@ function TrainerDashboard() {
 
 function FellowDashboard() {
   return (
-    <DashboardLayout
+    <RoleDashboard
       eyebrow="Fellow Dashboard"
       title="Continue your fellowship journey"
       description="Access your learning updates, opportunities, and fellowship progress."
@@ -124,7 +124,7 @@ function FellowDashboard() {
 
 function EmployerDashboard() {
   return (
-    <DashboardLayout
+    <RoleDashboard
       eyebrow="Employer Dashboard"
       title="Connect with fellowship talent"
       description="Manage opportunities, review fellow profiles, and follow hiring activity."
@@ -162,15 +162,26 @@ export default function AppRouter() {
           }
         />
         <Route
-          path="/admin/dashboard"
+          path="/admin"
           element={
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
-                <AdminDashboard />
+                <DashboardLayout />
               </RoleBasedRoute>
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="applications" element={<ApplicationsPage />} />
+          <Route path="fellows" element={<FellowsPage />} />
+          <Route path="cohorts" element={<CohortsPage />} />
+          <Route path="trainers" element={<TrainersPage />} />
+          <Route path="employers" element={<EmployersPage />} />
+          <Route path="opportunities" element={<OpportunitiesPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
         <Route
           path="/trainer/dashboard"
           element={
