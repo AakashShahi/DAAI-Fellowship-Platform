@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminDashboard from '../pages/admin/AdminDashboard'
+import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
 import CohortsPage from '../pages/admin/CohortsPage'
 import EmployersPage from '../pages/admin/EmployersPage'
@@ -264,6 +265,7 @@ export default function AppRouter() {
           <Route path="trainers" element={<TrainersPage />} />
           <Route path="employers" element={<EmployersPage />} />
           <Route path="opportunities" element={<OpportunitiesPage />} />
+          <Route path="quizzes" element={<AdminQuizManagementPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
