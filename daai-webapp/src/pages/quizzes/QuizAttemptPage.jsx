@@ -14,6 +14,7 @@ export default function QuizAttemptPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasTriedSubmit, setHasTriedSubmit] = useState(false)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
 
@@ -21,6 +22,8 @@ export default function QuizAttemptPage() {
     () => Object.keys(selectedAnswers).length,
     [selectedAnswers],
   )
+  const progressPercentage =
+    questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0
 
   useEffect(() => {
     let isMounted = true
@@ -30,6 +33,7 @@ export default function QuizAttemptPage() {
       setError('')
       setNotFound(false)
       setSelectedAnswers({})
+      setHasTriedSubmit(false)
 
       try {
         const [categories, questionData] = await Promise.all([
@@ -78,6 +82,7 @@ export default function QuizAttemptPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    setHasTriedSubmit(true)
 
     if (answeredCount !== questions.length) {
       setError('Please answer all questions before submitting.')
@@ -125,6 +130,17 @@ export default function QuizAttemptPage() {
           <p className="mt-4 text-sm font-black text-[#24140e]">
             {answeredCount} of {questions.length} answered
           </p>
+          <div className="mt-3" aria-label="Quiz completion progress">
+            <div className="h-3 overflow-hidden rounded-full bg-orange-100">
+              <div
+                className="h-full rounded-full bg-[#f26322] transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs font-black uppercase tracking-wide text-[#f26322]">
+              {progressPercentage}% complete
+            </p>
+          </div>
         </div>
 
         {isLoading ? (
@@ -140,40 +156,59 @@ export default function QuizAttemptPage() {
         ) : null}
 
         <div className="space-y-4">
-          {questions.map((question, questionIndex) => (
-            <fieldset
-              key={question.id}
-              className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]"
-            >
-              <legend className="text-base font-black text-[#24140e]">
-                {questionIndex + 1}. {question.question}
-              </legend>
+          {questions.map((question, questionIndex) => {
+            const isAnswered = Boolean(selectedAnswers[question.id])
+            const shouldHighlightUnanswered = hasTriedSubmit && !isAnswered
 
-              <div className="mt-4 grid gap-3">
-                {question.options.map((option) => (
-                  <label
-                    key={option}
-                    className={[
-                      'flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm font-semibold transition',
-                      selectedAnswers[question.id] === option
-                        ? 'border-[#f26322] bg-[#fff1e8] text-[#24140e]'
-                        : 'border-orange-100 bg-white text-[#6f5f57] hover:border-[#ffb088]',
-                    ].join(' ')}
-                  >
-                    <input
-                      type="radio"
-                      name={question.id}
-                      value={option}
-                      checked={selectedAnswers[question.id] === option}
-                      onChange={() => handleAnswerChange(question.id, option)}
-                      className="mt-1 accent-[#f26322]"
-                    />
-                    <span>{option}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
+            return (
+              <fieldset
+                key={question.id}
+                className={[
+                  'rounded-lg border bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition',
+                  shouldHighlightUnanswered
+                    ? 'border-red-300 bg-red-50/40'
+                    : 'border-orange-100',
+                ].join(' ')}
+              >
+                <legend className="text-base font-black text-[#24140e]">
+                  <span className="block text-xs font-black uppercase tracking-wide text-[#f26322]">
+                    Question {questionIndex + 1} of {questions.length}
+                  </span>
+                  <span className="mt-2 block">{question.question}</span>
+                </legend>
+
+                {shouldHighlightUnanswered ? (
+                  <p className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">
+                    Please choose an answer for this question.
+                  </p>
+                ) : null}
+
+                <div className="mt-4 grid gap-3">
+                  {question.options.map((option) => (
+                    <label
+                      key={option}
+                      className={[
+                        'flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm font-semibold transition',
+                        selectedAnswers[question.id] === option
+                          ? 'border-[#f26322] bg-[#fff1e8] text-[#24140e]'
+                          : 'border-orange-100 bg-white text-[#6f5f57] hover:border-[#ffb088]',
+                      ].join(' ')}
+                    >
+                      <input
+                        type="radio"
+                        name={question.id}
+                        value={option}
+                        checked={selectedAnswers[question.id] === option}
+                        onChange={() => handleAnswerChange(question.id, option)}
+                        className="mt-1 accent-[#f26322]"
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )
+          })}
         </div>
 
         {error ? (
