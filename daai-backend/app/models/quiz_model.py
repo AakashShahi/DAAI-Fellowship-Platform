@@ -25,6 +25,20 @@ QUIZ_CATEGORY_LABELS: dict[QuizCategory, str] = {
     QuizCategory.AWS_SOLUTIONS_ARCHITECT: "AWS Solutions Architect",
 }
 
+QUIZ_CATEGORY_DESCRIPTIONS: dict[QuizCategory, str] = {
+    QuizCategory.QA: "Build confidence with software testing, bug reporting, and quality basics.",
+    QuizCategory.SALESFORCE: "Practice core CRM concepts, objects, automation, and reporting fundamentals.",
+    QuizCategory.AWS_PRACTITIONER: "Review cloud basics, AWS services, security, pricing, and shared responsibility.",
+    QuizCategory.AWS_SOLUTIONS_ARCHITECT: "Strengthen architecture decisions for resilient, scalable AWS workloads.",
+}
+
+QUIZ_CATEGORY_DIFFICULTY_LABELS: dict[QuizCategory, str] = {
+    QuizCategory.QA: "Beginner",
+    QuizCategory.SALESFORCE: "Beginner",
+    QuizCategory.AWS_PRACTITIONER: "Foundational",
+    QuizCategory.AWS_SOLUTIONS_ARCHITECT: "Intermediate",
+}
+
 
 class QuizQuestion(Document):
     category: QuizCategory
@@ -50,6 +64,7 @@ class QuizAnswerResult(BaseModel):
     question: str
     selected_answer: str
     correct_answer: str
+    explanation: str = ""
     is_correct: bool
 
 

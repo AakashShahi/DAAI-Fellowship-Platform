@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.models.user_model import User
+from app.models.user_model import User, UserRole
 from app.repositories.user_repository import UserRepository
 from app.utils.jwt import decode_access_token
 
@@ -27,5 +27,15 @@ async def current_user(token: str = Depends(oauth2_scheme)) -> User:
     user = await UserRepository().get_by_id(user_id)
     if user is None or not user.is_active:
         raise credentials_exception
+
+    return user
+
+
+async def current_admin(user: User = Depends(current_user)) -> User:
+    if user.role not in {UserRole.SUPER_ADMIN, UserRole.ADMIN}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
 
     return user

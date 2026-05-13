@@ -8,6 +8,7 @@ const adminMenuItems = [
   { label: 'Trainers', to: '/admin/trainers' },
   { label: 'Employers', to: '/admin/employers' },
   { label: 'Opportunities', to: '/admin/opportunities' },
+  { label: 'Quizzes', to: '/admin/quizzes' },
   { label: 'Reports', to: '/admin/reports' },
   { label: 'Settings', to: '/admin/settings' },
 ]

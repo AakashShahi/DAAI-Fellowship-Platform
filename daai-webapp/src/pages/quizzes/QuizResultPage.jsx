@@ -3,6 +3,8 @@ import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { getMyQuizAttempt } from '../../services/quizService'
 
 const PASSING_PERCENTAGE = 70
+const DEFAULT_EXPLANATION =
+  'No explanation is available for this question yet.'
 
 export default function QuizResultPage() {
   const { category, attemptId } = useParams()
@@ -74,12 +76,35 @@ export default function QuizResultPage() {
         {!isLoading && !error && result ? (
           <>
             <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-              <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-                Quiz Result
-              </p>
-              <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
-                {result.category_title}
-              </h1>
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                    Quiz Result
+                  </p>
+                  <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+                    {result.category_title}
+                  </h1>
+                </div>
+                <div className="rounded-lg border border-orange-100 bg-[#fff8f3] px-5 py-4 lg:text-right">
+                  <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                    Percentage
+                  </p>
+                  <p className="mt-1 text-4xl font-black text-[#24140e]">
+                    {percentage}%
+                  </p>
+                  <span
+                    className={[
+                      'mt-3 inline-flex rounded-full px-4 py-2 text-sm font-black',
+                      resultStatus === 'Passed'
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-red-50 text-red-700',
+                    ].join(' ')}
+                  >
+                    {resultStatus}
+                  </span>
+                </div>
+              </div>
+
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-lg bg-[#fff1e8] p-4">
                   <p className="text-xs font-black uppercase text-[#f26322]">
@@ -106,38 +131,39 @@ export default function QuizResultPage() {
                   </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm font-bold text-[#24140e]">
-                Percentage: {percentage}%
-              </p>
-              <span
-                className={[
-                  'mt-3 inline-flex rounded-full px-4 py-2 text-sm font-black',
-                  resultStatus === 'Passed'
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700',
-                ].join(' ')}
-              >
-                {resultStatus}
-              </span>
             </div>
 
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              <section className="rounded-lg border border-green-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-                <h2 className="text-xl font-black text-[#24140e]">
-                  Correct answers
-                </h2>
+              <section className="rounded-lg border border-green-200 bg-green-50/50 p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-xl font-black text-[#14532d]">
+                    Correct answers
+                  </h2>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-green-700">
+                    {correctAnswers.length}
+                  </span>
+                </div>
                 <div className="mt-4 space-y-3">
                   {correctAnswers.length > 0 ? (
-                    correctAnswers.map((answer) => (
+                    correctAnswers.map((answer, index) => (
                       <article
                         key={answer.question_id}
-                        className="rounded-md bg-green-50 p-3"
+                        className="rounded-md border border-green-200 bg-white p-4"
                       >
-                        <p className="text-sm font-black text-[#24140e]">
+                        <p className="text-xs font-black uppercase tracking-wide text-green-700">
+                          Question {index + 1}
+                        </p>
+                        <p className="mt-2 text-sm font-black text-[#24140e]">
                           {answer.question}
                         </p>
-                        <p className="mt-2 text-sm font-semibold text-green-700">
-                          {answer.correct_answer}
+                        <p className="mt-3 rounded-md bg-green-50 p-3 text-sm font-semibold text-green-700">
+                          Your answer: {answer.selected_answer}
+                        </p>
+                        <p className="mt-3 text-sm font-medium text-[#6f5f57]">
+                          <span className="font-black text-[#24140e]">
+                            Explanation:
+                          </span>{' '}
+                          {answer.explanation || DEFAULT_EXPLANATION}
                         </p>
                       </article>
                     ))
@@ -147,25 +173,39 @@ export default function QuizResultPage() {
                 </div>
               </section>
 
-              <section className="rounded-lg border border-red-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-                <h2 className="text-xl font-black text-[#24140e]">
-                  Wrong answers
-                </h2>
+              <section className="rounded-lg border border-red-200 bg-red-50/50 p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-xl font-black text-[#7f1d1d]">
+                    Wrong answers
+                  </h2>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-red-700">
+                    {wrongAnswers.length}
+                  </span>
+                </div>
                 <div className="mt-4 space-y-3">
                   {wrongAnswers.length > 0 ? (
-                    wrongAnswers.map((answer) => (
+                    wrongAnswers.map((answer, index) => (
                       <article
                         key={answer.question_id}
-                        className="rounded-md bg-red-50 p-3"
+                        className="rounded-md border border-red-200 bg-white p-4"
                       >
-                        <p className="text-sm font-black text-[#24140e]">
+                        <p className="text-xs font-black uppercase tracking-wide text-red-700">
+                          Question {index + 1}
+                        </p>
+                        <p className="mt-2 text-sm font-black text-[#24140e]">
                           {answer.question}
                         </p>
-                        <p className="mt-2 text-sm font-semibold text-red-700">
+                        <p className="mt-3 rounded-md bg-red-50 p-3 text-sm font-semibold text-red-700">
                           Your answer: {answer.selected_answer}
                         </p>
-                        <p className="mt-1 text-sm font-semibold text-green-700">
+                        <p className="mt-2 rounded-md bg-green-50 p-3 text-sm font-semibold text-green-700">
                           Correct answer: {answer.correct_answer}
+                        </p>
+                        <p className="mt-3 text-sm font-medium text-[#6f5f57]">
+                          <span className="font-black text-[#24140e]">
+                            Explanation:
+                          </span>{' '}
+                          {answer.explanation || DEFAULT_EXPLANATION}
                         </p>
                       </article>
                     ))
