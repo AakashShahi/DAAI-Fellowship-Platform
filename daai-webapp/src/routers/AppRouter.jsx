@@ -16,6 +16,7 @@ import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import TrainersPage from '../pages/admin/TrainersPage'
 import Login from '../pages/Login'
+import Register from '../pages/Register'
 import useAuthStore from '../store/authStore'
 
 const ROLES = {
@@ -153,6 +154,7 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/dashboard"
           element={
