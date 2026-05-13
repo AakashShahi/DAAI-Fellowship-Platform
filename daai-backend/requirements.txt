@@ -6,9 +6,10 @@ motor
 pymongo
 python-jose
 passlib[bcrypt]
-bcrypt
+bcrypt==4.0.1
 python-multipart
 pydantic
+pydantic-settings
 email-validator
 redis
 celery
