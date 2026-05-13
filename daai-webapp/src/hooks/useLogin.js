@@ -33,7 +33,6 @@ export const useLogin = () => {
         throw new Error('Login response did not include an access token.')
       }
 
-      localStorage.setItem('token', token)
       setAuth({ token, user: data.user ?? null })
 
       return data

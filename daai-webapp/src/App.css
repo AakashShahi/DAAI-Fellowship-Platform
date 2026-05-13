@@ -128,6 +128,9 @@
 
 .login-form button,
 .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 44px;
   border: 0;
   border-radius: 6px;
@@ -137,6 +140,7 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -202,13 +206,29 @@
   box-shadow: var(--shadow);
 }
 
+.status-panel {
+  width: min(100%, 640px);
+  margin: 12svh auto 0;
+  padding: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
 .welcome-panel h1 {
   max-width: 680px;
 }
 
-.welcome-panel p:not(.eyebrow) {
+.welcome-panel p:not(.eyebrow),
+.status-panel p:not(.eyebrow) {
   margin-top: 14px;
   max-width: 620px;
+}
+
+.status-panel .secondary-button {
+  margin-top: 24px;
 }
 
 .eyebrow {
@@ -232,7 +252,8 @@
 
   .auth-brand-panel,
   .login-form,
-  .welcome-panel {
+  .welcome-panel,
+  .status-panel {
     padding: 28px;
   }
 
