@@ -126,6 +126,28 @@
   font-size: 14px;
 }
 
+.auth-success {
+  color: #157347;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-switch {
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  color: var(--accent-hover);
+}
+
 .login-form button,
 .secondary-button {
   display: inline-flex;

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLogin } from '../hooks/useLogin'
 
 export default function Login() {
@@ -69,6 +69,10 @@ export default function Login() {
           <button type="submit" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
+
+          <p className="auth-switch">
+            Don&apos;t have an account? <Link to="/register">Register</Link>
+          </p>
         </form>
       </section>
     </main>
