@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { getMyQuizAttempt } from '../../services/quizService'
 
+const PASSING_PERCENTAGE = 70
+
 export default function QuizResultPage() {
   const { category, attemptId } = useParams()
   const location = useLocation()
@@ -52,6 +54,7 @@ export default function QuizResultPage() {
   const percentage = result
     ? Math.round((result.score / result.total_questions) * 100)
     : 0
+  const resultStatus = percentage >= PASSING_PERCENTAGE ? 'Passed' : 'Needs Practice'
 
   return (
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
@@ -106,6 +109,16 @@ export default function QuizResultPage() {
               <p className="mt-4 text-sm font-bold text-[#24140e]">
                 Percentage: {percentage}%
               </p>
+              <span
+                className={[
+                  'mt-3 inline-flex rounded-full px-4 py-2 text-sm font-black',
+                  resultStatus === 'Passed'
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700',
+                ].join(' ')}
+              >
+                {resultStatus}
+              </span>
             </div>
 
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
