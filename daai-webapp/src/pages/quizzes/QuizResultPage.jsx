@@ -2,27 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { getMyQuizAttempt } from '../../services/quizService'
 
-const getStoredResult = (category) => {
-  const storedResult = sessionStorage.getItem(`quiz-result:${category}`)
-
-  if (!storedResult) {
-    return null
-  }
-
-  try {
-    return JSON.parse(storedResult)
-  } catch {
-    sessionStorage.removeItem(`quiz-result:${category}`)
-    return null
-  }
-}
-
 export default function QuizResultPage() {
   const { category, attemptId } = useParams()
   const location = useLocation()
-  const [attemptResult, setAttemptResult] = useState(
-    location.state?.result ?? getStoredResult(category),
-  )
+  const [attemptResult, setAttemptResult] = useState(location.state?.result)
   const [isLoading, setIsLoading] = useState(Boolean(attemptId))
   const [error, setError] = useState('')
 
