@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getMyQuizAttempts } from '../../services/quizService'
 
+const PASSING_PERCENTAGE = 70
+
+const getAttemptPercentage = (attempt) =>
+  Math.round((attempt.score / attempt.total_questions) * 100)
+
+const getAttemptStatus = (attempt) =>
+  getAttemptPercentage(attempt) >= PASSING_PERCENTAGE ? 'Passed' : 'Needs Practice'
+
 export default function QuizAttemptsPage() {
   const [attempts, setAttempts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -81,18 +89,42 @@ export default function QuizAttemptsPage() {
               to={`/quizzes/attempts/${attempt.id}`}
               className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h2 className="text-xl font-black text-[#24140e]">
                     {attempt.category_title}
                   </h2>
-                  <p className="mt-1 text-sm font-medium">
-                    Submitted {new Date(attempt.submitted_at).toLocaleString()}
-                  </p>
+                  <div className="mt-3 grid gap-2 text-sm font-medium text-[#6f5f57] sm:grid-cols-2 lg:grid-cols-3">
+                    <p>
+                      <span className="font-black text-[#24140e]">Score:</span>{' '}
+                      {attempt.score}/{attempt.total_questions} (
+                      {getAttemptPercentage(attempt)}%)
+                    </p>
+                    <p>
+                      <span className="font-black text-[#24140e]">Date:</span>{' '}
+                      {new Date(attempt.submitted_at).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-black text-[#24140e]">Category:</span>{' '}
+                      {attempt.category_title}
+                    </p>
+                  </div>
                 </div>
-                <span className="rounded-full bg-[#fff1e8] px-4 py-2 text-sm font-black text-[#f26322]">
-                  {attempt.score}/{attempt.total_questions}
-                </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span
+                    className={[
+                      'rounded-full px-4 py-2 text-sm font-black',
+                      getAttemptStatus(attempt) === 'Passed'
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-red-50 text-red-700',
+                    ].join(' ')}
+                  >
+                    {getAttemptStatus(attempt)}
+                  </span>
+                  <span className="rounded-full bg-[#fff1e8] px-4 py-2 text-sm font-black text-[#f26322]">
+                    Reopen Result
+                  </span>
+                </div>
               </div>
             </Link>
           ))}

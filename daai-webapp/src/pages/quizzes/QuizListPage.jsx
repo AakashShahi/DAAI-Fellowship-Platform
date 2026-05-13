@@ -59,12 +59,14 @@ export default function QuizListPage() {
           <p className="mt-3 max-w-2xl text-sm font-medium">
             Questions now load from the backend quiz API and MongoDB seed data.
           </p>
-          <Link
-            to="/quizzes/attempts"
-            className="mt-5 inline-flex rounded-md border border-orange-100 bg-[#fff1e8] px-4 py-2 text-sm font-black text-[#f26322] transition hover:bg-white"
-          >
-            View quiz attempts / results
-          </Link>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <Link
+              to="/quizzes/attempts"
+              className="inline-flex justify-center rounded-md bg-[#f26322] px-4 py-2 text-sm font-black text-white transition hover:bg-[#d94f13]"
+            >
+              My Attempts
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (
