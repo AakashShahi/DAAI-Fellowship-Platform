@@ -5,6 +5,7 @@ from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.config import settings
+from app.models.quiz_model import QuizAttempt, QuizQuestion
 from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ async def init_db() -> AsyncDatabase:
     db = client[settings.DATABASE_NAME]
 
     await client.admin.command("ping")
-    await init_beanie(database=db, document_models=[User])
+    await init_beanie(database=db, document_models=[User, QuizQuestion, QuizAttempt])
 
     logger.info("MongoDB connected: %s", settings.DATABASE_NAME)
     return db
