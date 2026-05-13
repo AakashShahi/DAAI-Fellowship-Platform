@@ -89,7 +89,6 @@ export default function QuizAttemptPage() {
 
     try {
       const result = await submitQuiz(category, selectedAnswers)
-      sessionStorage.setItem(`quiz-result:${category}`, JSON.stringify(result))
       navigate(`/quizzes/${category}/result`, { state: { result } })
     } catch (submitError) {
       const detail = submitError?.response?.data?.detail
