@@ -4,6 +4,8 @@ import AdminLayout from '../layouts/AdminLayout'
 import AdminBatchesPage from '../pages/admin/AdminBatchesPage'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
+import AdminLessonsPage from '../pages/admin/AdminLessonsPage'
+import AdminModulesPage from '../pages/admin/AdminModulesPage'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
 import AdminTracksPage from '../pages/admin/AdminTracksPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
@@ -35,6 +37,8 @@ export const adminRoutesElement = (
     <Route path="tracks" element={<AdminTracksPage />} />
     <Route path="batches" element={<AdminBatchesPage />} />
     <Route path="enrollments" element={<AdminEnrollmentsPage />} />
+    <Route path="modules" element={<AdminModulesPage />} />
+    <Route path="lessons" element={<AdminLessonsPage />} />
     <Route path="quizzes" element={<AdminQuizManagementPage />} />
     <Route path="reports" element={<ReportsPage />} />
     <Route path="settings" element={<SettingsPage />} />
