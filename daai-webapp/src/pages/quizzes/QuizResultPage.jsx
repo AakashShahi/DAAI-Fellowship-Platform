@@ -62,9 +62,15 @@ export default function QuizResultPage() {
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
         {isLoading ? (
-          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
-            Loading quiz result...
-          </p>
+          <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+            <Link
+              to="/quizzes"
+              className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
+            >
+              Back to quizzes
+            </Link>
+            <p className="mt-4 text-sm font-bold">Loading quiz result...</p>
+          </div>
         ) : null}
 
         {error ? (
@@ -76,9 +82,15 @@ export default function QuizResultPage() {
         {!isLoading && !error && result ? (
           <>
             <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+              <Link
+                to="/quizzes"
+                className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
+              >
+                Back to quizzes
+              </Link>
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[#f26322]">
                     Quiz Result
                   </p>
                   <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">

@@ -262,15 +262,17 @@ export default function ProfileSettingsPage() {
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
         <div className="mb-6">
-          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-            Profile Settings
-          </p>
-          <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
-            Manage your account
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm font-medium">
-            Keep your fellowship profile accurate and your account secure.
-          </p>
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+              Profile Settings
+            </p>
+            <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+              Manage your account
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm font-medium">
+              Keep your fellowship profile accurate and your account secure.
+            </p>
+          </div>
         </div>
 
         {successMessage ? (
@@ -341,6 +343,28 @@ export default function ProfileSettingsPage() {
 
                 <label className="block">
                   <span className="text-sm font-black text-[#24140e]">
+                    Email
+                  </span>
+                  <input
+                    value={displayProfile.email}
+                    className={fieldClass}
+                    disabled
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-black text-[#24140e]">
+                    Role
+                  </span>
+                  <input
+                    value={displayProfile.role}
+                    className={fieldClass}
+                    disabled
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-black text-[#24140e]">
                     Phone
                   </span>
                   <input
@@ -397,45 +421,10 @@ export default function ProfileSettingsPage() {
               </div>
             </form>
 
-            <section className={cardClass}>
-              <div className="mb-5">
-                <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-                  Account Details
-                </p>
-                <h2 className="mt-2 text-2xl font-black text-[#24140e]">
-                  Sign-in information
-                </h2>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
-                    Email
-                  </span>
-                  <input
-                    value={displayProfile.email}
-                    className={fieldClass}
-                    disabled
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
-                    Role
-                  </span>
-                  <input
-                    value={displayProfile.role}
-                    className={fieldClass}
-                    disabled
-                  />
-                </label>
-              </div>
-            </section>
-
             <form onSubmit={handlePasswordSubmit} className={cardClass}>
               <div className="mb-5">
                 <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-                  Security
+                  Account Security
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-[#24140e]">
                   Change password
