@@ -1,0 +1,41 @@
+from datetime import datetime, timezone
+from enum import Enum
+
+from beanie import Document, PydanticObjectId
+from pydantic import Field
+from pymongo import ASCENDING, IndexModel
+
+
+class SubmissionStatus(str, Enum):
+    SUBMITTED = "SUBMITTED"
+    REVIEWED = "REVIEWED"
+    NEEDS_REVISION = "NEEDS_REVISION"
+
+
+class Submission(Document):
+    assignment_id: PydanticObjectId
+    fellow_id: PydanticObjectId
+    track_id: PydanticObjectId
+    module_id: PydanticObjectId | None = None
+    submission_text: str = Field(default="", max_length=50_000)
+    submission_link: str = Field(default="", max_length=2000)
+    file_url: str = Field(default="", max_length=2000)
+    status: SubmissionStatus = SubmissionStatus.SUBMITTED
+    score: int | None = None
+    feedback: str = Field(default="", max_length=10_000)
+    reviewed_by: PydanticObjectId | None = None
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    reviewed_at: datetime | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    class Settings:
+        name = "submissions"
+        indexes = [
+            IndexModel(
+                [("assignment_id", ASCENDING), ("fellow_id", ASCENDING)],
+                unique=True,
+            ),
+            IndexModel([("track_id", ASCENDING), ("status", ASCENDING)]),
+            IndexModel([("fellow_id", ASCENDING)]),
+        ]
