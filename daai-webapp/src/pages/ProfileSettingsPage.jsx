@@ -92,6 +92,7 @@ export default function ProfileSettingsPage() {
             location: data.location ?? '',
             bio: data.bio ?? '',
             avatarUrl: data.avatarUrl ?? '',
+            learningTrack: data.learningTrack,
           })
         }
       } catch (error) {
@@ -209,6 +210,7 @@ export default function ProfileSettingsPage() {
         location: updatedProfile.location ?? '',
         bio: updatedProfile.bio ?? '',
         avatarUrl: updatedProfile.avatarUrl ?? '',
+        learningTrack: updatedProfile.learningTrack,
       })
       setSuccessMessage('Profile updated successfully.')
     } catch (error) {
