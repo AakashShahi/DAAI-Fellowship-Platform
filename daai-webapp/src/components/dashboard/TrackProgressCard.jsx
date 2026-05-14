@@ -16,7 +16,7 @@ export default function TrackProgressCard({
   name,
   description,
   progress = 0,
-  to = '/quizzes',
+  to = '/fellow/quizzes',
 }) {
   const normalizedProgress = Math.min(Math.max(progress, 0), 100)
   const status = getStatus(normalizedProgress)

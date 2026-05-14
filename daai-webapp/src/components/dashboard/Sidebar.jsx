@@ -1,27 +1,18 @@
 import { NavLink } from 'react-router-dom'
+import { adminNavigation } from '../../constants/navigation'
 
-const adminMenuItems = [
-  { label: 'Dashboard', to: '/admin/dashboard' },
-  { label: 'Applications', to: '/admin/applications' },
-  { label: 'Fellows', to: '/admin/fellows' },
-  { label: 'Cohorts', to: '/admin/cohorts' },
-  { label: 'Trainers', to: '/admin/trainers' },
-  { label: 'Employers', to: '/admin/employers' },
-  { label: 'Opportunities', to: '/admin/opportunities' },
-  { label: 'Quizzes', to: '/admin/quizzes' },
-  { label: 'Reports', to: '/admin/reports' },
-  { label: 'Settings', to: '/admin/settings' },
-]
-
-export default function Sidebar() {
+export default function Sidebar({
+  items = adminNavigation,
+  sectionLabel = 'Admin',
+}) {
   return (
     <aside className="border-orange-100 bg-[#fff8f3] lg:min-h-screen lg:w-72 lg:border-r">
       <div className="px-4 py-5 lg:px-5">
         <p className="text-xs font-bold uppercase tracking-wide text-[#f26322]">
-          Admin
+          {sectionLabel}
         </p>
         <nav className="mt-4 flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
-          {adminMenuItems.map((item) => (
+          {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

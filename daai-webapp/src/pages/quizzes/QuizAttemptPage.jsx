@@ -99,12 +99,12 @@ export default function QuizAttemptPage() {
   }, [category, hasQuizAccess])
 
   if (notFound) {
-    return <Navigate to="/quizzes" replace />
+    return <Navigate to="/fellow/quizzes" replace />
   }
 
   if (!hasQuizAccess) {
     return (
-      <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
         <section className="mx-auto max-w-4xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
           <p className="text-sm font-black">{getQuizAccessMessage(user, category)}</p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -112,19 +112,19 @@ export default function QuizAttemptPage() {
               to="/fellow/dashboard"
               className="rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
             >
-              Back to Dashboard
+              Go to overview
             </Link>
             {selectedTrack ? (
               <Link
                 to={selectedTrack.quizPath}
                 className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               >
-                Open {selectedTrack.label} Quiz
+                Open {selectedTrack.label} quiz
               </Link>
             ) : null}
           </div>
         </section>
-      </main>
+      </div>
     )
   }
 
@@ -150,7 +150,7 @@ export default function QuizAttemptPage() {
 
     try {
       const result = await submitQuiz(category, selectedAnswers)
-      navigate(`/quizzes/${category}/result`, { state: { result } })
+      navigate(`/fellow/quizzes/${category}/result`, { state: { result } })
     } catch (submitError) {
       const detail = submitError?.response?.data?.detail
       setError(
@@ -164,16 +164,10 @@ export default function QuizAttemptPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <form className="mx-auto max-w-4xl" onSubmit={handleSubmit}>
         <div className="mb-5 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <Link
-            to="/quizzes"
-            className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
-          >
-            Back to quizzes
-          </Link>
-          <p className="mt-5 text-xs font-black uppercase tracking-wide text-[#f26322]">
+          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
             Quiz Attempt
           </p>
           <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
@@ -286,6 +280,6 @@ export default function QuizAttemptPage() {
           </button>
         </div>
       </form>
-    </main>
+    </div>
   )
 }

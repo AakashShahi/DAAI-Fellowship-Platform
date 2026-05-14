@@ -59,7 +59,7 @@ export default function QuizListPage() {
   const isFellowWithoutTrack = user?.role === 'FELLOW' && !selectedTrack
 
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
         <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
           <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
@@ -75,7 +75,7 @@ export default function QuizListPage() {
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Link
-              to="/quizzes/attempts"
+              to="/fellow/quizzes/attempts"
               className="inline-flex justify-center rounded-md bg-[#f26322] px-4 py-2 text-sm font-black text-white transition hover:bg-[#d94f13]"
             >
               My Attempts
@@ -108,7 +108,7 @@ export default function QuizListPage() {
           {!isFellowWithoutTrack && visibleCategories.map((category) => (
             <Link
               key={category.slug}
-              to={`/quizzes/${category.slug}`}
+              to={`/fellow/quizzes/${category.slug}`}
               className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -133,6 +133,6 @@ export default function QuizListPage() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   )
 }
