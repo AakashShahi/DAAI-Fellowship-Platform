@@ -4,6 +4,7 @@ python-dotenv
 beanie
 motor
 pymongo
+dnspython>=2.6.0
 python-jose
 passlib[bcrypt]
 bcrypt==4.0.1

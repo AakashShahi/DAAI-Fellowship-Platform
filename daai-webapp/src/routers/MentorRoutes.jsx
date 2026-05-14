@@ -3,15 +3,19 @@ import { ROLES } from '../constants/roles'
 import MentorLayout from '../layouts/MentorLayout'
 import ComingSoonPage from '../pages/ComingSoonPage'
 import MentorDashboard from '../pages/dashboards/MentorDashboard'
+import MentorSubmissionReviewPage from '../pages/mentor/MentorSubmissionReviewPage'
+import MentorSubmissionsPage from '../pages/mentor/MentorSubmissionsPage'
 import { protectRole } from './routeGuards'
 
 export const mentorRoutesElement = (
   <Route
     path="/mentor"
-    element={protectRole([ROLES.MENTOR], <MentorLayout />)}
+    element={protectRole([ROLES.MENTOR, ROLES.TRAINER], <MentorLayout />)}
   >
     <Route index element={<Navigate to="/mentor/dashboard" replace />} />
     <Route path="dashboard" element={<MentorDashboard />} />
+    <Route path="submissions" element={<MentorSubmissionsPage />} />
+    <Route path="submissions/:submissionId" element={<MentorSubmissionReviewPage />} />
     <Route
       path="fellows"
       element={

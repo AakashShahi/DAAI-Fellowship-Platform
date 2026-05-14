@@ -3,6 +3,9 @@ import { ROLES } from '../constants/roles'
 import FellowLayout from '../layouts/FellowLayout'
 import ComingSoonPage from '../pages/ComingSoonPage'
 import FellowDashboard from '../pages/dashboards/FellowDashboard'
+import FellowAssignmentDetailPage from '../pages/fellow/FellowAssignmentDetailPage'
+import FellowAssignmentsPage from '../pages/fellow/FellowAssignmentsPage'
+import FellowAssignmentSubmissionsPage from '../pages/fellow/FellowAssignmentSubmissionsPage'
 import FellowLearningPage from '../pages/fellow/FellowLearningPage'
 import FellowLessonPage from '../pages/fellow/FellowLessonPage'
 import FellowModulePage from '../pages/fellow/FellowModulePage'
@@ -37,15 +40,9 @@ export const fellowRoutesElement = (
       element={<LearningTrackDetailPage />}
     />
     <Route path="courses/:trackSlug" element={<LearningTrackDetailPage />} />
-    <Route
-      path="assignments"
-      element={
-        <ComingSoonPage
-          title="Assignments"
-          description="Fellowship assignments and submissions will appear here once your cohort is enrolled."
-        />
-      }
-    />
+    <Route path="assignments/submissions" element={<FellowAssignmentSubmissionsPage />} />
+    <Route path="assignments/:assignmentId" element={<FellowAssignmentDetailPage />} />
+    <Route path="assignments" element={<FellowAssignmentsPage />} />
     <Route
       path="announcements"
       element={

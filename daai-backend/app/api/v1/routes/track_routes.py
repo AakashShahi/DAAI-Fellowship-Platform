@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.dependencies.auth_dependency import current_admin
+from app.dependencies.auth_dependency import current_admin, current_track_catalog_reader
+from app.models.user_model import User
 from app.schema.fellowship_schema import TrackCreate, TrackResponse, TrackUpdate
 from app.services.fellowship_service import TrackService
 
@@ -8,7 +9,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[TrackResponse])
-async def list_tracks(_admin=Depends(current_admin)):
+async def list_tracks(_staff: User = Depends(current_track_catalog_reader)):
     return await TrackService().list_tracks()
 
 

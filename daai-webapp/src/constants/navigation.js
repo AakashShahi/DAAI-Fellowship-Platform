@@ -7,6 +7,8 @@ export const adminNavigation = [
   { label: 'Enrollments', to: '/admin/enrollments' },
   { label: 'Modules', to: '/admin/modules' },
   { label: 'Lessons', to: '/admin/lessons' },
+  { label: 'Assignments', to: '/admin/assignments' },
+  { label: 'Submissions', to: '/admin/submissions' },
   { label: 'Cohorts', to: '/admin/cohorts' },
   { label: 'Trainers', to: '/admin/trainers' },
   { label: 'Employers', to: '/admin/employers' },
@@ -29,6 +31,7 @@ export const fellowNavigation = [
 
 export const mentorNavigation = [
   { label: 'Dashboard', to: '/mentor/dashboard' },
+  { label: 'Submissions', to: '/mentor/submissions' },
   { label: 'Fellows', to: '/mentor/fellows' },
   { label: 'Sessions', to: '/mentor/sessions' },
   { label: 'Resources', to: '/mentor/resources' },

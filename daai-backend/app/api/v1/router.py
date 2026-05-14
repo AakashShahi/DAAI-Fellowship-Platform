@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.routes import (
+    assignment_admin_routes,
     auth_routes,
     batch_routes,
     enrollment_routes,
@@ -11,6 +12,7 @@ from app.api.v1.routes import (
     module_routes,
     profile_routes,
     quiz_routes,
+    submission_review_routes,
     track_routes,
 )
 
@@ -80,4 +82,16 @@ api_router.include_router(
     learning_fellow_routes.router,
     prefix="/learning",
     tags=["Learning"],
+)
+
+api_router.include_router(
+    assignment_admin_routes.router,
+    prefix="/assignments",
+    tags=["Assignments"],
+)
+
+api_router.include_router(
+    submission_review_routes.router,
+    prefix="/submissions",
+    tags=["Submissions"],
 )

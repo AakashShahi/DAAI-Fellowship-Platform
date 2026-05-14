@@ -6,6 +6,7 @@ import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverv
 import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
 import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
 import { getMyEnrollment } from '../../services/fellowshipService'
+import { getFellowAssignmentsSummary } from '../../services/assignmentService'
 import { getFellowLearningSummary } from '../../services/learningService'
 import {
   getMyQuizAttempts,
@@ -56,6 +57,8 @@ export default function FellowDashboard() {
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
 
+  const [assignmentSummary, setAssignmentSummary] = useState(undefined)
+
   useEffect(() => {
     let isMounted = true
 
@@ -63,12 +66,14 @@ export default function FellowDashboard() {
       const [
         enrollmentResult,
         learningSummaryResult,
+        assignmentSummaryResult,
         profileResult,
         categoryResult,
         attemptResult,
       ] = await Promise.allSettled([
         getMyEnrollment(),
         getFellowLearningSummary(),
+        getFellowAssignmentsSummary(),
         getMyProfile(),
         getQuizCategories(),
         getMyQuizAttempts(),
@@ -81,6 +86,10 @@ export default function FellowDashboard() {
 
         if (learningSummaryResult.status === 'fulfilled') {
           setLearningSummary(learningSummaryResult.value)
+        }
+
+        if (assignmentSummaryResult.status === 'fulfilled') {
+          setAssignmentSummary(assignmentSummaryResult.value)
         }
 
         if (profileResult.status === 'fulfilled') {
@@ -200,8 +209,13 @@ export default function FellowDashboard() {
       },
       {
         title: 'Assignments',
-        body: 'Written assignments, labs, and submission deadlines will be listed here.',
-        cta: { label: 'Assignments (soon)', to: '/fellow/assignments' },
+        body: assignmentSummary?.enrolled
+          ? `Open assignments: ${assignmentSummary.openCount}. Awaiting review: ${assignmentSummary.submittedPendingCount}. Needs revision: ${assignmentSummary.needsRevisionCount}. Reviewed: ${assignmentSummary.reviewedCount}.`
+          : 'Written assignments and deadlines appear when you are enrolled in a track.',
+        cta: {
+          label: assignmentSummary?.enrolled ? 'View assignments' : 'Assignments',
+          to: '/fellow/assignments',
+        },
       },
       {
         title: 'Announcements',
@@ -216,6 +230,7 @@ export default function FellowDashboard() {
     selectedTrackAttempts.length,
     learningSummary,
     programEnrollment,
+    assignmentSummary,
   ])
 
   const trackActions = selectedTrack
@@ -267,6 +282,16 @@ export default function FellowDashboard() {
                 )}%`
               : 'Soon',
           disabled: !learningSummary?.enrolled || !learningSummary?.totalLessons,
+        },
+        {
+          title: 'Assignments',
+          description:
+            assignmentSummary?.enrolled && assignmentSummary.openCount > 0
+              ? `${assignmentSummary.openCount} open · ${assignmentSummary.submittedPendingCount} awaiting review · ${assignmentSummary.needsRevisionCount} need revision.`
+              : 'Submit coursework and track your review status.',
+          to: '/fellow/assignments',
+          cta: 'Open assignments',
+          status: assignmentSummary?.enrolled ? 'Live' : 'Enroll',
         },
       ]
     : []
