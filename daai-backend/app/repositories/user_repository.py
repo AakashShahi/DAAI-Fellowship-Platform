@@ -1,6 +1,8 @@
 from beanie import PydanticObjectId
 from bson.errors import InvalidId
 
+from datetime import datetime, timezone
+
 from app.models.user_model import User
 from app.schema.user_schema import UserCreate
 from app.utils.password import hash_password
@@ -26,4 +28,27 @@ class UserRepository:
             role=user_data.role,
         )
         await user.insert()
+        return user
+
+    async def update_profile(
+        self,
+        user: User,
+        *,
+        full_name: str,
+        phone: str | None,
+        location: str | None,
+        bio: str | None,
+    ) -> User:
+        user.full_name = full_name
+        user.phone = phone
+        user.location = location
+        user.bio = bio
+        user.updated_at = datetime.now(timezone.utc)
+        await user.save()
+        return user
+
+    async def update_password(self, user: User, hashed_password: str) -> User:
+        user.hashed_password = hashed_password
+        user.updated_at = datetime.now(timezone.utc)
+        await user.save()
         return user

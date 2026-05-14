@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.routes import auth_routes, health_routes, quiz_routes
+from app.api.v1.routes import auth_routes, health_routes, profile_routes, quiz_routes
 
 api_router = APIRouter()
 
@@ -20,4 +20,10 @@ api_router.include_router(
     quiz_routes.router,
     prefix="/quizzes",
     tags=["Quizzes"]
+)
+
+api_router.include_router(
+    profile_routes.router,
+    prefix="/profile",
+    tags=["Profile"]
 )

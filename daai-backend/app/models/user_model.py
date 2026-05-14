@@ -19,6 +19,10 @@ class User(Document):
     email: EmailStr
     hashed_password: str
     role: UserRole = UserRole.FELLOW
+    phone: str | None = Field(default=None, max_length=30)
+    location: str | None = Field(default=None, max_length=120)
+    bio: str | None = Field(default=None, max_length=500)
+    avatar_url: str | None = Field(default=None, max_length=500)
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
