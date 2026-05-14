@@ -14,3 +14,8 @@ export const changeMyPassword = async (payload) => {
   const response = await axiosClient.put('/profile/change-password', payload)
   return response.data
 }
+
+export const updateLearningTrack = async (payload) => {
+  const response = await axiosClient.put('/profile/learning-track', payload)
+  return response.data
+}
