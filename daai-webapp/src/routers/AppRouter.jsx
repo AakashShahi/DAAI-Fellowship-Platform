@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ROLES } from '../constants/roles'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
@@ -23,14 +24,6 @@ import Register from '../pages/Register'
 import DashboardRedirect from '../routes/DashboardRedirect'
 import ProtectedRoute from '../routes/ProtectedRoute'
 import RoleBasedRoute from '../routes/RoleBasedRoute'
-
-const ROLES = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  ADMIN: 'ADMIN',
-  TRAINER: 'TRAINER',
-  FELLOW: 'FELLOW',
-  EMPLOYER: 'EMPLOYER',
-}
 
 const protect = (element) => <ProtectedRoute>{element}</ProtectedRoute>
 
