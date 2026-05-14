@@ -1,17 +1,46 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
+import FellowTopbar from '../../components/dashboard/FellowTopbar'
 import { LEARNING_TRACKS_BY_SLUG } from '../../constants/learningTracks'
+import useAuthStore from '../../store/authStore'
+import {
+  canAccessQuiz,
+  getFellowTrack,
+  getQuizAccessMessage,
+} from '../../utils/learningTrackAccess'
 
 export default function LearningTrackDetailPage() {
   const { trackSlug } = useParams()
+  const user = useAuthStore((state) => state.user)
   const track = LEARNING_TRACKS_BY_SLUG[trackSlug]
+  const selectedTrack = getFellowTrack(user)
 
   if (!track) {
     return <Navigate to="/fellow/dashboard" replace />
   }
 
+  if (selectedTrack && !canAccessQuiz(user, track.quizSlug)) {
+    return (
+      <main className="app-home">
+        <FellowTopbar selectedTrack={selectedTrack} />
+        <section className="mx-auto mt-7 max-w-5xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+          <p className="text-sm font-black">
+            {getQuizAccessMessage(user, track.quizSlug)}
+          </p>
+          <Link
+            to="/fellow/dashboard"
+            className="mt-5 inline-flex rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
+          >
+            Back to Dashboard
+          </Link>
+        </section>
+      </main>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-5xl">
+    <main className="app-home">
+      <FellowTopbar selectedTrack={selectedTrack ?? track} />
+      <section className="mx-auto mt-7 max-w-5xl">
         <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
           <Link
             to="/fellow/dashboard"

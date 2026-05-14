@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
 import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
+import FellowTopbar from '../../components/dashboard/FellowTopbar'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
 import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
 import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
@@ -11,6 +12,7 @@ import {
 } from '../../services/quizService'
 import { getMyProfile, updateLearningTrack } from '../../services/profileService'
 import useAuthStore from '../../store/authStore'
+import { getFellowTrack } from '../../utils/learningTrackAccess'
 
 const getAttemptPercentage = (attempt) =>
   attempt?.total_questions
@@ -42,7 +44,6 @@ export default function FellowDashboard() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
-  const logout = useAuthStore((state) => state.logout)
   const [profile, setProfile] = useState(null)
   const [categories, setCategories] = useState([])
   const [attempts, setAttempts] = useState([])
@@ -100,8 +101,11 @@ export default function FellowDashboard() {
     }
   }, [updateUser])
 
-  const learningTrack = profile?.learningTrack ?? user?.learningTrack
-  const selectedTrack = learningTrack ? LEARNING_TRACKS[learningTrack] : null
+  const currentUser = {
+    ...user,
+    learningTrack: profile?.learningTrack ?? user?.learningTrack,
+  }
+  const selectedTrack = getFellowTrack(currentUser)
 
   const selectedTrackAttempts = useMemo(() => {
     if (!selectedTrack) {
@@ -146,6 +150,13 @@ export default function FellowDashboard() {
   const trackActions = selectedTrack
     ? [
         {
+          title: 'Active Course',
+          description: `${selectedTrack.title} is your selected fellowship course.`,
+          to: selectedTrack.detailPath,
+          cta: 'Open course',
+          status: selectedTrack.pathLabel,
+        },
+        {
           title: `Start ${selectedTrack.label} Quiz`,
           description: selectedCategory?.description ?? selectedTrack.description,
           to: selectedTrack.quizPath,
@@ -153,21 +164,25 @@ export default function FellowDashboard() {
           status: 'Available',
         },
         {
-          title: `${selectedTrack.label} Course`,
-          description: 'Open modules, progress placeholder, and next steps for this track.',
-          to: selectedTrack.detailPath,
-          cta: 'View course',
-          status: selectedTrack.pathLabel,
+          title: 'Quiz Progress',
+          description: selectedTrackAttempts.length
+            ? `Best score ${bestScore}% and average score ${averageScore}%.`
+            : 'Start your first quiz to build progress.',
+          to: selectedTrack.quizPath,
+          cta: selectedTrackAttempts.length ? 'Retake quiz' : 'Start quiz',
+          status: `${selectedTrackAttempts.length} attempts`,
         },
         {
-          title: 'Quiz Attempts / Results',
-          description: 'Review your quiz history. Filtering by track can be added when the backend supports it.',
+          title: 'Recent Result',
+          description: latestAttempt
+            ? `Latest score: ${latestPercentage}% in ${latestAttempt.category_title}.`
+            : 'No results yet for your active course.',
           to: '/quizzes/attempts',
-          cta: 'View results',
-          status: 'Available',
+          cta: latestAttempt ? 'View result' : 'View results',
+          status: latestAttempt ? 'Latest' : 'Empty',
         },
         {
-          title: 'Learning Progress',
+          title: 'Learning Track Progress',
           description: 'Track-specific learning milestones will appear here when modules are available.',
           cta: 'Coming soon',
           status: 'Soon',
@@ -227,26 +242,7 @@ export default function FellowDashboard() {
 
   return (
     <main className="app-home">
-      <header className="topbar">
-        <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            D
-          </span>
-          <span>
-            <strong>DAAI</strong>
-            <small>Fellowship</small>
-          </span>
-        </div>
-
-        <div className="auth-actions">
-          <Link className="secondary-button" to="/profile/settings">
-            Profile
-          </Link>
-          <button type="button" className="secondary-button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </header>
+      <FellowTopbar selectedTrack={selectedTrack} />
 
       <section className="fellow-dashboard">
         {dashboardError ? (

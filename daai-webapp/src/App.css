@@ -48,6 +48,7 @@
   align-items: center;
   gap: 12px;
   color: inherit;
+  text-decoration: none;
 }
 
 .brand-mark {
@@ -257,6 +258,39 @@
   justify-content: flex-end;
 }
 
+.fellow-topbar {
+  align-items: center;
+}
+
+.fellow-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0 8px;
+}
+
+.fellow-nav a {
+  flex: 0 0 auto;
+  border-radius: 6px;
+  padding: 9px 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.fellow-nav a:hover {
+  color: var(--text-h);
+  background: var(--accent-bg);
+}
+
 .welcome-panel {
   width: min(100%, 1120px);
   margin: 28px auto 0;
@@ -418,6 +452,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
   padding: 18px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -438,14 +473,18 @@
   text-transform: uppercase;
 }
 
-.fellow-profile-summary strong,
-.fellow-profile-summary span,
-.fellow-profile-summary em {
+.fellow-profile-summary > div {
+  min-width: 0;
+}
+
+.fellow-profile-summary > div strong,
+.fellow-profile-summary > div span,
+.fellow-profile-summary > div em {
   display: block;
   word-break: break-word;
 }
 
-.fellow-profile-summary strong {
+.fellow-profile-summary > div strong {
   color: var(--text-h);
   font-size: 16px;
   font-style: normal;
@@ -882,12 +921,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.fellow-profile-summary span {
+.fellow-profile-summary > div span {
   margin-top: 4px;
   font-size: 13px;
 }
 
-.fellow-profile-summary em {
+.fellow-profile-summary > div em {
   width: fit-content;
   margin-top: 10px;
   border-radius: 999px;
@@ -936,6 +975,12 @@
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .fellow-nav {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 2px 0;
   }
 
   .dashboard-actions {

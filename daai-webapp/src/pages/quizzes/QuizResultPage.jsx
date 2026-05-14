@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { getMyQuizAttempt } from '../../services/quizService'
+import useAuthStore from '../../store/authStore'
+import {
+  canAccessQuiz,
+  getFellowTrack,
+  getQuizAccessMessage,
+} from '../../utils/learningTrackAccess'
 
 const PASSING_PERCENTAGE = 70
 const DEFAULT_EXPLANATION =
@@ -9,6 +15,7 @@ const DEFAULT_EXPLANATION =
 export default function QuizResultPage() {
   const { category, attemptId } = useParams()
   const location = useLocation()
+  const user = useAuthStore((state) => state.user)
   const [attemptResult, setAttemptResult] = useState(location.state?.result)
   const [isLoading, setIsLoading] = useState(Boolean(attemptId))
   const [error, setError] = useState('')
@@ -50,6 +57,9 @@ export default function QuizResultPage() {
   }
 
   const result = attemptResult
+  const selectedTrack = getFellowTrack(user)
+  const resultCategory = result?.category ?? category
+  const hasResultAccess = !resultCategory || canAccessQuiz(user, resultCategory)
   const answers = result?.answers ?? []
   const correctAnswers = answers.filter((answer) => answer.is_correct)
   const wrongAnswers = answers.filter((answer) => !answer.is_correct)
@@ -58,16 +68,34 @@ export default function QuizResultPage() {
     : 0
   const resultStatus = percentage >= PASSING_PERCENTAGE ? 'Passed' : 'Needs Practice'
 
+  if (!hasResultAccess) {
+    return (
+      <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-5xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+          <p className="text-sm font-black">
+            {getQuizAccessMessage(user, resultCategory)}
+          </p>
+          <Link
+            to="/fellow/dashboard"
+            className="mt-5 inline-flex rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
+          >
+            Back to Dashboard
+          </Link>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
         {isLoading ? (
           <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
             <Link
-              to="/quizzes"
+              to={selectedTrack ? '/fellow/dashboard' : '/quizzes'}
               className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
             >
-              Back to quizzes
+              {selectedTrack ? 'Back to dashboard' : 'Back to quizzes'}
             </Link>
             <p className="mt-4 text-sm font-bold">Loading quiz result...</p>
           </div>
@@ -238,16 +266,16 @@ export default function QuizResultPage() {
                 Retake Quiz
               </Link>
               <Link
-                to="/quizzes"
+                to="/fellow/dashboard"
                 className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               >
-                Choose Another Quiz
+                Back to Dashboard
               </Link>
               <Link
                 to="/quizzes/attempts"
                 className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               >
-                View Attempts
+                View Result
               </Link>
             </div>
           </>

@@ -4,8 +4,11 @@ import {
   getQuizCategories,
   getQuizQuestions,
 } from '../../services/quizService'
+import useAuthStore from '../../store/authStore'
+import { getFellowTrack, normalizeQuizSlug } from '../../utils/learningTrackAccess'
 
 export default function QuizListPage() {
+  const user = useAuthStore((state) => state.user)
   const [categories, setCategories] = useState([])
   const [questionCounts, setQuestionCounts] = useState({})
   const [isLoading, setIsLoading] = useState(true)
@@ -46,6 +49,15 @@ export default function QuizListPage() {
     }
   }, [])
 
+  const selectedTrack = getFellowTrack(user)
+  const visibleCategories = selectedTrack
+    ? categories.filter(
+        (category) =>
+          normalizeQuizSlug(category.slug) === normalizeQuizSlug(selectedTrack.quizSlug),
+      )
+    : categories
+  const isFellowWithoutTrack = user?.role === 'FELLOW' && !selectedTrack
+
   return (
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
@@ -54,10 +66,12 @@ export default function QuizListPage() {
             Quizzes
           </p>
           <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
-            Choose a quiz category
+            {selectedTrack ? `${selectedTrack.label} Quiz` : 'Choose a quiz category'}
           </h1>
           <p className="mt-3 max-w-2xl text-sm font-medium">
-            Questions now load from the backend quiz API and MongoDB seed data.
+            {selectedTrack
+              ? 'Your quiz access is limited to your selected fellowship course.'
+              : 'Questions now load from the backend quiz API and MongoDB seed data.'}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -81,8 +95,17 @@ export default function QuizListPage() {
           </p>
         ) : null}
 
+        {isFellowWithoutTrack ? (
+          <div className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+            Select your learning track before opening quizzes.
+            <Link className="ml-2 text-[#f26322] hover:text-[#d94f13]" to="/fellow/dashboard">
+              Go to dashboard
+            </Link>
+          </div>
+        ) : null}
+
         <div className="grid gap-4 md:grid-cols-2">
-          {categories.map((category) => (
+          {!isFellowWithoutTrack && visibleCategories.map((category) => (
             <Link
               key={category.slug}
               to={`/quizzes/${category.slug}`}

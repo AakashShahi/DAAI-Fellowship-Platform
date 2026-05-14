@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getMyQuizAttempts } from '../../services/quizService'
+import useAuthStore from '../../store/authStore'
+import { getFellowTrack, normalizeQuizSlug } from '../../utils/learningTrackAccess'
 
 const PASSING_PERCENTAGE = 70
 
@@ -11,6 +13,7 @@ const getAttemptStatus = (attempt) =>
   getAttemptPercentage(attempt) >= PASSING_PERCENTAGE ? 'Passed' : 'Needs Practice'
 
 export default function QuizAttemptsPage() {
+  const user = useAuthStore((state) => state.user)
   const [attempts, setAttempts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -43,6 +46,15 @@ export default function QuizAttemptsPage() {
     }
   }, [])
 
+  const selectedTrack = getFellowTrack(user)
+  const visibleAttempts = selectedTrack
+    ? attempts.filter(
+        (attempt) =>
+          normalizeQuizSlug(attempt.category) ===
+          normalizeQuizSlug(selectedTrack.quizSlug),
+      )
+    : attempts
+
   return (
     <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
@@ -60,7 +72,9 @@ export default function QuizAttemptsPage() {
             Your quiz results
           </h1>
           <p className="mt-3 max-w-2xl text-sm font-medium">
-            Review quiz attempts saved from the backend database.
+            {selectedTrack
+              ? `Review results for your ${selectedTrack.label} course.`
+              : 'Review quiz attempts saved from the backend database.'}
           </p>
         </div>
 
@@ -76,14 +90,16 @@ export default function QuizAttemptsPage() {
           </p>
         ) : null}
 
-        {!isLoading && !error && attempts.length === 0 ? (
+        {!isLoading && !error && visibleAttempts.length === 0 ? (
           <p className="mt-5 rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
-            No quiz attempts yet.
+            {selectedTrack
+              ? `No ${selectedTrack.label} quiz attempts yet.`
+              : 'No quiz attempts yet.'}
           </p>
         ) : null}
 
         <div className="mt-5 grid gap-4">
-          {attempts.map((attempt) => (
+          {visibleAttempts.map((attempt) => (
             <Link
               key={attempt.id}
               to={`/quizzes/attempts/${attempt.id}`}
