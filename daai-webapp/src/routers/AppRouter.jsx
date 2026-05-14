@@ -17,6 +17,7 @@ import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import TrainersPage from '../pages/admin/TrainersPage'
 import Login from '../pages/Login'
+import ProfileSettingsPage from '../pages/ProfileSettingsPage'
 import QuizAttemptsPage from '../pages/quizzes/QuizAttemptsPage'
 import QuizAttemptPage from '../pages/quizzes/QuizAttemptPage'
 import QuizListPage from '../pages/quizzes/QuizListPage'
@@ -89,9 +90,14 @@ function RoleDashboard({ eyebrow, title, description, children }) {
           </span>
         </div>
 
-        <button type="button" className="secondary-button" onClick={logout}>
-          Logout
-        </button>
+        <div className="auth-actions">
+          <Link className="secondary-button" to="/profile/settings">
+            Profile
+          </Link>
+          <button type="button" className="secondary-button" onClick={logout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <section className="welcome-panel">
@@ -244,6 +250,14 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <QuizResultPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/settings"
+          element={
+            <ProtectedRoute>
+              <ProfileSettingsPage />
             </ProtectedRoute>
           }
         />
