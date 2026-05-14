@@ -10,6 +10,7 @@ class UserRole(str, Enum):
     SUPER_ADMIN = "SUPER_ADMIN"
     ADMIN = "ADMIN"
     TRAINER = "TRAINER"
+    MENTOR = "MENTOR"
     FELLOW = "FELLOW"
     EMPLOYER = "EMPLOYER"
 

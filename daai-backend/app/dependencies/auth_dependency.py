@@ -49,3 +49,34 @@ async def require_fellow(user: User = Depends(current_user)) -> User:
         )
 
     return user
+
+
+async def current_submission_reviewer(user: User = Depends(current_user)) -> User:
+    if user.role not in {
+        UserRole.SUPER_ADMIN,
+        UserRole.ADMIN,
+        UserRole.TRAINER,
+        UserRole.MENTOR,
+    }:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Staff access required to review submissions",
+        )
+
+    return user
+
+
+async def current_track_catalog_reader(user: User = Depends(current_user)) -> User:
+    """List tracks (read-only) for admins and staff who review submissions."""
+    if user.role not in {
+        UserRole.SUPER_ADMIN,
+        UserRole.ADMIN,
+        UserRole.TRAINER,
+        UserRole.MENTOR,
+    }:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed to list tracks",
+        )
+
+    return user

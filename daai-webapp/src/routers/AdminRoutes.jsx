@@ -1,12 +1,16 @@
 import { Navigate, Route } from 'react-router-dom'
 import { ROLES } from '../constants/roles'
 import AdminLayout from '../layouts/AdminLayout'
+import AdminAssignmentEditPage from '../pages/admin/AdminAssignmentEditPage'
+import AdminAssignmentsPage from '../pages/admin/AdminAssignmentsPage'
 import AdminBatchesPage from '../pages/admin/AdminBatchesPage'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
 import AdminLessonsPage from '../pages/admin/AdminLessonsPage'
 import AdminModulesPage from '../pages/admin/AdminModulesPage'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
+import AdminSubmissionReviewPage from '../pages/admin/AdminSubmissionReviewPage'
+import AdminSubmissionsPage from '../pages/admin/AdminSubmissionsPage'
 import AdminTracksPage from '../pages/admin/AdminTracksPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
 import CohortsPage from '../pages/admin/CohortsPage'
@@ -39,6 +43,10 @@ export const adminRoutesElement = (
     <Route path="enrollments" element={<AdminEnrollmentsPage />} />
     <Route path="modules" element={<AdminModulesPage />} />
     <Route path="lessons" element={<AdminLessonsPage />} />
+    <Route path="assignments" element={<AdminAssignmentsPage />} />
+    <Route path="assignments/:assignmentId" element={<AdminAssignmentEditPage />} />
+    <Route path="submissions" element={<AdminSubmissionsPage />} />
+    <Route path="submissions/:submissionId" element={<AdminSubmissionReviewPage />} />
     <Route path="quizzes" element={<AdminQuizManagementPage />} />
     <Route path="reports" element={<ReportsPage />} />
     <Route path="settings" element={<SettingsPage />} />
