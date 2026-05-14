@@ -5,6 +5,7 @@ import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
 import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
 import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
+import { getMyEnrollment } from '../../services/fellowshipService'
 import {
   getMyQuizAttempts,
   getQuizCategories,
@@ -51,19 +52,25 @@ export default function FellowDashboard() {
   const [dashboardError, setDashboardError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isChangingTrack, setIsChangingTrack] = useState(false)
+  const [programEnrollment, setProgramEnrollment] = useState(undefined)
 
   useEffect(() => {
     let isMounted = true
 
     const loadDashboard = async () => {
-      const [profileResult, categoryResult, attemptResult] =
+      const [enrollmentResult, profileResult, categoryResult, attemptResult] =
         await Promise.allSettled([
+          getMyEnrollment(),
           getMyProfile(),
           getQuizCategories(),
           getMyQuizAttempts(),
         ])
 
       if (isMounted) {
+        if (enrollmentResult.status === 'fulfilled') {
+          setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
+        }
+
         if (profileResult.status === 'fulfilled') {
           setProfile(profileResult.value)
           updateUser({
@@ -293,6 +300,43 @@ export default function FellowDashboard() {
 
         {successMessage ? (
           <p className="dashboard-success">{successMessage}</p>
+        ) : null}
+
+        {!isLoadingDashboard && programEnrollment ? (
+          <div className="dashboard-section">
+            <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+              <p className="eyebrow">Program enrollment</p>
+              <h2 className="mt-1 text-xl font-black text-[#24140e]">
+                {programEnrollment.track.title}
+              </h2>
+              <p className="mt-2 text-sm font-medium text-[#6f5f57]">
+                Batch: <strong>{programEnrollment.batch.name}</strong> ·{' '}
+                {new Date(programEnrollment.batch.startDate).toLocaleDateString()} –{' '}
+                {new Date(programEnrollment.batch.endDate).toLocaleDateString()}
+              </p>
+              <Link className="text-button mt-3 inline-block" to="/fellow/my-track">
+                View track and batch details
+              </Link>
+            </div>
+          </div>
+        ) : null}
+
+        {!isLoadingDashboard && programEnrollment === null ? (
+          <div className="dashboard-section">
+            <div className="rounded-lg border border-dashed border-orange-200 bg-[#fffaf6] p-5">
+              <p className="eyebrow">Program enrollment</p>
+              <p className="mt-2 text-sm font-bold text-[#6f5f57]">
+                You are not enrolled in any fellowship track yet.
+              </p>
+              <p className="mt-2 text-sm text-[#6f5f57]">
+                Your official track and batch will appear here once staff enroll you.
+                You can still set a quiz practice track below.
+              </p>
+              <Link className="text-button mt-2 inline-block" to="/fellow/my-track">
+                Open My track
+              </Link>
+            </div>
+          </div>
         ) : null}
 
         {shouldShowSelection ? (

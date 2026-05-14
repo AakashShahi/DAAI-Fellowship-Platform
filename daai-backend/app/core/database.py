@@ -5,7 +5,10 @@ from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.config import settings
+from app.models.batch_model import Batch
+from app.models.enrollment_model import Enrollment
 from app.models.quiz_model import QuizAttempt, QuizQuestion
+from app.models.track_model import Track
 from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
@@ -24,7 +27,10 @@ async def init_db() -> AsyncDatabase:
     db = client[settings.DATABASE_NAME]
 
     await client.admin.command("ping")
-    await init_beanie(database=db, document_models=[User, QuizQuestion, QuizAttempt])
+    await init_beanie(
+        database=db,
+        document_models=[User, QuizQuestion, QuizAttempt, Track, Batch, Enrollment],
+    )
 
     logger.info("MongoDB connected: %s", settings.DATABASE_NAME)
     return db

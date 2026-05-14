@@ -39,3 +39,13 @@ async def current_admin(user: User = Depends(current_user)) -> User:
         )
 
     return user
+
+
+async def require_fellow(user: User = Depends(current_user)) -> User:
+    if user.role != UserRole.FELLOW:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Fellow access required",
+        )
+
+    return user
