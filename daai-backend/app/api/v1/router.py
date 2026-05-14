@@ -6,6 +6,9 @@ from app.api.v1.routes import (
     enrollment_routes,
     fellows_admin_routes,
     health_routes,
+    learning_fellow_routes,
+    lesson_routes,
+    module_routes,
     profile_routes,
     quiz_routes,
     track_routes,
@@ -59,4 +62,22 @@ api_router.include_router(
     fellows_admin_routes.router,
     prefix="/fellows",
     tags=["Fellows"],
+)
+
+api_router.include_router(
+    module_routes.router,
+    prefix="/modules",
+    tags=["Modules"],
+)
+
+api_router.include_router(
+    lesson_routes.router,
+    prefix="/lessons",
+    tags=["Lessons"],
+)
+
+api_router.include_router(
+    learning_fellow_routes.router,
+    prefix="/learning",
+    tags=["Learning"],
 )

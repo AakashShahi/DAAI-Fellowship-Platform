@@ -6,6 +6,7 @@ import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverv
 import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
 import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
 import { getMyEnrollment } from '../../services/fellowshipService'
+import { getFellowLearningSummary } from '../../services/learningService'
 import {
   getMyQuizAttempts,
   getQuizCategories,
@@ -53,22 +54,33 @@ export default function FellowDashboard() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isChangingTrack, setIsChangingTrack] = useState(false)
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
+  const [learningSummary, setLearningSummary] = useState(undefined)
 
   useEffect(() => {
     let isMounted = true
 
     const loadDashboard = async () => {
-      const [enrollmentResult, profileResult, categoryResult, attemptResult] =
-        await Promise.allSettled([
-          getMyEnrollment(),
-          getMyProfile(),
-          getQuizCategories(),
-          getMyQuizAttempts(),
-        ])
+      const [
+        enrollmentResult,
+        learningSummaryResult,
+        profileResult,
+        categoryResult,
+        attemptResult,
+      ] = await Promise.allSettled([
+        getMyEnrollment(),
+        getFellowLearningSummary(),
+        getMyProfile(),
+        getQuizCategories(),
+        getMyQuizAttempts(),
+      ])
 
       if (isMounted) {
         if (enrollmentResult.status === 'fulfilled') {
           setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
+        }
+
+        if (learningSummaryResult.status === 'fulfilled') {
+          setLearningSummary(learningSummaryResult.value)
         }
 
         if (profileResult.status === 'fulfilled') {
@@ -166,14 +178,20 @@ export default function FellowDashboard() {
       },
       {
         title: 'Progress',
-        body: `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
-          selectedTrackAttempts.length === 1 ? '' : 's'
-        }. Module progress will appear when coursework is connected.`,
+        body:
+          learningSummary?.enrolled && learningSummary.totalLessons > 0
+            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Modules fully done ${learningSummary.modulesFullyCompleted} / ${learningSummary.totalModules}. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
+            : `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
+                selectedTrackAttempts.length === 1 ? '' : 's'
+              }.`,
       },
       {
         title: 'Continue learning',
-        body: 'Jump back into modules, readings, and the course outline for your cohort.',
-        cta: { label: 'Open course', to: selectedTrack.detailPath },
+        body: 'Jump into published modules and lessons for your enrolled track.',
+        cta: {
+          label: programEnrollment ? 'Open learning' : 'Open course',
+          to: programEnrollment ? '/fellow/learning' : selectedTrack.detailPath,
+        },
       },
       {
         title: 'Pending quizzes',
@@ -196,6 +214,8 @@ export default function FellowDashboard() {
     averageScore,
     bestScore,
     selectedTrackAttempts.length,
+    learningSummary,
+    programEnrollment,
   ])
 
   const trackActions = selectedTrack
@@ -234,10 +254,19 @@ export default function FellowDashboard() {
         },
         {
           title: 'Learning Track Progress',
-          description: 'Track-specific learning milestones will appear here when modules are available.',
-          cta: 'Coming soon',
-          status: 'Soon',
-          disabled: true,
+          description:
+            learningSummary?.enrolled && learningSummary.totalLessons > 0
+              ? `${learningSummary.completedLessons} of ${learningSummary.totalLessons} lessons completed.`
+              : 'Track-specific learning milestones will appear here when modules are available.',
+          to: '/fellow/learning',
+          cta: 'View learning',
+          status:
+            learningSummary?.enrolled && learningSummary.totalLessons > 0
+              ? `${Math.round(
+                  (learningSummary.completedLessons / learningSummary.totalLessons) * 100,
+                )}%`
+              : 'Soon',
+          disabled: !learningSummary?.enrolled || !learningSummary?.totalLessons,
         },
       ]
     : []
