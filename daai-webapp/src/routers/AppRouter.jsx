@@ -1,10 +1,4 @@
-import {
-  BrowserRouter,
-  Link,
-  Navigate,
-  Route,
-  Routes,
-} from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
@@ -16,6 +10,9 @@ import OpportunitiesPage from '../pages/admin/OpportunitiesPage'
 import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import TrainersPage from '../pages/admin/TrainersPage'
+import EmployerDashboard from '../pages/dashboards/EmployerDashboard'
+import FellowDashboard from '../pages/dashboards/FellowDashboard'
+import TrainerDashboard from '../pages/dashboards/TrainerDashboard'
 import Login from '../pages/Login'
 import ProfileSettingsPage from '../pages/ProfileSettingsPage'
 import QuizAttemptsPage from '../pages/quizzes/QuizAttemptsPage'
@@ -23,7 +20,9 @@ import QuizAttemptPage from '../pages/quizzes/QuizAttemptPage'
 import QuizListPage from '../pages/quizzes/QuizListPage'
 import QuizResultPage from '../pages/quizzes/QuizResultPage'
 import Register from '../pages/Register'
-import useAuthStore from '../store/authStore'
+import DashboardRedirect from '../routes/DashboardRedirect'
+import ProtectedRoute from '../routes/ProtectedRoute'
+import RoleBasedRoute from '../routes/RoleBasedRoute'
 
 const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
@@ -33,221 +32,10 @@ const ROLES = {
   EMPLOYER: 'EMPLOYER',
 }
 
-const ROLE_DASHBOARD_PATHS = {
-  [ROLES.SUPER_ADMIN]: '/admin/dashboard',
-  [ROLES.ADMIN]: '/admin/dashboard',
-  [ROLES.TRAINER]: '/trainer/dashboard',
-  [ROLES.FELLOW]: '/fellow/dashboard',
-  [ROLES.EMPLOYER]: '/employer/dashboard',
-}
+const protect = (element) => <ProtectedRoute>{element}</ProtectedRoute>
 
-function ProtectedRoute({ children }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
-  return children
-}
-
-function RoleBasedRoute({ allowedRoles, children }) {
-  const user = useAuthStore((state) => state.user)
-  const userRole = user?.role
-
-  if (!userRole || !allowedRoles.includes(userRole)) {
-    return <Unauthorized />
-  }
-
-  return children
-}
-
-function DashboardRedirect() {
-  const user = useAuthStore((state) => state.user)
-  const dashboardPath = ROLE_DASHBOARD_PATHS[user?.role]
-
-  if (!dashboardPath) {
-    return <Unauthorized />
-  }
-
-  return <Navigate to={dashboardPath} replace />
-}
-
-function RoleDashboard({ eyebrow, title, description, children }) {
-  const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-
-  return (
-    <main className="app-home">
-      <header className="topbar">
-        <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            D
-          </span>
-          <span>
-            <strong>DAAI</strong>
-            <small>Fellowship</small>
-          </span>
-        </div>
-
-        <div className="auth-actions">
-          <Link className="secondary-button" to="/profile/settings">
-            Profile
-          </Link>
-          <button type="button" className="secondary-button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <section className="welcome-panel">
-        <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
-        <p>{description}</p>
-        <p>
-          {user?.email
-            ? `Signed in as ${user.email}`
-            : 'You are signed in and ready to continue.'}
-        </p>
-
-        {children}
-      </section>
-    </main>
-  )
-}
-
-function TrainerDashboard() {
-  return (
-    <RoleDashboard
-      eyebrow="Trainer Dashboard"
-      title="Guide fellows and learning progress"
-      description="Track assigned fellows, sessions, learning activities, and training support from one place."
-    />
-  )
-}
-
-function FellowDashboard() {
-  const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-  const fellowActions = [
-    {
-      title: 'Take Quizzes',
-      description: 'Practice QA, Salesforce, and AWS quiz categories.',
-      to: '/quizzes',
-      cta: 'Start quiz',
-      status: 'Available',
-    },
-    {
-      title: 'View Quiz Attempts / Results',
-      description: 'Review quiz results after completing an attempt.',
-      to: '/quizzes/attempts',
-      cta: 'Review results',
-      status: 'Available',
-    },
-    {
-      title: 'Learning Progress',
-      description: 'Track your fellowship learning milestones.',
-      to: '/fellow/dashboard',
-      cta: 'Coming soon',
-      status: 'Soon',
-    },
-    {
-      title: 'Opportunities',
-      description: 'Explore fellowship opportunities and next steps.',
-      to: '/fellow/dashboard',
-      cta: 'Coming soon',
-      status: 'Soon',
-    },
-  ]
-
-  return (
-    <main className="app-home">
-      <header className="topbar">
-        <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            D
-          </span>
-          <span>
-            <strong>DAAI</strong>
-            <small>Fellowship</small>
-          </span>
-        </div>
-
-        <div className="auth-actions">
-          <Link className="secondary-button" to="/profile/settings">
-            Profile
-          </Link>
-          <button type="button" className="secondary-button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <section className="fellow-dashboard">
-        <div className="fellow-hero">
-          <div>
-            <p className="eyebrow">Fellow Dashboard</p>
-            <h1>Welcome back, {user?.full_name ?? 'Fellow'}</h1>
-            <p>
-              Continue your quizzes, review progress, and keep your fellowship
-              profile ready for upcoming opportunities.
-            </p>
-          </div>
-          <div className="fellow-profile-summary">
-            <span className="fellow-avatar" aria-hidden="true">
-              {(user?.full_name || user?.email || 'F').charAt(0)}
-            </span>
-            <div>
-              <strong>{user?.full_name ?? 'Fellow Profile'}</strong>
-              <span>{user?.email ?? 'Signed in'}</span>
-              <em>{user?.role ?? 'FELLOW'}</em>
-            </div>
-          </div>
-        </div>
-
-        <div className="dashboard-actions">
-          {fellowActions.map((action) => (
-            <Link key={action.title} className="dashboard-action-card" to={action.to}>
-              <div>
-                <span>{action.title}</span>
-                <p>{action.description}</p>
-              </div>
-              <div className="dashboard-card-footer">
-                <small>{action.status}</small>
-                <strong>{action.cta}</strong>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
-  )
-}
-
-function EmployerDashboard() {
-  return (
-    <RoleDashboard
-      eyebrow="Employer Dashboard"
-      title="Connect with fellowship talent"
-      description="Manage opportunities, review fellow profiles, and follow hiring activity."
-    />
-  )
-}
-
-function Unauthorized() {
-  return (
-    <main className="app-home">
-      <section className="status-panel">
-        <p className="eyebrow">Unauthorized</p>
-        <h1>Access denied</h1>
-        <p>You do not have permission to view this page.</p>
-        <Link className="secondary-button" to="/dashboard">
-          Back to dashboard
-        </Link>
-      </section>
-    </main>
-  )
-}
+const protectRole = (allowedRoles, element) =>
+  protect(<RoleBasedRoute allowedRoles={allowedRoles}>{element}</RoleBasedRoute>)
 
 export default function AppRouter() {
   return (
@@ -256,71 +44,35 @@ export default function AppRouter() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardRedirect />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quizzes"
-          element={
-            <ProtectedRoute>
-              <QuizListPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={protect(<DashboardRedirect />)} />
+        <Route path="/quizzes" element={protect(<QuizListPage />)} />
         <Route
           path="/quizzes/attempts"
-          element={
-            <ProtectedRoute>
-              <QuizAttemptsPage />
-            </ProtectedRoute>
-          }
+          element={protect(<QuizAttemptsPage />)}
         />
         <Route
           path="/quizzes/attempts/:attemptId"
-          element={
-            <ProtectedRoute>
-              <QuizResultPage />
-            </ProtectedRoute>
-          }
+          element={protect(<QuizResultPage />)}
         />
         <Route
           path="/quizzes/:category"
-          element={
-            <ProtectedRoute>
-              <QuizAttemptPage />
-            </ProtectedRoute>
-          }
+          element={protect(<QuizAttemptPage />)}
         />
         <Route
           path="/quizzes/:category/result"
-          element={
-            <ProtectedRoute>
-              <QuizResultPage />
-            </ProtectedRoute>
-          }
+          element={protect(<QuizResultPage />)}
         />
         <Route
           path="/profile/settings"
-          element={
-            <ProtectedRoute>
-              <ProfileSettingsPage />
-            </ProtectedRoute>
-          }
+          element={protect(<ProfileSettingsPage />)}
         />
+
         <Route
           path="/admin"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
-                <DashboardLayout />
-              </RoleBasedRoute>
-            </ProtectedRoute>
-          }
+          element={protectRole(
+            [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+            <DashboardLayout />,
+          )}
         >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -334,35 +86,18 @@ export default function AppRouter() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
+
         <Route
           path="/trainer/dashboard"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={[ROLES.TRAINER]}>
-                <TrainerDashboard />
-              </RoleBasedRoute>
-            </ProtectedRoute>
-          }
+          element={protectRole([ROLES.TRAINER], <TrainerDashboard />)}
         />
         <Route
           path="/fellow/dashboard"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={[ROLES.FELLOW]}>
-                <FellowDashboard />
-              </RoleBasedRoute>
-            </ProtectedRoute>
-          }
+          element={protectRole([ROLES.FELLOW], <FellowDashboard />)}
         />
         <Route
           path="/employer/dashboard"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={[ROLES.EMPLOYER]}>
-                <EmployerDashboard />
-              </RoleBasedRoute>
-            </ProtectedRoute>
-          }
+          element={protectRole([ROLES.EMPLOYER], <EmployerDashboard />)}
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
