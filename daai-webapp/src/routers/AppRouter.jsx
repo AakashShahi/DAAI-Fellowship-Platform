@@ -14,6 +14,7 @@ import TrainersPage from '../pages/admin/TrainersPage'
 import EmployerDashboard from '../pages/dashboards/EmployerDashboard'
 import FellowDashboard from '../pages/dashboards/FellowDashboard'
 import TrainerDashboard from '../pages/dashboards/TrainerDashboard'
+import LearningTrackDetailPage from '../pages/learningTracks/LearningTrackDetailPage'
 import Login from '../pages/Login'
 import ProfileSettingsPage from '../pages/ProfileSettingsPage'
 import QuizAttemptsPage from '../pages/quizzes/QuizAttemptsPage'
@@ -58,6 +59,14 @@ export default function AppRouter() {
         <Route
           path="/profile/settings"
           element={protect(<ProfileSettingsPage />)}
+        />
+        <Route
+          path="/learning-tracks/:trackSlug"
+          element={protectRole([ROLES.FELLOW], <LearningTrackDetailPage />)}
+        />
+        <Route
+          path="/courses/:trackSlug"
+          element={protectRole([ROLES.FELLOW], <LearningTrackDetailPage />)}
         />
 
         <Route

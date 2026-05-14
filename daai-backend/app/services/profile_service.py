@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status
 
-from app.models.user_model import User
+from app.models.user_model import User, UserRole
 from app.repositories.user_repository import UserRepository
 from app.schema.profile_schema import (
     ChangePasswordRequest,
+    LearningTrackUpdateRequest,
     ProfileResponse,
     ProfileUpdateRequest,
 )
@@ -28,6 +29,7 @@ class ProfileService:
             bio=user.bio,
             avatarInitial=avatar_name[:1].upper(),
             avatarUrl=user.avatar_url,
+            learningTrack=user.learning_track,
         )
 
     async def update_profile(
@@ -41,6 +43,22 @@ class ProfileService:
             phone=profile_data.phone,
             location=profile_data.location,
             bio=profile_data.bio,
+        )
+
+    async def update_learning_track(
+        self,
+        user: User,
+        track_data: LearningTrackUpdateRequest,
+    ) -> User:
+        if user.role != UserRole.FELLOW:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only fellows can update learning track",
+            )
+
+        return await self.user_repository.update_learning_track(
+            user,
+            track_data.learningTrack,
         )
 
     async def change_password(

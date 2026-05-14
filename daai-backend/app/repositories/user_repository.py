@@ -3,7 +3,7 @@ from bson.errors import InvalidId
 
 from datetime import datetime, timezone
 
-from app.models.user_model import User
+from app.models.user_model import LearningTrack, User
 from app.schema.user_schema import UserCreate
 from app.utils.password import hash_password
 
@@ -49,6 +49,16 @@ class UserRepository:
 
     async def update_password(self, user: User, hashed_password: str) -> User:
         user.hashed_password = hashed_password
+        user.updated_at = datetime.now(timezone.utc)
+        await user.save()
+        return user
+
+    async def update_learning_track(
+        self,
+        user: User,
+        learning_track: LearningTrack,
+    ) -> User:
+        user.learning_track = learning_track
         user.updated_at = datetime.now(timezone.utc)
         await user.save()
         return user

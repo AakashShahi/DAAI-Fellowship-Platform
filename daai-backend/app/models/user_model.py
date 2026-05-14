@@ -14,6 +14,13 @@ class UserRole(str, Enum):
     EMPLOYER = "EMPLOYER"
 
 
+class LearningTrack(str, Enum):
+    QA = "QA"
+    SALESFORCE = "SALESFORCE"
+    AWS_PRACTITIONER = "AWS_PRACTITIONER"
+    AWS_ARCHITECT = "AWS_ARCHITECT"
+
+
 class User(Document):
     full_name: str = Field(min_length=1, max_length=120)
     email: EmailStr
@@ -23,6 +30,7 @@ class User(Document):
     location: str | None = Field(default=None, max_length=120)
     bio: str | None = Field(default=None, max_length=500)
     avatar_url: str | None = Field(default=None, max_length=500)
+    learning_track: LearningTrack | None = None
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

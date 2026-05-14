@@ -52,4 +52,5 @@ class AuthService:
             email=user.email,
             role=user.role,
             is_active=user.is_active,
+            learningTrack=user.learning_track,
         )

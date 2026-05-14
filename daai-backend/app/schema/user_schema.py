@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from app.models.user_model import UserRole
+from app.models.user_model import LearningTrack, UserRole
 
 BCRYPT_MAX_PASSWORD_BYTES = 72
 
@@ -31,3 +31,4 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: UserRole
     is_active: bool
+    learningTrack: LearningTrack | None = None

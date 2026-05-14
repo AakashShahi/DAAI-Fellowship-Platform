@@ -2,7 +2,7 @@ import re
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from app.models.user_model import UserRole
+from app.models.user_model import LearningTrack, UserRole
 from app.schema.user_schema import BCRYPT_MAX_PASSWORD_BYTES
 
 PHONE_PATTERN = re.compile(r"^[+()\-.\s0-9]{7,30}$")
@@ -18,6 +18,7 @@ class ProfileResponse(BaseModel):
     bio: str | None = None
     avatarInitial: str
     avatarUrl: str | None = None
+    learningTrack: LearningTrack | None = None
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -53,6 +54,10 @@ class ProfileUpdateRequest(BaseModel):
             raise ValueError("Phone number format is invalid")
 
         return value
+
+
+class LearningTrackUpdateRequest(BaseModel):
+    learningTrack: LearningTrack
 
 
 class ChangePasswordRequest(BaseModel):

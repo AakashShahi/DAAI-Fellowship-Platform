@@ -5,6 +5,7 @@ from app.dependencies.auth_dependency import current_user
 from app.models.user_model import User
 from app.schema.profile_schema import (
     ChangePasswordRequest,
+    LearningTrackUpdateRequest,
     ProfileResponse,
     ProfileUpdateRequest,
 )
@@ -73,3 +74,15 @@ async def change_my_password(
     await ProfileService().change_password(user, password_data)
 
     return {"message": "Password updated successfully"}
+
+
+@router.put("/learning-track", response_model=ProfileResponse)
+async def update_my_learning_track(
+    request: Request,
+    user: User = Depends(current_user),
+):
+    track_data = await parse_request_body(request, LearningTrackUpdateRequest)
+    profile_service = ProfileService()
+    updated_user = await profile_service.update_learning_track(user, track_data)
+
+    return ProfileService.to_response(updated_user)

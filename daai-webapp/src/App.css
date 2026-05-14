@@ -753,7 +753,12 @@
   font-weight: 800;
 }
 
-.track-selection-card button {
+.track-selection-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.track-selection-actions button {
   min-height: 42px;
   border: 0;
   border-radius: 6px;
@@ -765,13 +770,32 @@
   cursor: pointer;
 }
 
-.track-selection-card button:hover {
+.track-selection-actions button:hover {
   background: var(--accent-hover);
 }
 
-.track-selection-card button:disabled {
+.track-selection-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.track-selection-actions a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.track-selection-actions a:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
 }
 
 .selected-track-overview {

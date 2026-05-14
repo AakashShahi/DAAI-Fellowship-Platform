@@ -37,6 +37,9 @@ class QuizService:
     def parse_category(category: str) -> QuizCategory:
         normalized_category = category.strip().lower()
 
+        if normalized_category == "aws-architect":
+            return QuizCategory.AWS_SOLUTIONS_ARCHITECT
+
         for quiz_category in QuizCategory:
             if normalized_category == quiz_category.value:
                 return quiz_category
