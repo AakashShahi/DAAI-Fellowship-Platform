@@ -3,6 +3,9 @@ import { ROLES } from '../constants/roles'
 import FellowLayout from '../layouts/FellowLayout'
 import ComingSoonPage from '../pages/ComingSoonPage'
 import FellowDashboard from '../pages/dashboards/FellowDashboard'
+import FellowLearningPage from '../pages/fellow/FellowLearningPage'
+import FellowLessonPage from '../pages/fellow/FellowLessonPage'
+import FellowModulePage from '../pages/fellow/FellowModulePage'
 import FellowMyTrackPage from '../pages/fellow/FellowMyTrackPage'
 import LearningTrackDetailPage from '../pages/learningTracks/LearningTrackDetailPage'
 import ProfileSettingsPage from '../pages/ProfileSettingsPage'
@@ -20,6 +23,9 @@ export const fellowRoutesElement = (
     <Route index element={<Navigate to="/fellow/dashboard" replace />} />
     <Route path="dashboard" element={<FellowDashboard />} />
     <Route path="my-track" element={<FellowMyTrackPage />} />
+    <Route path="learning" element={<FellowLearningPage />} />
+    <Route path="modules/:moduleId" element={<FellowModulePage />} />
+    <Route path="lessons/:lessonId" element={<FellowLessonPage />} />
     <Route path="quizzes" element={<QuizListPage />} />
     <Route path="quizzes/attempts" element={<QuizAttemptsPage />} />
     <Route path="quizzes/attempts/:attemptId" element={<QuizResultPage />} />
