@@ -2,6 +2,9 @@ export const adminNavigation = [
   { label: 'Dashboard', to: '/admin/dashboard' },
   { label: 'Applications', to: '/admin/applications' },
   { label: 'Fellows', to: '/admin/fellows' },
+  { label: 'Tracks', to: '/admin/tracks' },
+  { label: 'Batches', to: '/admin/batches' },
+  { label: 'Enrollments', to: '/admin/enrollments' },
   { label: 'Cohorts', to: '/admin/cohorts' },
   { label: 'Trainers', to: '/admin/trainers' },
   { label: 'Employers', to: '/admin/employers' },
@@ -13,6 +16,7 @@ export const adminNavigation = [
 
 export const fellowNavigation = [
   { label: 'Overview', to: '/fellow/dashboard' },
+  { label: 'My track', to: '/fellow/my-track' },
   { label: 'Quizzes', to: '/fellow/quizzes' },
   { label: 'Results', to: '/fellow/quizzes/attempts' },
   { label: 'Assignments', to: '/fellow/assignments' },
