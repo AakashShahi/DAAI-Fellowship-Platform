@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 
-export default function TopNavbar() {
+export default function TopNavbar({ profilePath = '/profile/settings' }) {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
@@ -30,7 +30,7 @@ export default function TopNavbar() {
             </p>
           </div>
           <Link
-            to="/profile/settings"
+            to={profilePath}
             className="rounded-md border border-orange-100 px-4 py-2 text-sm font-bold text-[#6f5f57] transition hover:bg-[#fff1e8] hover:text-[#24140e]"
           >
             Profile

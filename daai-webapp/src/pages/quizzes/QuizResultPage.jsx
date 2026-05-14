@@ -4,7 +4,6 @@ import { getMyQuizAttempt } from '../../services/quizService'
 import useAuthStore from '../../store/authStore'
 import {
   canAccessQuiz,
-  getFellowTrack,
   getQuizAccessMessage,
 } from '../../utils/learningTrackAccess'
 
@@ -53,11 +52,11 @@ export default function QuizResultPage() {
   }, [attemptId])
 
   if (!attemptId && !attemptResult) {
-    return <Navigate to={`/quizzes/${category}`} replace />
+    const fallback = category ? `/fellow/quizzes/${category}` : '/fellow/quizzes'
+    return <Navigate to={fallback} replace />
   }
 
   const result = attemptResult
-  const selectedTrack = getFellowTrack(user)
   const resultCategory = result?.category ?? category
   const hasResultAccess = !resultCategory || canAccessQuiz(user, resultCategory)
   const answers = result?.answers ?? []
@@ -70,7 +69,7 @@ export default function QuizResultPage() {
 
   if (!hasResultAccess) {
     return (
-      <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
         <section className="mx-auto max-w-5xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
           <p className="text-sm font-black">
             {getQuizAccessMessage(user, resultCategory)}
@@ -79,25 +78,19 @@ export default function QuizResultPage() {
             to="/fellow/dashboard"
             className="mt-5 inline-flex rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
           >
-            Back to Dashboard
+            Go to overview
           </Link>
         </section>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
         {isLoading ? (
           <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-            <Link
-              to={selectedTrack ? '/fellow/dashboard' : '/quizzes'}
-              className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
-            >
-              {selectedTrack ? 'Back to dashboard' : 'Back to quizzes'}
-            </Link>
-            <p className="mt-4 text-sm font-bold">Loading quiz result...</p>
+            <p className="text-sm font-bold">Loading quiz result...</p>
           </div>
         ) : null}
 
@@ -110,15 +103,9 @@ export default function QuizResultPage() {
         {!isLoading && !error && result ? (
           <>
             <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-              <Link
-                to="/quizzes"
-                className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
-              >
-                Back to quizzes
-              </Link>
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="mt-5 text-xs font-black uppercase tracking-wide text-[#f26322]">
+                  <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
                     Quiz Result
                   </p>
                   <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
@@ -260,27 +247,21 @@ export default function QuizResultPage() {
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Link
-                to={`/quizzes/${result.category}`}
+                to={`/fellow/quizzes/${result.category}`}
                 className="rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
               >
-                Retake Quiz
+                Retake quiz
               </Link>
               <Link
-                to="/fellow/dashboard"
+                to="/fellow/quizzes/attempts"
                 className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               >
-                Back to Dashboard
-              </Link>
-              <Link
-                to="/quizzes/attempts"
-                className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
-              >
-                View Result
+                All attempts
               </Link>
             </div>
           </>
         ) : null}
       </section>
-    </main>
+    </div>
   )
 }

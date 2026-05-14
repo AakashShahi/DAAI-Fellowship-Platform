@@ -56,16 +56,10 @@ export default function QuizAttemptsPage() {
     : attempts
 
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
         <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <Link
-            to="/quizzes"
-            className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
-          >
-            Back to quizzes
-          </Link>
-          <p className="mt-5 text-xs font-black uppercase tracking-wide text-[#f26322]">
+          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
             Quiz Attempts
           </p>
           <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
@@ -102,7 +96,7 @@ export default function QuizAttemptsPage() {
           {visibleAttempts.map((attempt) => (
             <Link
               key={attempt.id}
-              to={`/quizzes/attempts/${attempt.id}`}
+              to={`/fellow/quizzes/attempts/${attempt.id}`}
               className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -146,6 +140,6 @@ export default function QuizAttemptsPage() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   )
 }

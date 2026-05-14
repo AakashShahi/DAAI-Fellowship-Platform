@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
 import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
-import FellowTopbar from '../../components/dashboard/FellowTopbar'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
 import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
 import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
@@ -147,6 +146,51 @@ export default function FellowDashboard() {
     },
   ]
 
+  const fellowshipPanels = useMemo(() => {
+    if (!selectedTrack) {
+      return []
+    }
+
+    return [
+      {
+        title: 'Current track',
+        body: `${selectedTrack.title} — ${selectedTrack.pathLabel}.`,
+        cta: { label: 'Open track overview', to: selectedTrack.detailPath },
+      },
+      {
+        title: 'Progress',
+        body: `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
+          selectedTrackAttempts.length === 1 ? '' : 's'
+        }. Module progress will appear when coursework is connected.`,
+      },
+      {
+        title: 'Continue learning',
+        body: 'Jump back into modules, readings, and the course outline for your cohort.',
+        cta: { label: 'Open course', to: selectedTrack.detailPath },
+      },
+      {
+        title: 'Pending quizzes',
+        body: 'Complete required quizzes to stay on pace with the fellowship schedule.',
+        cta: { label: 'View quizzes', to: '/fellow/quizzes' },
+      },
+      {
+        title: 'Assignments',
+        body: 'Written assignments, labs, and submission deadlines will be listed here.',
+        cta: { label: 'Assignments (soon)', to: '/fellow/assignments' },
+      },
+      {
+        title: 'Announcements',
+        body: 'Staff announcements, calendar updates, and cohort reminders will appear here.',
+        cta: { label: 'Announcements (soon)', to: '/fellow/announcements' },
+      },
+    ]
+  }, [
+    selectedTrack,
+    averageScore,
+    bestScore,
+    selectedTrackAttempts.length,
+  ])
+
   const trackActions = selectedTrack
     ? [
         {
@@ -177,7 +221,7 @@ export default function FellowDashboard() {
           description: latestAttempt
             ? `Latest score: ${latestPercentage}% in ${latestAttempt.category_title}.`
             : 'No results yet for your active course.',
-          to: '/quizzes/attempts',
+          to: '/fellow/quizzes/attempts',
           cta: latestAttempt ? 'View result' : 'View results',
           status: latestAttempt ? 'Latest' : 'Empty',
         },
@@ -241,9 +285,7 @@ export default function FellowDashboard() {
   const shouldShowSelection = !selectedTrack || isChangingTrack
 
   return (
-    <main className="app-home">
-      <FellowTopbar selectedTrack={selectedTrack} />
-
+    <div className="app-home">
       <section className="fellow-dashboard">
         {dashboardError ? (
           <p className="dashboard-alert">{dashboardError}</p>
@@ -286,8 +328,9 @@ export default function FellowDashboard() {
                 <p className="eyebrow">Fellow Dashboard</p>
                 <h1>{selectedTrack.title}</h1>
                 <p>
-                  Welcome back, {user?.full_name ?? 'Fellow'}. Your dashboard is
-                  focused on {selectedTrack.label} practice and progress.
+                  Welcome back, {user?.full_name ?? 'Fellow'}. This is your hub
+                  for coursework, assessments, assignments, and program updates
+                  for the {selectedTrack.label} track.
                 </p>
                 <div className="fellow-hero-actions">
                   <Link className="outline-button" to={selectedTrack.detailPath}>
@@ -296,7 +339,7 @@ export default function FellowDashboard() {
                   <Link className="secondary-button" to={selectedTrack.quizPath}>
                     Start {selectedTrack.label} Quiz
                   </Link>
-                  <Link className="outline-button" to="/quizzes/attempts">
+                  <Link className="outline-button" to="/fellow/quizzes/attempts">
                     View Results
                   </Link>
                   <button
@@ -322,6 +365,26 @@ export default function FellowDashboard() {
 
             <section className="dashboard-section">
               <div className="dashboard-section-heading">
+                <p className="eyebrow">Program</p>
+                <h2>Your fellowship at a glance</h2>
+              </div>
+              <div className="fellowship-overview-grid">
+                {fellowshipPanels.map((panel) => (
+                  <article key={panel.title} className="fellowship-panel">
+                    <h3>{panel.title}</h3>
+                    <p>{panel.body}</p>
+                    {panel.cta ? (
+                      <Link className="text-button" to={panel.cta.to}>
+                        {panel.cta.label}
+                      </Link>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dashboard-section">
+              <div className="dashboard-section-heading">
                 <p className="eyebrow">Overview</p>
                 <h2>{selectedTrack.label} progress</h2>
               </div>
@@ -344,7 +407,7 @@ export default function FellowDashboard() {
             <section className="dashboard-section">
               <div className="dashboard-section-heading">
                 <p className="eyebrow">Next Actions</p>
-                <h2>Continue your selected track</h2>
+                <h2>Track shortcuts</h2>
               </div>
               <div className="dashboard-actions selected-track-actions-grid">
                 {trackActions.map((action) => (
@@ -367,7 +430,7 @@ export default function FellowDashboard() {
                       Last activity:{' '}
                       {new Date(latestAttempt.submitted_at).toLocaleString()}
                     </span>
-                    <Link to={`/quizzes/attempts/${latestAttempt.id}`}>
+                    <Link to={`/fellow/quizzes/attempts/${latestAttempt.id}`}>
                       Open result
                     </Link>
                   </div>
@@ -393,7 +456,7 @@ export default function FellowDashboard() {
                   className="secondary-button"
                   to={
                     latestAttempt
-                      ? `/quizzes/attempts/${latestAttempt.id}`
+                      ? `/fellow/quizzes/attempts/${latestAttempt.id}`
                       : selectedTrack.quizPath
                   }
                 >
@@ -404,6 +467,6 @@ export default function FellowDashboard() {
           </>
         )}
       </section>
-    </main>
+    </div>
   )
 }

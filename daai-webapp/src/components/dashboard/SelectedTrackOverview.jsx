@@ -48,7 +48,7 @@ export default function SelectedTrackOverview({
         <Link className="outline-button" to={track.detailPath}>
           View Course
         </Link>
-        <Link className="outline-button" to="/quizzes/attempts">
+        <Link className="outline-button" to="/fellow/quizzes/attempts">
           View Results
         </Link>
       </div>

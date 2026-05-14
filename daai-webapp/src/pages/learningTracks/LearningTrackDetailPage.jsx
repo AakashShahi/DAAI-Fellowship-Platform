@@ -1,5 +1,4 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
-import FellowTopbar from '../../components/dashboard/FellowTopbar'
 import { LEARNING_TRACKS_BY_SLUG } from '../../constants/learningTracks'
 import useAuthStore from '../../store/authStore'
 import {
@@ -20,8 +19,7 @@ export default function LearningTrackDetailPage() {
 
   if (selectedTrack && !canAccessQuiz(user, track.quizSlug)) {
     return (
-      <main className="app-home">
-        <FellowTopbar selectedTrack={selectedTrack} />
+      <div className="app-home">
         <section className="mx-auto mt-7 max-w-5xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
           <p className="text-sm font-black">
             {getQuizAccessMessage(user, track.quizSlug)}
@@ -30,26 +28,18 @@ export default function LearningTrackDetailPage() {
             to="/fellow/dashboard"
             className="mt-5 inline-flex rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
           >
-            Back to Dashboard
+            Go to overview
           </Link>
         </section>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="app-home">
-      <FellowTopbar selectedTrack={selectedTrack ?? track} />
+    <div className="app-home">
       <section className="mx-auto mt-7 max-w-5xl">
         <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <Link
-            to="/fellow/dashboard"
-            className="text-sm font-black text-[#f26322] hover:text-[#d94f13]"
-          >
-            Back to fellow dashboard
-          </Link>
-
-          <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_280px] lg:items-start">
+          <div className="mt-1 grid gap-6 lg:grid-cols-[1fr_280px] lg:items-start">
             <div>
               <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
                 Learning Track
@@ -130,23 +120,17 @@ export default function LearningTrackDetailPage() {
               Start the quiz for this learning track and use your result to guide
               what to review next.
             </p>
-            <div className="mt-5 grid gap-3">
+            <div className="mt-5">
               <Link
                 to={track.quizPath}
-                className="rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
+                className="block rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
               >
                 Take Quiz
-              </Link>
-              <Link
-                to="/fellow/dashboard"
-                className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
-              >
-                Back to Dashboard
               </Link>
             </div>
           </aside>
         </div>
       </section>
-    </main>
+    </div>
   )
 }
