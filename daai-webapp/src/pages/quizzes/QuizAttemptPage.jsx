@@ -6,6 +6,20 @@ import {
   submitQuiz,
 } from '../../services/quizService'
 
+const getLoadErrorMessage = (error) => {
+  const detail = error?.response?.data?.detail
+
+  if (typeof detail === 'string') {
+    return detail
+  }
+
+  if (error?.response?.status === 401) {
+    return 'Your session could not be verified. Please log in again.'
+  }
+
+  return 'Unable to load quiz questions.'
+}
+
 export default function QuizAttemptPage() {
   const { category } = useParams()
   const navigate = useNavigate()
@@ -36,14 +50,16 @@ export default function QuizAttemptPage() {
       setHasTriedSubmit(false)
 
       try {
-        const [categories, questionData] = await Promise.all([
-          getQuizCategories(),
-          getQuizQuestions(category),
-        ])
+        const categories = await getQuizCategories()
         const matchedCategory = categories.find((item) => item.slug === category)
 
         if (isMounted) {
           setQuizTitle(matchedCategory?.title ?? category)
+        }
+
+        const questionData = await getQuizQuestions(category)
+
+        if (isMounted) {
           setQuestions(questionData)
         }
       } catch (loadError) {
@@ -51,7 +67,7 @@ export default function QuizAttemptPage() {
           if (loadError?.response?.status === 404) {
             setNotFound(true)
           } else {
-            setError('Unable to load quiz questions.')
+            setError(getLoadErrorMessage(loadError))
           }
         }
       } finally {

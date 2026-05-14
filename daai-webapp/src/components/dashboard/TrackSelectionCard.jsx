@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function TrackSelectionCard({
   track,
   isSaving,
@@ -17,13 +19,16 @@ export default function TrackSelectionCard({
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => onSelect(track.value)}
-        disabled={isSaving}
-      >
-        {isSaving ? 'Saving...' : 'Select Track'}
-      </button>
+      <div className="track-selection-actions">
+        <button
+          type="button"
+          onClick={() => onSelect(track.value)}
+          disabled={isSaving}
+        >
+          {isSaving ? 'Saving...' : 'Select Track'}
+        </button>
+        <Link to={track.detailPath}>View details</Link>
+      </div>
     </article>
   )
 }

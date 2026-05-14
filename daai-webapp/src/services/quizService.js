@@ -1,25 +1,44 @@
 import axiosClient from '../api/axiosClient'
 
+const CATEGORY_ALIASES = {
+  'aws-architect': 'aws-solutions-architect',
+}
+
+const resolveCategory = (category) => CATEGORY_ALIASES[category] ?? category
+
 export const getQuizCategories = async () => {
   const response = await axiosClient.get('/quizzes/categories')
   return response.data
 }
 
 export const getQuizQuestions = async (category) => {
-  const response = await axiosClient.get(`/quizzes/${category}/questions`)
+  const response = await axiosClient.get(
+    `/quizzes/${resolveCategory(category)}/questions`,
+  )
   return response.data
 }
 
 export const submitQuiz = async (category, selectedAnswers) => {
-  const response = await axiosClient.post(`/quizzes/${category}/submit`, {
-    selected_answers: selectedAnswers,
-  })
+  const response = await axiosClient.post(
+    `/quizzes/${resolveCategory(category)}/submit`,
+    {
+      selected_answers: selectedAnswers,
+    },
+  )
   return response.data
 }
 
 export const getMyQuizAttempts = async () => {
-  const response = await axiosClient.get('/quizzes/my-attempts')
-  return response.data
+  try {
+    const response = await axiosClient.get('/quizzes/my-attempts')
+    return response.data
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      return []
+    }
+
+    throw error
+  }
 }
 
 export const getMyQuizAttempt = async (attemptId) => {

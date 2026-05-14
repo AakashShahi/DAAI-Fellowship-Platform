@@ -45,6 +45,9 @@ export default function SelectedTrackOverview({
         <Link className="secondary-button" to={track.quizPath}>
           Start {track.label} Quiz
         </Link>
+        <Link className="outline-button" to={track.detailPath}>
+          View Course
+        </Link>
         <Link className="outline-button" to="/quizzes/attempts">
           View Results
         </Link>

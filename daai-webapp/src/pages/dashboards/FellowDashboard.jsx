@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
 import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
@@ -39,6 +39,7 @@ const getScoreStats = (attempts) => {
 }
 
 export default function FellowDashboard() {
+  const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
   const logout = useAuthStore((state) => state.logout)
@@ -55,32 +56,40 @@ export default function FellowDashboard() {
     let isMounted = true
 
     const loadDashboard = async () => {
-      try {
-        const [profileData, categoryData, attemptData] = await Promise.all([
+      const [profileResult, categoryResult, attemptResult] =
+        await Promise.allSettled([
           getMyProfile(),
           getQuizCategories(),
           getMyQuizAttempts(),
         ])
 
-        if (isMounted) {
-          setProfile(profileData)
-          setCategories(categoryData)
-          setAttempts(attemptData)
+      if (isMounted) {
+        if (profileResult.status === 'fulfilled') {
+          setProfile(profileResult.value)
           updateUser({
-            full_name: profileData.fullName,
-            email: profileData.email,
-            role: profileData.role,
-            learningTrack: profileData.learningTrack,
+            full_name: profileResult.value.fullName,
+            email: profileResult.value.email,
+            role: profileResult.value.role,
+            learningTrack: profileResult.value.learningTrack,
           })
         }
-      } catch {
-        if (isMounted) {
-          setDashboardError('Unable to load dashboard activity right now.')
+
+        if (categoryResult.status === 'fulfilled') {
+          setCategories(categoryResult.value)
         }
-      } finally {
-        if (isMounted) {
-          setIsLoadingDashboard(false)
+
+        if (attemptResult.status === 'fulfilled') {
+          setAttempts(attemptResult.value)
         }
+
+        if (
+          profileResult.status === 'rejected' ||
+          categoryResult.status === 'rejected'
+        ) {
+          setDashboardError('Unable to load some dashboard details right now.')
+        }
+
+        setIsLoadingDashboard(false)
       }
     }
 
@@ -144,6 +153,13 @@ export default function FellowDashboard() {
           status: 'Available',
         },
         {
+          title: `${selectedTrack.label} Course`,
+          description: 'Open modules, progress placeholder, and next steps for this track.',
+          to: selectedTrack.detailPath,
+          cta: 'View course',
+          status: selectedTrack.pathLabel,
+        },
+        {
           title: 'Quiz Attempts / Results',
           description: 'Review your quiz history. Filtering by track can be added when the backend supports it.',
           to: '/quizzes/attempts',
@@ -179,6 +195,11 @@ export default function FellowDashboard() {
       })
       setIsChangingTrack(false)
       setSuccessMessage('Learning track saved.')
+
+      const savedTrack = LEARNING_TRACKS[updatedProfile.learningTrack]
+      if (savedTrack?.detailPath) {
+        navigate(savedTrack.detailPath)
+      }
     } catch (error) {
       const detail = error?.response?.data?.detail
       setDashboardError(
@@ -273,6 +294,9 @@ export default function FellowDashboard() {
                   focused on {selectedTrack.label} practice and progress.
                 </p>
                 <div className="fellow-hero-actions">
+                  <Link className="outline-button" to={selectedTrack.detailPath}>
+                    View Course
+                  </Link>
                   <Link className="secondary-button" to={selectedTrack.quizPath}>
                     Start {selectedTrack.label} Quiz
                   </Link>
