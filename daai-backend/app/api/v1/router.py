@@ -7,6 +7,7 @@ from app.api.v1.routes import (
     fellows_admin_routes,
     health_routes,
     learning_fellow_routes,
+    learning_progress_routes,
     lesson_routes,
     module_routes,
     profile_routes,
@@ -80,4 +81,10 @@ api_router.include_router(
     learning_fellow_routes.router,
     prefix="/learning",
     tags=["Learning"],
+)
+
+api_router.include_router(
+    learning_progress_routes.router,
+    prefix="/learning-progress",
+    tags=["Learning Progress"],
 )
