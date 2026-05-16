@@ -6,10 +6,14 @@ import FellowDashboard from '../pages/dashboards/FellowDashboard'
 import FellowAssignmentDetailPage from '../pages/fellow/FellowAssignmentDetailPage'
 import FellowAssignmentsPage from '../pages/fellow/FellowAssignmentsPage'
 import FellowAssignmentSubmissionsPage from '../pages/fellow/FellowAssignmentSubmissionsPage'
+import FellowAttendancePage from '../pages/fellow/FellowAttendancePage'
 import FellowLearningPage from '../pages/fellow/FellowLearningPage'
 import FellowLessonPage from '../pages/fellow/FellowLessonPage'
 import FellowModulePage from '../pages/fellow/FellowModulePage'
 import FellowMyTrackPage from '../pages/fellow/FellowMyTrackPage'
+import FellowSessionDetailPage from '../pages/fellow/FellowSessionDetailPage'
+import FellowProgressPage from '../pages/fellow/FellowProgressPage'
+import FellowSessionsPage from '../pages/fellow/FellowSessionsPage'
 import TrackSelectionPage from '../pages/fellow/TrackSelectionPage'
 import LearningTrackDetailPage from '../pages/learningTracks/LearningTrackDetailPage'
 import ProfileSettingsPage from '../pages/ProfileSettingsPage'
@@ -50,6 +54,19 @@ export const fellowRoutesElement = (
       <Route path="submissions" element={<FellowAssignmentSubmissionsPage />} />
       <Route path="assignments/:assignmentId" element={<FellowAssignmentDetailPage />} />
       <Route path="assignments" element={<FellowAssignmentsPage />} />
+      <Route path="sessions/:sessionId" element={<FellowSessionDetailPage />} />
+      <Route path="sessions" element={<FellowSessionsPage />} />
+      <Route path="attendance" element={<FellowAttendancePage />} />
+      <Route path="progress" element={<FellowProgressPage />} />
+      <Route
+        path="certificates"
+        element={
+          <ComingSoonPage
+            title="Certificates"
+            description="Your fellowship certificate will appear here when eligibility criteria are met."
+          />
+        }
+      />
       <Route
         path="announcements"
         element={

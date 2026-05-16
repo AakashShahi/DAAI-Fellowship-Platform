@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import FellowsTable from '../../components/admin/FellowsTable'
 import TrackFilter from '../../components/admin/TrackFilter'
+import FilterBar from '../../components/ui/FilterBar'
+import PageHeader from '../../components/ui/PageHeader'
+import Skeleton from '../../components/ui/Skeleton'
 import {
   getAdminFellows,
   updateAdminFellowTrack,
@@ -104,31 +107,24 @@ export default function FellowsPage() {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-          Fellow Management
-        </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e]">
-          Fellows
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm font-medium text-[#6f5f57]">
-          View each fellow&apos;s selected learning track and safely update or
-          reset track enrollment when staff need to intervene.
-        </p>
+      <PageHeader
+        eyebrow="Admin"
+        title="Fellows"
+        description="View each fellow's selected learning track and safely update or reset track enrollment when staff need to intervene."
+      />
 
-        <div className="mt-5">
-          <TrackFilter
-            value={trackFilter}
-            onChange={(value) => {
-              setIsLoading(true)
-              setError('')
-              setTrackFilter(value)
-              setSuccessMessage('')
-            }}
-            disabled={isLoading || isUpdating}
-          />
-        </div>
-      </div>
+      <FilterBar className="mb-6">
+        <TrackFilter
+          value={trackFilter}
+          onChange={(value) => {
+            setIsLoading(true)
+            setError('')
+            setTrackFilter(value)
+            setSuccessMessage('')
+          }}
+          disabled={isLoading || isUpdating}
+        />
+      </FilterBar>
 
       {error ? (
         <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
@@ -143,9 +139,7 @@ export default function FellowsPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold text-[#6f5f57]">
-          Loading fellows...
-        </p>
+        <Skeleton className="h-48 w-full" />
       ) : (
         <FellowsTable
           key={`${trackFilter}-${fellows.map((fellow) => `${fellow.id}:${fellow.selectedTrack ?? ''}`).join('|')}`}

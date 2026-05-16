@@ -15,8 +15,11 @@ import ModuleFormPage from '../pages/admin/ModuleFormPage'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
 import AdminSubmissionReviewPage from '../pages/admin/AdminSubmissionReviewPage'
 import AdminSubmissionsPage from '../pages/admin/AdminSubmissionsPage'
+import AdminSessionDetailPage from '../pages/admin/AdminSessionDetailPage'
+import AdminSessionsPage from '../pages/admin/AdminSessionsPage'
 import AdminTracksPage from '../pages/admin/AdminTracksPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
+import AttendanceManagementPage from '../pages/admin/AttendanceManagementPage'
 import CohortCreatePage from '../pages/admin/CohortCreatePage'
 import CohortDetailPage from '../pages/admin/CohortDetailPage'
 import CohortsPage from '../pages/admin/CohortsPage'
@@ -25,7 +28,9 @@ import FellowsPage from '../pages/admin/FellowsPage'
 import OpportunitiesPage from '../pages/admin/OpportunitiesPage'
 import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
+import SessionFormPage from '../pages/admin/SessionFormPage'
 import TrainersPage from '../pages/admin/TrainersPage'
+import ComingSoonPage from '../pages/ComingSoonPage'
 import { protectRole } from './routeGuards'
 
 export const adminRoutesElement = (
@@ -59,9 +64,41 @@ export const adminRoutesElement = (
     <Route path="assignments/:assignmentId" element={<AdminAssignmentEditPage />} />
     <Route path="assignments/:assignmentId/edit" element={<AssignmentFormPage />} />
     <Route path="assignments/:assignmentId/submissions" element={<AssignmentSubmissionsPage />} />
+    <Route path="sessions" element={<AdminSessionsPage />} />
+    <Route path="sessions/new" element={<SessionFormPage />} />
+    <Route path="sessions/:sessionId" element={<AdminSessionDetailPage />} />
+    <Route path="sessions/:sessionId/edit" element={<SessionFormPage />} />
+    <Route path="sessions/:sessionId/attendance" element={<AttendanceManagementPage />} />
     <Route path="submissions" element={<AdminSubmissionsPage />} />
     <Route path="submissions/:submissionId" element={<AdminSubmissionReviewPage />} />
     <Route path="quizzes" element={<AdminQuizManagementPage />} />
+    <Route
+      path="attendance"
+      element={
+        <ComingSoonPage
+          title="Attendance overview"
+          description="Cross-cohort attendance summaries will appear here. Mark attendance per session from Sessions → open session → Attendance."
+        />
+      }
+    />
+    <Route
+      path="announcements"
+      element={
+        <ComingSoonPage
+          title="Announcements"
+          description="Broadcast announcements to cohorts and tracks from this hub."
+        />
+      }
+    />
+    <Route
+      path="certificates"
+      element={
+        <ComingSoonPage
+          title="Certificates"
+          description="Approve and issue fellowship certificates when fellows meet criteria."
+        />
+      }
+    />
     <Route path="reports" element={<ReportsPage />} />
     <Route path="settings" element={<SettingsPage />} />
   </Route>
