@@ -111,13 +111,13 @@ export default function HomePage() {
       </section>
 
       <section className="bg-indigo-600 py-16 text-white">
-        <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold">Start your fellowship journey with DAAI</h2>
-          <p className="mx-auto mt-4 max-w-xl text-indigo-100">
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-center text-3xl font-bold">Start your fellowship journey with DAAI</h2>
+          <p className="mt-4 max-w-xl text-center text-indigo-100">
             Join a cohort-driven program designed for career-ready skills in cloud, CRM,
             and quality engineering.
           </p>
-          <div className="mt-8 flex justify-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button
               to="/fellowship/apply"
               variant="secondary"
@@ -125,7 +125,10 @@ export default function HomePage() {
             >
               Apply Now
             </Button>
-            <Button to="/login" variant="ghost" className="text-white hover:bg-indigo-500">
+            <Button
+              to="/login"
+              className="border border-white/30 bg-transparent text-white hover:bg-indigo-500"
+            >
               Fellow login
             </Button>
           </div>
