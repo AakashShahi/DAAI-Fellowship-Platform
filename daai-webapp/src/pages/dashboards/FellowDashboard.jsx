@@ -5,6 +5,7 @@ import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
 import { getMyEnrollment } from '../../services/fellowshipService'
 import { getFellowAssignmentsSummary } from '../../services/assignmentService'
+import { getMyCohort } from '../../services/cohortService'
 import { getFellowLearningSummary } from '../../services/learningService'
 import {
   getMyQuizAttempts,
@@ -49,6 +50,7 @@ export default function FellowDashboard() {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
   const [dashboardError, setDashboardError] = useState('')
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
+  const [myCohort, setMyCohort] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
 
   const [assignmentSummary, setAssignmentSummary] = useState(undefined)
@@ -61,6 +63,7 @@ export default function FellowDashboard() {
         enrollmentResult,
         learningSummaryResult,
         assignmentSummaryResult,
+        cohortResult,
         profileResult,
         categoryResult,
         attemptResult,
@@ -68,6 +71,7 @@ export default function FellowDashboard() {
         getMyEnrollment(),
         getFellowLearningSummary(),
         getFellowAssignmentsSummary(),
+        getMyCohort(),
         getMyProfile(),
         getQuizCategories(),
         getMyQuizAttempts(),
@@ -84,6 +88,10 @@ export default function FellowDashboard() {
 
         if (assignmentSummaryResult.status === 'fulfilled') {
           setAssignmentSummary(assignmentSummaryResult.value)
+        }
+
+        if (cohortResult.status === 'fulfilled') {
+          setMyCohort(cohortResult.value?.cohort ?? null)
         }
 
         if (profileResult.status === 'fulfilled') {
@@ -329,6 +337,39 @@ export default function FellowDashboard() {
               <Link className="text-button mt-2 inline-block" to="/fellow/my-track">
                 Open My track
               </Link>
+            </div>
+          </div>
+        ) : null}
+
+        {!isLoadingDashboard ? (
+          <div className="dashboard-section">
+            <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+              <p className="eyebrow">Your Cohort</p>
+              {myCohort ? (
+                <>
+                  <h2 className="mt-1 text-xl font-black text-[#24140e]">
+                    {myCohort.name}
+                  </h2>
+                  <div className="mt-3 grid gap-2 text-sm font-bold text-[#6f5f57] md:grid-cols-3">
+                    <p>Track: {selectedTrack?.label ?? myCohort.track}</p>
+                    <p>
+                      Duration:{' '}
+                      {new Date(myCohort.startDate).toLocaleDateString()} -{' '}
+                      {new Date(myCohort.endDate).toLocaleDateString()}
+                    </p>
+                    <p>Status: {myCohort.status}</p>
+                  </div>
+                  {myCohort.description ? (
+                    <p className="mt-3 text-sm font-medium text-[#6f5f57]">
+                      {myCohort.description}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="mt-2 text-sm font-bold text-[#6f5f57]">
+                  You are not assigned to a cohort yet. Please contact admin.
+                </p>
+              )}
             </div>
           </div>
         ) : null}

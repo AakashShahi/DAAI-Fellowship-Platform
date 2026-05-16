@@ -13,6 +13,8 @@ import AdminSubmissionReviewPage from '../pages/admin/AdminSubmissionReviewPage'
 import AdminSubmissionsPage from '../pages/admin/AdminSubmissionsPage'
 import AdminTracksPage from '../pages/admin/AdminTracksPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
+import CohortCreatePage from '../pages/admin/CohortCreatePage'
+import CohortDetailPage from '../pages/admin/CohortDetailPage'
 import CohortsPage from '../pages/admin/CohortsPage'
 import EmployersPage from '../pages/admin/EmployersPage'
 import FellowsPage from '../pages/admin/FellowsPage'
@@ -35,6 +37,8 @@ export const adminRoutesElement = (
     <Route path="applications" element={<ApplicationsPage />} />
     <Route path="fellows" element={<FellowsPage />} />
     <Route path="cohorts" element={<CohortsPage />} />
+    <Route path="cohorts/new" element={<CohortCreatePage />} />
+    <Route path="cohorts/:cohortId" element={<CohortDetailPage />} />
     <Route path="trainers" element={<TrainersPage />} />
     <Route path="employers" element={<EmployersPage />} />
     <Route path="opportunities" element={<OpportunitiesPage />} />

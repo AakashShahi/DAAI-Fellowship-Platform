@@ -6,6 +6,7 @@ import {
   getFellowTrackLabel,
 } from '../../constants/fellowTracks'
 import { getAdminTrackStats } from '../../services/adminFellowService'
+import { getAdminCohortStats } from '../../services/cohortService'
 
 const emptyStats = {
   totalFellows: 0,
@@ -13,8 +14,17 @@ const emptyStats = {
   tracks: {},
 }
 
+const emptyCohortStats = {
+  totalCohorts: 0,
+  active: 0,
+  upcoming: 0,
+  completed: 0,
+  archived: 0,
+}
+
 export default function AdminDashboard() {
   const [trackStats, setTrackStats] = useState(emptyStats)
+  const [cohortStats, setCohortStats] = useState(emptyCohortStats)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -23,14 +33,18 @@ export default function AdminDashboard() {
 
     const loadStats = async () => {
       try {
-        const data = await getAdminTrackStats()
+        const [trackData, cohortData] = await Promise.all([
+          getAdminTrackStats(),
+          getAdminCohortStats(),
+        ])
 
         if (isMounted) {
-          setTrackStats(data)
+          setTrackStats(trackData)
+          setCohortStats(cohortData)
         }
       } catch {
         if (isMounted) {
-          setError('Unable to load track statistics.')
+          setError('Unable to load dashboard statistics.')
         }
       } finally {
         if (isMounted) {
@@ -49,6 +63,31 @@ export default function AdminDashboard() {
   const statCards = useMemo(
     () => [
       {
+        label: 'Total Cohorts',
+        value: cohortStats.totalCohorts,
+        helper: 'All program cohorts',
+      },
+      {
+        label: 'Active Cohorts',
+        value: cohortStats.active,
+        helper: 'Currently running',
+      },
+      {
+        label: 'Upcoming Cohorts',
+        value: cohortStats.upcoming,
+        helper: 'Scheduled to start',
+      },
+      {
+        label: 'Completed Cohorts',
+        value: cohortStats.completed,
+        helper: 'Finished programs',
+      },
+      {
+        label: 'Archived Cohorts',
+        value: cohortStats.archived,
+        helper: 'Hidden from active planning',
+      },
+      {
         label: 'Total Fellows',
         value: trackStats.totalFellows,
         helper: 'All registered fellow accounts',
@@ -64,7 +103,7 @@ export default function AdminDashboard() {
         helper: 'Selected learning track',
       })),
     ],
-    [trackStats],
+    [cohortStats, trackStats],
   )
 
   return (
@@ -79,15 +118,23 @@ export default function AdminDashboard() {
               Platform Overview
             </h1>
             <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
-              Monitor fellow enrollment across QA, AWS, and Salesforce tracks.
+              Monitor cohorts and fellow enrollment across QA, AWS, and Salesforce tracks.
             </p>
           </div>
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
-            to="/admin/fellows"
-          >
-            Manage Fellows
-          </Link>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
+              to="/admin/cohorts"
+            >
+              Manage Cohorts
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-orange-100 bg-white px-4 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+              to="/admin/fellows"
+            >
+              Manage Fellows
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -99,7 +146,7 @@ export default function AdminDashboard() {
 
       {isLoading ? (
         <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold text-[#6f5f57]">
-          Loading track statistics...
+          Loading dashboard statistics...
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
