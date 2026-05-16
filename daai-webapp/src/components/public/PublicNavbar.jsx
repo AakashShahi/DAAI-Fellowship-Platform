@@ -1,18 +1,54 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useState, useCallback } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Button from '../ui/Button'
 import { cn } from '../../lib/cn'
 
+const NAVBAR_OFFSET = 100
+
 const navLinks = [
-  { label: 'Fellowship', to: '/fellowship' },
+  { label: 'Fellowship', to: '/fellowship#fellowship' },
   { label: 'Pathways', to: '/fellowship#pathways' },
   { label: 'How It Works', to: '/fellowship#how-it-works' },
   { label: 'Outcomes', to: '/fellowship#outcomes' },
-  { label: 'Apply', to: '/fellowship/apply' },
+  { label: 'Apply', to: '/fellowship#apply' },
 ]
 
 export default function PublicNavbar() {
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const isActive = (to) => {
+    const [path, hash] = to.split('#')
+    if (location.pathname !== path) return false
+    // "Fellowship" link is active when no hash or #fellowship
+    if (hash === 'fellowship') {
+      return !location.hash || location.hash === '#fellowship'
+    }
+    return location.hash === `#${hash}`
+  }
+
+  // When already on /fellowship, React Router won't re-trigger a navigation
+  // for the same pathname, so we manually scroll to the target.
+  const handleClick = useCallback(
+    (e, to) => {
+      const [path, hash] = to.split('#')
+      if (location.pathname === path && hash) {
+        e.preventDefault()
+        // Push the hash so URL and active state update
+        navigate(to)
+        const el = document.getElementById(hash)
+        if (el) {
+          const top =
+            el.getBoundingClientRect().top + window.scrollY - NAVBAR_OFFSET
+          window.scrollTo({ top, behavior: 'smooth' })
+        }
+      }
+      // If navigating from a different page, let React Router handle it
+      // and ScrollToHash will pick it up.
+    },
+    [location.pathname, navigate],
+  )
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
@@ -29,18 +65,19 @@ export default function PublicNavbar() {
 
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
-            <NavLink
+            <Link
               key={link.to}
               to={link.to}
-              className={({ isActive }) =>
-                cn(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive ? 'text-indigo-700 bg-indigo-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
-                )
-              }
+              onClick={(e) => handleClick(e, link.to)}
+              className={cn(
+                'rounded-lg px-3 py-2 text-sm font-medium transition',
+                isActive(link.to)
+                  ? 'text-indigo-700 bg-indigo-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
+              )}
             >
               {link.label}
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
@@ -71,7 +108,10 @@ export default function PublicNavbar() {
                 <Link
                   to={link.to}
                   className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    handleClick(e, link.to)
+                    setOpen(false)
+                  }}
                 >
                   {link.label}
                 </Link>
