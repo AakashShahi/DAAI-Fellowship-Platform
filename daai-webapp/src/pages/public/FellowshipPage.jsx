@@ -27,7 +27,7 @@ const FAQ = [
 
 export default function FellowshipPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8" id="fellowship">
       <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">Program</p>
       <h1 className="mt-2 text-4xl font-bold text-slate-900">DAAI Fellowship Overview</h1>
       <p className="mt-4 max-w-3xl text-lg text-slate-600">
@@ -102,7 +102,7 @@ export default function FellowshipPage() {
         </dl>
       </section>
 
-      <div className="mt-16 rounded-xl bg-indigo-50 p-8 text-center">
+      <div className="mt-16 rounded-xl bg-indigo-50 p-8 text-center" id="apply">
         <h2 className="text-xl font-bold text-slate-900">Ready to apply?</h2>
         <p className="mt-2 text-slate-600">Start your application for the next DAAI cohort.</p>
         <div className="mt-6">

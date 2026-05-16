@@ -79,3 +79,12 @@ h2 {
 p {
   margin: 0;
 }
+
+/* Offset hash-scroll targets so sticky navbar doesn't cover headings */
+#fellowship,
+#pathways,
+#how-it-works,
+#outcomes,
+#apply {
+  scroll-margin-top: 100px;
+}
