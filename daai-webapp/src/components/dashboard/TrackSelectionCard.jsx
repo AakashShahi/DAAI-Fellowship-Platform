@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-
 export default function TrackSelectionCard({
   track,
   isSaving,
@@ -8,6 +6,9 @@ export default function TrackSelectionCard({
   return (
     <article className="track-selection-card">
       <div>
+        <strong className="track-selection-icon" aria-hidden="true">
+          {track.iconText}
+        </strong>
         <span>{track.pathLabel}</span>
         <h2>{track.label}</h2>
         <p>{track.description}</p>
@@ -22,12 +23,11 @@ export default function TrackSelectionCard({
       <div className="track-selection-actions">
         <button
           type="button"
-          onClick={() => onSelect(track.value)}
+          onClick={() => onSelect(track.selectedTrack)}
           disabled={isSaving}
         >
           {isSaving ? 'Saving...' : 'Select Track'}
         </button>
-        <Link to={track.detailPath}>View details</Link>
       </div>
     </article>
   )

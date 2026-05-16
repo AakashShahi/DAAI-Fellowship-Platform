@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
 import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
-import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
-import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
 import { getMyEnrollment } from '../../services/fellowshipService'
 import { getFellowAssignmentsSummary } from '../../services/assignmentService'
+import { getMyCohort } from '../../services/cohortService'
 import { getFellowLearningSummary } from '../../services/learningService'
 import {
   getMyQuizAttempts,
   getQuizCategories,
 } from '../../services/quizService'
-import { getMyProfile, updateLearningTrack } from '../../services/profileService'
+import { getMyProfile } from '../../services/profileService'
 import useAuthStore from '../../store/authStore'
 import { getFellowTrack } from '../../utils/learningTrackAccess'
 
@@ -43,18 +42,15 @@ const getScoreStats = (attempts) => {
 }
 
 export default function FellowDashboard() {
-  const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
   const [profile, setProfile] = useState(null)
   const [categories, setCategories] = useState([])
   const [attempts, setAttempts] = useState([])
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
-  const [isSavingTrack, setIsSavingTrack] = useState(false)
   const [dashboardError, setDashboardError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
-  const [isChangingTrack, setIsChangingTrack] = useState(false)
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
+  const [myCohort, setMyCohort] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
 
   const [assignmentSummary, setAssignmentSummary] = useState(undefined)
@@ -67,6 +63,7 @@ export default function FellowDashboard() {
         enrollmentResult,
         learningSummaryResult,
         assignmentSummaryResult,
+        cohortResult,
         profileResult,
         categoryResult,
         attemptResult,
@@ -74,6 +71,7 @@ export default function FellowDashboard() {
         getMyEnrollment(),
         getFellowLearningSummary(),
         getFellowAssignmentsSummary(),
+        getMyCohort(),
         getMyProfile(),
         getQuizCategories(),
         getMyQuizAttempts(),
@@ -90,6 +88,10 @@ export default function FellowDashboard() {
 
         if (assignmentSummaryResult.status === 'fulfilled') {
           setAssignmentSummary(assignmentSummaryResult.value)
+        }
+
+        if (cohortResult.status === 'fulfilled') {
+          setMyCohort(cohortResult.value?.cohort ?? null)
         }
 
         if (profileResult.status === 'fulfilled') {
@@ -172,6 +174,13 @@ export default function FellowDashboard() {
         ? 'Across this track'
         : 'Start to build progress',
     },
+    {
+      label: 'Learning Progress',
+      value: `${learningSummary?.completionPercentage ?? 0}%`,
+      helper: `${learningSummary?.completedLessons ?? 0} / ${
+        learningSummary?.totalLessons ?? 0
+      } lessons completed`,
+    },
   ]
 
   const fellowshipPanels = useMemo(() => {
@@ -188,8 +197,8 @@ export default function FellowDashboard() {
       {
         title: 'Progress',
         body:
-          learningSummary?.enrolled && learningSummary.totalLessons > 0
-            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Modules fully done ${learningSummary.modulesFullyCompleted} / ${learningSummary.totalModules}. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
+          learningSummary?.totalLessons > 0
+            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Overall learning progress ${learningSummary.completionPercentage}%. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
             : `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
                 selectedTrackAttempts.length === 1 ? '' : 's'
               }.`,
@@ -209,11 +218,11 @@ export default function FellowDashboard() {
       },
       {
         title: 'Assignments',
-        body: assignmentSummary?.enrolled
-          ? `Open assignments: ${assignmentSummary.openCount}. Awaiting review: ${assignmentSummary.submittedPendingCount}. Needs revision: ${assignmentSummary.needsRevisionCount}. Reviewed: ${assignmentSummary.reviewedCount}.`
+        body: assignmentSummary
+          ? `Total assignments: ${assignmentSummary.totalAssignments}. Submitted: ${assignmentSummary.submittedAssignments}. Reviewed: ${assignmentSummary.reviewedAssignments}. Pending: ${assignmentSummary.pendingAssignments}.`
           : 'Written assignments and deadlines appear when you are enrolled in a track.',
         cta: {
-          label: assignmentSummary?.enrolled ? 'View assignments' : 'Assignments',
+          label: 'View assignments',
           to: '/fellow/assignments',
         },
       },
@@ -270,90 +279,35 @@ export default function FellowDashboard() {
         {
           title: 'Learning Track Progress',
           description:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
+            learningSummary?.totalLessons > 0
               ? `${learningSummary.completedLessons} of ${learningSummary.totalLessons} lessons completed.`
               : 'Track-specific learning milestones will appear here when modules are available.',
           to: '/fellow/learning',
           cta: 'View learning',
           status:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
-              ? `${Math.round(
-                  (learningSummary.completedLessons / learningSummary.totalLessons) * 100,
-                )}%`
+            learningSummary?.totalLessons > 0
+              ? `${learningSummary.completionPercentage}%`
               : 'Soon',
-          disabled: !learningSummary?.enrolled || !learningSummary?.totalLessons,
+          disabled: !learningSummary?.totalLessons,
         },
         {
           title: 'Assignments',
           description:
-            assignmentSummary?.enrolled && assignmentSummary.openCount > 0
-              ? `${assignmentSummary.openCount} open · ${assignmentSummary.submittedPendingCount} awaiting review · ${assignmentSummary.needsRevisionCount} need revision.`
+            assignmentSummary?.totalAssignments > 0
+              ? `${assignmentSummary.totalAssignments} total · ${assignmentSummary.pendingAssignments} pending · ${assignmentSummary.reviewedAssignments} reviewed.`
               : 'Submit coursework and track your review status.',
           to: '/fellow/assignments',
           cta: 'Open assignments',
-          status: assignmentSummary?.enrolled ? 'Live' : 'Enroll',
+          status: assignmentSummary?.pendingAssignments ? 'Pending' : 'Live',
         },
       ]
     : []
-
-  const handleSelectTrack = async (trackValue) => {
-    setIsSavingTrack(true)
-    setDashboardError('')
-    setSuccessMessage('')
-
-    try {
-      const updatedProfile = await updateLearningTrack({
-        learningTrack: trackValue,
-      })
-
-      setProfile(updatedProfile)
-      updateUser({
-        full_name: updatedProfile.fullName,
-        email: updatedProfile.email,
-        role: updatedProfile.role,
-        learningTrack: updatedProfile.learningTrack,
-      })
-      setIsChangingTrack(false)
-      setSuccessMessage('Learning track saved.')
-
-      const savedTrack = LEARNING_TRACKS[updatedProfile.learningTrack]
-      if (savedTrack?.detailPath) {
-        navigate(savedTrack.detailPath)
-      }
-    } catch (error) {
-      const detail = error?.response?.data?.detail
-      setDashboardError(
-        typeof detail === 'string'
-          ? detail
-          : 'Unable to save learning track.',
-      )
-    } finally {
-      setIsSavingTrack(false)
-    }
-  }
-
-  const handleChangeTrack = () => {
-    const shouldContinue = window.confirm(
-      'Changing your track may reset or affect progress display. Continue?',
-    )
-
-    if (shouldContinue) {
-      setIsChangingTrack(true)
-      setSuccessMessage('')
-    }
-  }
-
-  const shouldShowSelection = !selectedTrack || isChangingTrack
 
   return (
     <div className="app-home">
       <section className="fellow-dashboard">
         {dashboardError ? (
           <p className="dashboard-alert">{dashboardError}</p>
-        ) : null}
-
-        {successMessage ? (
-          <p className="dashboard-success">{successMessage}</p>
         ) : null}
 
         {!isLoadingDashboard && programEnrollment ? (
@@ -384,7 +338,6 @@ export default function FellowDashboard() {
               </p>
               <p className="mt-2 text-sm text-[#6f5f57]">
                 Your official track and batch will appear here once staff enroll you.
-                You can still set a quiz practice track below.
               </p>
               <Link className="text-button mt-2 inline-block" to="/fellow/my-track">
                 Open My track
@@ -393,37 +346,49 @@ export default function FellowDashboard() {
           </div>
         ) : null}
 
-        {shouldShowSelection ? (
-          <section className="track-selection-shell">
-            <div className="track-selection-heading">
-              <p className="eyebrow">Choose Specialization</p>
-              <h1>Select your learning track</h1>
-              <p>
-                Pick one track to personalize your dashboard, quiz shortcuts,
-                progress display, and recommended next steps.
-              </p>
+        {!isLoadingDashboard ? (
+          <div className="dashboard-section">
+            <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+              <p className="eyebrow">Your Cohort</p>
+              {myCohort ? (
+                <>
+                  <h2 className="mt-1 text-xl font-black text-[#24140e]">
+                    {myCohort.name}
+                  </h2>
+                  <div className="mt-3 grid gap-2 text-sm font-bold text-[#6f5f57] md:grid-cols-3">
+                    <p>Track: {selectedTrack?.label ?? myCohort.track}</p>
+                    <p>
+                      Duration:{' '}
+                      {new Date(myCohort.startDate).toLocaleDateString()} -{' '}
+                      {new Date(myCohort.endDate).toLocaleDateString()}
+                    </p>
+                    <p>Status: {myCohort.status}</p>
+                  </div>
+                  {myCohort.description ? (
+                    <p className="mt-3 text-sm font-medium text-[#6f5f57]">
+                      {myCohort.description}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="mt-2 text-sm font-bold text-[#6f5f57]">
+                  You are not assigned to a cohort yet. Please contact admin.
+                </p>
+              )}
             </div>
+          </div>
+        ) : null}
 
-            {isLoadingDashboard ? (
-              <p className="track-selection-loading">Loading track options...</p>
-            ) : null}
-
-            <div className="track-selection-grid">
-              {LEARNING_TRACK_OPTIONS.map((track) => (
-                <TrackSelectionCard
-                  key={track.value}
-                  track={track}
-                  isSaving={isSavingTrack}
-                  onSelect={handleSelectTrack}
-                />
-              ))}
-            </div>
-          </section>
+        {isLoadingDashboard || !selectedTrack ? (
+          <p className="track-selection-loading">Loading your dashboard...</p>
         ) : (
           <>
             <div className="fellow-hero">
               <div>
                 <p className="eyebrow">Fellow Dashboard</p>
+                <p className="mt-2 text-sm font-black text-[#f26322]">
+                  Your Learning Track: {selectedTrack.label}
+                </p>
                 <h1>{selectedTrack.title}</h1>
                 <p>
                   Welcome back, {user?.full_name ?? 'Fellow'}. This is your hub
@@ -440,13 +405,6 @@ export default function FellowDashboard() {
                   <Link className="outline-button" to="/fellow/quizzes/attempts">
                     View Results
                   </Link>
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={handleChangeTrack}
-                  >
-                    Change learning track
-                  </button>
                 </div>
               </div>
               <div className="fellow-profile-summary">

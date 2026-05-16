@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "cd ../daai-backend && python3 seed.py",
+    "seed:reset": "cd ../daai-backend && SEED_RESET=1 python3 seed.py"
   },
   "dependencies": {
     "axios": "^1.16.0",
