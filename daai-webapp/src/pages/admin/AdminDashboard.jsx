@@ -8,6 +8,7 @@ import {
 import { getAdminTrackStats } from '../../services/adminFellowService'
 import { getAdminCohortStats } from '../../services/cohortService'
 import { getCurriculumStats } from '../../services/learningService'
+import { getAssignmentStatsAdmin } from '../../services/assignmentService'
 
 const emptyStats = {
   totalFellows: 0,
@@ -31,10 +32,19 @@ const emptyCurriculumStats = {
   totalLessons: 0,
 }
 
+const emptyAssignmentStats = {
+  totalAssignments: 0,
+  publishedAssignments: 0,
+  pendingReviews: 0,
+  reviewedSubmissions: 0,
+  needsResubmission: 0,
+}
+
 export default function AdminDashboard() {
   const [trackStats, setTrackStats] = useState(emptyStats)
   const [cohortStats, setCohortStats] = useState(emptyCohortStats)
   const [curriculumStats, setCurriculumStats] = useState(emptyCurriculumStats)
+  const [assignmentStats, setAssignmentStats] = useState(emptyAssignmentStats)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -43,16 +53,18 @@ export default function AdminDashboard() {
 
     const loadStats = async () => {
       try {
-        const [trackData, cohortData, curriculumData] = await Promise.all([
+        const [trackData, cohortData, curriculumData, assignmentData] = await Promise.all([
           getAdminTrackStats(),
           getAdminCohortStats(),
           getCurriculumStats(),
+          getAssignmentStatsAdmin(),
         ])
 
         if (isMounted) {
           setTrackStats(trackData)
           setCohortStats(cohortData)
           setCurriculumStats(curriculumData)
+          setAssignmentStats(assignmentData)
         }
       } catch {
         if (isMounted) {
@@ -105,6 +117,31 @@ export default function AdminDashboard() {
         helper: 'All registered fellow accounts',
       },
       {
+        label: 'Total Assignments',
+        value: assignmentStats.totalAssignments,
+        helper: 'All coursework',
+      },
+      {
+        label: 'Published Assignments',
+        value: assignmentStats.publishedAssignments,
+        helper: 'Visible to fellows',
+      },
+      {
+        label: 'Pending Reviews',
+        value: assignmentStats.pendingReviews,
+        helper: 'Awaiting admin action',
+      },
+      {
+        label: 'Reviewed Submissions',
+        value: assignmentStats.reviewedSubmissions,
+        helper: 'Completed reviews',
+      },
+      {
+        label: 'Needs Resubmission',
+        value: assignmentStats.needsResubmission,
+        helper: 'Returned to fellows',
+      },
+      {
         label: 'Total Modules',
         value: curriculumStats.totalModules,
         helper: 'Curriculum modules',
@@ -140,7 +177,7 @@ export default function AdminDashboard() {
         helper: 'Selected learning track',
       })),
     ],
-    [cohortStats, curriculumStats, trackStats],
+    [assignmentStats, cohortStats, curriculumStats, trackStats],
   )
 
   return (
@@ -161,6 +198,12 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
+              to="/admin/assignments"
+            >
+              Manage Assignments
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-orange-100 bg-white px-4 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               to="/admin/modules"
             >
               Manage Curriculum

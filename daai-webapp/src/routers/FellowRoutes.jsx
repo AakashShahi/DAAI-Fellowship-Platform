@@ -47,6 +47,7 @@ export const fellowRoutesElement = (
       />
       <Route path="courses/:trackSlug" element={<LearningTrackDetailPage />} />
       <Route path="assignments/submissions" element={<FellowAssignmentSubmissionsPage />} />
+      <Route path="submissions" element={<FellowAssignmentSubmissionsPage />} />
       <Route path="assignments/:assignmentId" element={<FellowAssignmentDetailPage />} />
       <Route path="assignments" element={<FellowAssignmentsPage />} />
       <Route

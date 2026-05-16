@@ -218,11 +218,11 @@ export default function FellowDashboard() {
       },
       {
         title: 'Assignments',
-        body: assignmentSummary?.enrolled
-          ? `Open assignments: ${assignmentSummary.openCount}. Awaiting review: ${assignmentSummary.submittedPendingCount}. Needs revision: ${assignmentSummary.needsRevisionCount}. Reviewed: ${assignmentSummary.reviewedCount}.`
+        body: assignmentSummary
+          ? `Total assignments: ${assignmentSummary.totalAssignments}. Submitted: ${assignmentSummary.submittedAssignments}. Reviewed: ${assignmentSummary.reviewedAssignments}. Pending: ${assignmentSummary.pendingAssignments}.`
           : 'Written assignments and deadlines appear when you are enrolled in a track.',
         cta: {
-          label: assignmentSummary?.enrolled ? 'View assignments' : 'Assignments',
+          label: 'View assignments',
           to: '/fellow/assignments',
         },
       },
@@ -293,12 +293,12 @@ export default function FellowDashboard() {
         {
           title: 'Assignments',
           description:
-            assignmentSummary?.enrolled && assignmentSummary.openCount > 0
-              ? `${assignmentSummary.openCount} open · ${assignmentSummary.submittedPendingCount} awaiting review · ${assignmentSummary.needsRevisionCount} need revision.`
+            assignmentSummary?.totalAssignments > 0
+              ? `${assignmentSummary.totalAssignments} total · ${assignmentSummary.pendingAssignments} pending · ${assignmentSummary.reviewedAssignments} reviewed.`
               : 'Submit coursework and track your review status.',
           to: '/fellow/assignments',
           cta: 'Open assignments',
-          status: assignmentSummary?.enrolled ? 'Live' : 'Enroll',
+          status: assignmentSummary?.pendingAssignments ? 'Pending' : 'Live',
         },
       ]
     : []

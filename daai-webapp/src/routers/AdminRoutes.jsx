@@ -3,6 +3,8 @@ import { ROLES } from '../constants/roles'
 import AdminLayout from '../layouts/AdminLayout'
 import AdminAssignmentEditPage from '../pages/admin/AdminAssignmentEditPage'
 import AdminAssignmentsPage from '../pages/admin/AdminAssignmentsPage'
+import AssignmentFormPage from '../pages/admin/AssignmentFormPage'
+import AssignmentSubmissionsPage from '../pages/admin/AssignmentSubmissionsPage'
 import AdminBatchesPage from '../pages/admin/AdminBatchesPage'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
@@ -53,7 +55,10 @@ export const adminRoutesElement = (
     <Route path="modules/:moduleId/edit" element={<ModuleFormPage />} />
     <Route path="lessons" element={<AdminLessonsPage />} />
     <Route path="assignments" element={<AdminAssignmentsPage />} />
+    <Route path="assignments/new" element={<AssignmentFormPage />} />
     <Route path="assignments/:assignmentId" element={<AdminAssignmentEditPage />} />
+    <Route path="assignments/:assignmentId/edit" element={<AssignmentFormPage />} />
+    <Route path="assignments/:assignmentId/submissions" element={<AssignmentSubmissionsPage />} />
     <Route path="submissions" element={<AdminSubmissionsPage />} />
     <Route path="submissions/:submissionId" element={<AdminSubmissionReviewPage />} />
     <Route path="quizzes" element={<AdminQuizManagementPage />} />
