@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import ResourceLinks from '../../components/learning/ResourceLinks'
 import {
   completeFellowLesson,
   getFellowLessonDetail,
 } from '../../services/learningService'
 
 export default function FellowLessonPage() {
-  const { lessonId } = useParams()
+  const { moduleId, lessonId } = useParams()
   const [lesson, setLesson] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [actionError, setActionError] = useState('')
@@ -14,44 +15,38 @@ export default function FellowLessonPage() {
   const [saving, setSaving] = useState(false)
   const [doneMsg, setDoneMsg] = useState('')
 
+  const loadLesson = async () => {
+    const res = await getFellowLessonDetail(moduleId, lessonId)
+    setLesson(res)
+  }
+
   useEffect(() => {
-    let m = true
-    const run = async () => {
-      setLoadError('')
-      setActionError('')
-      setDoneMsg('')
-      try {
-        const res = await getFellowLessonDetail(lessonId)
-        if (m) {
-          setLesson(res)
-        }
-      } catch (err) {
-        if (m) {
+    let isMounted = true
+    getFellowLessonDetail(moduleId, lessonId)
+      .then((res) => {
+        if (isMounted) setLesson(res)
+      })
+      .catch((err) => {
+        if (isMounted) {
           const detail = err?.response?.data?.detail
-          setLoadError(
-            typeof detail === 'string' ? detail : 'Unable to load this lesson.',
-          )
+          setLoadError(typeof detail === 'string' ? detail : 'Unable to load this lesson.')
         }
-      } finally {
-        if (m) {
-          setLoading(false)
-        }
-      }
-    }
-    run()
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
     return () => {
-      m = false
+      isMounted = false
     }
-  }, [lessonId])
+  }, [moduleId, lessonId])
 
   const handleComplete = async () => {
     setSaving(true)
     setActionError('')
     setDoneMsg('')
     try {
-      await completeFellowLesson(lessonId)
-      const res = await getFellowLessonDetail(lessonId)
-      setLesson(res)
+      await completeFellowLesson(moduleId, lessonId)
+      await loadLesson()
       setDoneMsg('Marked as completed.')
     } catch (err) {
       const detail = err?.response?.data?.detail
@@ -61,63 +56,34 @@ export default function FellowLessonPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <section className="mx-auto max-w-3xl px-4 py-8">
-        <p className="text-sm font-medium text-[#6f5f57]">Loading…</p>
-      </section>
-    )
-  }
-
+  if (loading) return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading lesson...</p>
   if (loadError || !lesson) {
     return (
-      <section className="mx-auto max-w-3xl px-4 py-8">
+      <section className="mx-auto max-w-4xl px-4 py-8">
         <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
           {loadError || 'Lesson not found.'}
         </p>
-        <Link to="/fellow/learning" className="mt-4 inline-block text-sm font-bold text-[#f26322]">
-          ← Learning home
-        </Link>
       </section>
     )
   }
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-8 lg:px-0">
-      <Link
-        to={`/fellow/modules/${lesson.moduleId}`}
-        className="text-sm font-bold text-[#f26322] hover:text-[#d94f13]"
-      >
-        ← Back to module
+    <section className="mx-auto max-w-4xl px-4 py-8 lg:px-0">
+      <Link to={`/fellow/learning/${moduleId}`} className="text-sm font-bold text-[#f26322]">
+        Back to module
       </Link>
       <h1 className="mt-4 text-3xl font-black text-[#24140e]">{lesson.title}</h1>
       <p className="mt-2 text-xs font-bold uppercase text-[#6f5f57]">
-        ~{lesson.estimatedMinutes} minutes · {lesson.completed ? 'Completed' : 'In progress'}
+        {lesson.estimatedDurationMinutes} minutes · {lesson.completed ? 'Completed' : 'In progress'}
       </p>
+      <p className="mt-3 text-sm font-medium text-[#6f5f57]">{lesson.description}</p>
 
       {lesson.videoUrl ? (
-        <p className="mt-4">
-          <a
-            href={lesson.videoUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-black text-[#f26322] underline"
-          >
+        <div className="mt-5 overflow-hidden rounded-lg border border-orange-100 bg-white p-4">
+          <a className="text-sm font-black text-[#f26322] underline" href={lesson.videoUrl} target="_blank" rel="noreferrer">
             Open video
           </a>
-        </p>
-      ) : null}
-      {lesson.resourceUrl ? (
-        <p className="mt-2">
-          <a
-            href={lesson.resourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-black text-[#f26322] underline"
-          >
-            Open resource
-          </a>
-        </p>
+        </div>
       ) : null}
 
       <div className="mt-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
@@ -126,14 +92,12 @@ export default function FellowLessonPage() {
         </div>
       </div>
 
-      {doneMsg ? (
-        <p className="mt-4 text-sm font-bold text-green-700">{doneMsg}</p>
-      ) : null}
-      {actionError ? (
-        <p className="mt-4 text-sm font-bold text-red-700">{actionError}</p>
-      ) : null}
+      <ResourceLinks resources={lesson.resourceLinks} />
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      {doneMsg ? <p className="mt-4 text-sm font-bold text-green-700">{doneMsg}</p> : null}
+      {actionError ? <p className="mt-4 text-sm font-bold text-red-700">{actionError}</p> : null}
+
+      <div className="mt-6">
         {lesson.completed ? (
           <span className="rounded-md bg-green-50 px-4 py-2 text-sm font-black text-green-800">
             Completed
@@ -145,7 +109,7 @@ export default function FellowLessonPage() {
             onClick={handleComplete}
             className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
           >
-            {saving ? 'Saving…' : 'Mark as completed'}
+            {saving ? 'Saving...' : 'Mark as Completed'}
           </button>
         )}
       </div>

@@ -31,8 +31,10 @@ export const fellowRoutesElement = (
       <Route path="dashboard" element={<FellowDashboard />} />
       <Route path="my-track" element={<FellowMyTrackPage />} />
       <Route path="learning" element={<FellowLearningPage />} />
+      <Route path="learning/:moduleId" element={<FellowModulePage />} />
+      <Route path="learning/:moduleId/lessons/:lessonId" element={<FellowLessonPage />} />
       <Route path="modules/:moduleId" element={<FellowModulePage />} />
-      <Route path="lessons/:lessonId" element={<FellowLessonPage />} />
+      <Route path="lessons/:lessonId" element={<Navigate to="/fellow/learning" replace />} />
       <Route path="quizzes" element={<QuizListPage />} />
       <Route path="quizzes/attempts" element={<QuizAttemptsPage />} />
       <Route path="quizzes/attempts/:attemptId" element={<QuizResultPage />} />

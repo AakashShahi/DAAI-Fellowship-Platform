@@ -8,6 +8,8 @@ import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
 import AdminLessonsPage from '../pages/admin/AdminLessonsPage'
 import AdminModulesPage from '../pages/admin/AdminModulesPage'
+import ModuleDetailPage from '../pages/admin/ModuleDetailPage'
+import ModuleFormPage from '../pages/admin/ModuleFormPage'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
 import AdminSubmissionReviewPage from '../pages/admin/AdminSubmissionReviewPage'
 import AdminSubmissionsPage from '../pages/admin/AdminSubmissionsPage'
@@ -46,6 +48,9 @@ export const adminRoutesElement = (
     <Route path="batches" element={<AdminBatchesPage />} />
     <Route path="enrollments" element={<AdminEnrollmentsPage />} />
     <Route path="modules" element={<AdminModulesPage />} />
+    <Route path="modules/new" element={<ModuleFormPage />} />
+    <Route path="modules/:moduleId" element={<ModuleDetailPage />} />
+    <Route path="modules/:moduleId/edit" element={<ModuleFormPage />} />
     <Route path="lessons" element={<AdminLessonsPage />} />
     <Route path="assignments" element={<AdminAssignmentsPage />} />
     <Route path="assignments/:assignmentId" element={<AdminAssignmentEditPage />} />

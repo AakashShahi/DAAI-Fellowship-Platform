@@ -7,6 +7,7 @@ import {
 } from '../../constants/fellowTracks'
 import { getAdminTrackStats } from '../../services/adminFellowService'
 import { getAdminCohortStats } from '../../services/cohortService'
+import { getCurriculumStats } from '../../services/learningService'
 
 const emptyStats = {
   totalFellows: 0,
@@ -22,9 +23,18 @@ const emptyCohortStats = {
   archived: 0,
 }
 
+const emptyCurriculumStats = {
+  totalModules: 0,
+  publishedModules: 0,
+  draftModules: 0,
+  archivedModules: 0,
+  totalLessons: 0,
+}
+
 export default function AdminDashboard() {
   const [trackStats, setTrackStats] = useState(emptyStats)
   const [cohortStats, setCohortStats] = useState(emptyCohortStats)
+  const [curriculumStats, setCurriculumStats] = useState(emptyCurriculumStats)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -33,14 +43,16 @@ export default function AdminDashboard() {
 
     const loadStats = async () => {
       try {
-        const [trackData, cohortData] = await Promise.all([
+        const [trackData, cohortData, curriculumData] = await Promise.all([
           getAdminTrackStats(),
           getAdminCohortStats(),
+          getCurriculumStats(),
         ])
 
         if (isMounted) {
           setTrackStats(trackData)
           setCohortStats(cohortData)
+          setCurriculumStats(curriculumData)
         }
       } catch {
         if (isMounted) {
@@ -93,6 +105,31 @@ export default function AdminDashboard() {
         helper: 'All registered fellow accounts',
       },
       {
+        label: 'Total Modules',
+        value: curriculumStats.totalModules,
+        helper: 'Curriculum modules',
+      },
+      {
+        label: 'Published Modules',
+        value: curriculumStats.publishedModules,
+        helper: 'Visible to fellows',
+      },
+      {
+        label: 'Draft Modules',
+        value: curriculumStats.draftModules,
+        helper: 'Not visible yet',
+      },
+      {
+        label: 'Archived Modules',
+        value: curriculumStats.archivedModules,
+        helper: 'Retired curriculum',
+      },
+      {
+        label: 'Total Lessons',
+        value: curriculumStats.totalLessons,
+        helper: 'Across all modules',
+      },
+      {
         label: 'Unassigned Fellows',
         value: trackStats.unassigned,
         helper: 'Need track selection',
@@ -103,7 +140,7 @@ export default function AdminDashboard() {
         helper: 'Selected learning track',
       })),
     ],
-    [cohortStats, trackStats],
+    [cohortStats, curriculumStats, trackStats],
   )
 
   return (
@@ -124,6 +161,12 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
+              to="/admin/modules"
+            >
+              Manage Curriculum
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-orange-100 bg-white px-4 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
               to="/admin/cohorts"
             >
               Manage Cohorts

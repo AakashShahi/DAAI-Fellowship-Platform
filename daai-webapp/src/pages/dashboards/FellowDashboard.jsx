@@ -174,6 +174,13 @@ export default function FellowDashboard() {
         ? 'Across this track'
         : 'Start to build progress',
     },
+    {
+      label: 'Learning Progress',
+      value: `${learningSummary?.completionPercentage ?? 0}%`,
+      helper: `${learningSummary?.completedLessons ?? 0} / ${
+        learningSummary?.totalLessons ?? 0
+      } lessons completed`,
+    },
   ]
 
   const fellowshipPanels = useMemo(() => {
@@ -190,8 +197,8 @@ export default function FellowDashboard() {
       {
         title: 'Progress',
         body:
-          learningSummary?.enrolled && learningSummary.totalLessons > 0
-            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Modules fully done ${learningSummary.modulesFullyCompleted} / ${learningSummary.totalModules}. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
+          learningSummary?.totalLessons > 0
+            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Overall learning progress ${learningSummary.completionPercentage}%. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
             : `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
                 selectedTrackAttempts.length === 1 ? '' : 's'
               }.`,
@@ -272,18 +279,16 @@ export default function FellowDashboard() {
         {
           title: 'Learning Track Progress',
           description:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
+            learningSummary?.totalLessons > 0
               ? `${learningSummary.completedLessons} of ${learningSummary.totalLessons} lessons completed.`
               : 'Track-specific learning milestones will appear here when modules are available.',
           to: '/fellow/learning',
           cta: 'View learning',
           status:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
-              ? `${Math.round(
-                  (learningSummary.completedLessons / learningSummary.totalLessons) * 100,
-                )}%`
+            learningSummary?.totalLessons > 0
+              ? `${learningSummary.completionPercentage}%`
               : 'Soon',
-          disabled: !learningSummary?.enrolled || !learningSummary?.totalLessons,
+          disabled: !learningSummary?.totalLessons,
         },
         {
           title: 'Assignments',
