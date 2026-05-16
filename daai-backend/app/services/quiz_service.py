@@ -11,6 +11,7 @@ from app.models.quiz_model import (
     QuizDifficulty,
     QuizQuestion,
 )
+from app.models.user_model import LearningTrack, User, UserRole
 from app.repositories.quiz_repository import QuizRepository
 from app.schema.quiz_schema import (
     QuizAnswerResultResponse,
@@ -27,6 +28,13 @@ from app.schema.quiz_schema import (
 )
 
 PASSING_PERCENTAGE = 70
+
+TRACK_QUIZ_CATEGORIES = {
+    LearningTrack.QA: QuizCategory.QA,
+    LearningTrack.SALESFORCE: QuizCategory.SALESFORCE,
+    LearningTrack.AWS_PRACTITIONER: QuizCategory.AWS_PRACTITIONER,
+    LearningTrack.AWS_ARCHITECT: QuizCategory.AWS_SOLUTIONS_ARCHITECT,
+}
 
 
 class QuizService:
@@ -49,8 +57,31 @@ class QuizService:
             detail="Quiz category not found",
         )
 
-    async def get_categories(self) -> list[QuizCategoryResponse]:
+    @staticmethod
+    def validate_fellow_quiz_access(user: User, quiz_category: QuizCategory) -> None:
+        if user.role != UserRole.FELLOW:
+            return
+
+        if (
+            user.learning_track is None
+            or TRACK_QUIZ_CATEGORIES.get(user.learning_track) != quiz_category
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not enrolled in this track.",
+            )
+
+    async def get_categories(
+        self,
+        user: User | None = None,
+    ) -> list[QuizCategoryResponse]:
         await self.quiz_repository.ensure_default_questions()
+        categories = list(QuizCategory)
+
+        if user and user.role == UserRole.FELLOW:
+            selected_category = TRACK_QUIZ_CATEGORIES.get(user.learning_track)
+            categories = [selected_category] if selected_category else []
+
         return [
             QuizCategoryResponse(
                 slug=category.value,
@@ -58,11 +89,18 @@ class QuizService:
                 description=QUIZ_CATEGORY_DESCRIPTIONS[category],
                 difficulty_label=QUIZ_CATEGORY_DIFFICULTY_LABELS[category],
             )
-            for category in QuizCategory
+            for category in categories
         ]
 
-    async def get_questions(self, category: str) -> list[QuizQuestionResponse]:
+    async def get_questions(
+        self,
+        category: str,
+        user: User | None = None,
+    ) -> list[QuizQuestionResponse]:
         quiz_category = self.parse_category(category)
+        if user:
+            self.validate_fellow_quiz_access(user, quiz_category)
+
         questions = await self.quiz_repository.get_questions_by_category(quiz_category)
 
         return [self.to_question_response(question) for question in questions]
@@ -191,8 +229,12 @@ class QuizService:
         category: str,
         user_id: str,
         payload: QuizSubmitRequest,
+        user: User | None = None,
     ) -> QuizAttemptResponse:
         quiz_category = self.parse_category(category)
+        if user:
+            self.validate_fellow_quiz_access(user, quiz_category)
+
         questions = await self.quiz_repository.get_questions_by_category(quiz_category)
 
         if not questions:
@@ -243,14 +285,26 @@ class QuizService:
 
         return self.to_attempt_response(attempt)
 
-    async def get_my_attempts(self, user_id: str) -> list[QuizAttemptSummaryResponse]:
+    async def get_my_attempts(
+        self,
+        user_id: str,
+        user: User | None = None,
+    ) -> list[QuizAttemptSummaryResponse]:
         attempts = await self.quiz_repository.get_attempts_by_user(user_id)
+
+        if user and user.role == UserRole.FELLOW:
+            selected_category = TRACK_QUIZ_CATEGORIES.get(user.learning_track)
+            attempts = [
+                attempt for attempt in attempts if attempt.category == selected_category
+            ]
+
         return [self.to_attempt_summary_response(attempt) for attempt in attempts]
 
     async def get_my_attempt(
         self,
         attempt_id: str,
         user_id: str,
+        user: User | None = None,
     ) -> QuizAttemptResponse:
         attempt = await self.quiz_repository.get_attempt_by_id(attempt_id, user_id)
         if attempt is None:
@@ -258,6 +312,9 @@ class QuizService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Quiz attempt not found",
             )
+
+        if user:
+            self.validate_fellow_quiz_access(user, attempt.category)
 
         return self.to_attempt_response(attempt)
 
