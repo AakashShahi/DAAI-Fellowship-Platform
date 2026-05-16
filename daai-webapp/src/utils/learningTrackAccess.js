@@ -1,5 +1,8 @@
 import { ROLES } from '../constants/roles'
 import { LEARNING_TRACKS, LEARNING_TRACK_OPTIONS } from '../constants/learningTracks'
+import {
+  LEGACY_LEARNING_TRACK_BY_SELECTED_TRACK,
+} from '../constants/fellowTracks'
 
 const QUIZ_SLUG_ALIASES = {
   'aws-solutions-architect': 'aws-architect',
@@ -9,11 +12,15 @@ export const normalizeQuizSlug = (slug = '') =>
   QUIZ_SLUG_ALIASES[slug] ?? slug
 
 export const getFellowTrack = (user) => {
-  if (user?.role !== ROLES.FELLOW || !user?.learningTrack) {
+  if (user?.role !== ROLES.FELLOW) {
     return null
   }
 
-  return LEARNING_TRACKS[user.learningTrack] ?? null
+  const learningTrack =
+    user?.learningTrack ??
+    LEGACY_LEARNING_TRACK_BY_SELECTED_TRACK[user?.selectedTrack]
+
+  return LEARNING_TRACKS[learningTrack] ?? null
 }
 
 export const getTrackByQuizSlug = (slug) => {

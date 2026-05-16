@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
 import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
 import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
-import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
-import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
 import { getMyEnrollment } from '../../services/fellowshipService'
 import { getFellowAssignmentsSummary } from '../../services/assignmentService'
 import { getFellowLearningSummary } from '../../services/learningService'
@@ -12,7 +10,7 @@ import {
   getMyQuizAttempts,
   getQuizCategories,
 } from '../../services/quizService'
-import { getMyProfile, updateLearningTrack } from '../../services/profileService'
+import { getMyProfile } from '../../services/profileService'
 import useAuthStore from '../../store/authStore'
 import { getFellowTrack } from '../../utils/learningTrackAccess'
 
@@ -43,17 +41,13 @@ const getScoreStats = (attempts) => {
 }
 
 export default function FellowDashboard() {
-  const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
   const [profile, setProfile] = useState(null)
   const [categories, setCategories] = useState([])
   const [attempts, setAttempts] = useState([])
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
-  const [isSavingTrack, setIsSavingTrack] = useState(false)
   const [dashboardError, setDashboardError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
-  const [isChangingTrack, setIsChangingTrack] = useState(false)
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
 
@@ -296,64 +290,11 @@ export default function FellowDashboard() {
       ]
     : []
 
-  const handleSelectTrack = async (trackValue) => {
-    setIsSavingTrack(true)
-    setDashboardError('')
-    setSuccessMessage('')
-
-    try {
-      const updatedProfile = await updateLearningTrack({
-        learningTrack: trackValue,
-      })
-
-      setProfile(updatedProfile)
-      updateUser({
-        full_name: updatedProfile.fullName,
-        email: updatedProfile.email,
-        role: updatedProfile.role,
-        learningTrack: updatedProfile.learningTrack,
-      })
-      setIsChangingTrack(false)
-      setSuccessMessage('Learning track saved.')
-
-      const savedTrack = LEARNING_TRACKS[updatedProfile.learningTrack]
-      if (savedTrack?.detailPath) {
-        navigate(savedTrack.detailPath)
-      }
-    } catch (error) {
-      const detail = error?.response?.data?.detail
-      setDashboardError(
-        typeof detail === 'string'
-          ? detail
-          : 'Unable to save learning track.',
-      )
-    } finally {
-      setIsSavingTrack(false)
-    }
-  }
-
-  const handleChangeTrack = () => {
-    const shouldContinue = window.confirm(
-      'Changing your track may reset or affect progress display. Continue?',
-    )
-
-    if (shouldContinue) {
-      setIsChangingTrack(true)
-      setSuccessMessage('')
-    }
-  }
-
-  const shouldShowSelection = !selectedTrack || isChangingTrack
-
   return (
     <div className="app-home">
       <section className="fellow-dashboard">
         {dashboardError ? (
           <p className="dashboard-alert">{dashboardError}</p>
-        ) : null}
-
-        {successMessage ? (
-          <p className="dashboard-success">{successMessage}</p>
         ) : null}
 
         {!isLoadingDashboard && programEnrollment ? (
@@ -384,7 +325,6 @@ export default function FellowDashboard() {
               </p>
               <p className="mt-2 text-sm text-[#6f5f57]">
                 Your official track and batch will appear here once staff enroll you.
-                You can still set a quiz practice track below.
               </p>
               <Link className="text-button mt-2 inline-block" to="/fellow/my-track">
                 Open My track
@@ -393,37 +333,16 @@ export default function FellowDashboard() {
           </div>
         ) : null}
 
-        {shouldShowSelection ? (
-          <section className="track-selection-shell">
-            <div className="track-selection-heading">
-              <p className="eyebrow">Choose Specialization</p>
-              <h1>Select your learning track</h1>
-              <p>
-                Pick one track to personalize your dashboard, quiz shortcuts,
-                progress display, and recommended next steps.
-              </p>
-            </div>
-
-            {isLoadingDashboard ? (
-              <p className="track-selection-loading">Loading track options...</p>
-            ) : null}
-
-            <div className="track-selection-grid">
-              {LEARNING_TRACK_OPTIONS.map((track) => (
-                <TrackSelectionCard
-                  key={track.value}
-                  track={track}
-                  isSaving={isSavingTrack}
-                  onSelect={handleSelectTrack}
-                />
-              ))}
-            </div>
-          </section>
+        {isLoadingDashboard || !selectedTrack ? (
+          <p className="track-selection-loading">Loading your dashboard...</p>
         ) : (
           <>
             <div className="fellow-hero">
               <div>
                 <p className="eyebrow">Fellow Dashboard</p>
+                <p className="mt-2 text-sm font-black text-[#f26322]">
+                  Your Learning Track: {selectedTrack.label}
+                </p>
                 <h1>{selectedTrack.title}</h1>
                 <p>
                   Welcome back, {user?.full_name ?? 'Fellow'}. This is your hub
@@ -440,13 +359,6 @@ export default function FellowDashboard() {
                   <Link className="outline-button" to="/fellow/quizzes/attempts">
                     View Results
                   </Link>
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={handleChangeTrack}
-                  >
-                    Change learning track
-                  </button>
                 </div>
               </div>
               <div className="fellow-profile-summary">

@@ -1,6 +1,10 @@
+import { FELLOW_TRACK_VALUES } from './fellowTracks'
+
 export const LEARNING_TRACKS = {
   QA: {
     value: 'QA',
+    selectedTrack: FELLOW_TRACK_VALUES.QA,
+    iconText: 'QA',
     label: 'QA',
     title: 'QA Fellowship Track',
     detailPath: '/fellow/learning-tracks/qa',
@@ -19,6 +23,8 @@ export const LEARNING_TRACKS = {
   },
   SALESFORCE: {
     value: 'SALESFORCE',
+    selectedTrack: FELLOW_TRACK_VALUES.SALESFORCE,
+    iconText: 'SF',
     label: 'Salesforce',
     title: 'Salesforce Fellowship Track',
     detailPath: '/fellow/learning-tracks/salesforce',
@@ -37,6 +43,8 @@ export const LEARNING_TRACKS = {
   },
   AWS_PRACTITIONER: {
     value: 'AWS_PRACTITIONER',
+    selectedTrack: FELLOW_TRACK_VALUES.AWS_PRACTITIONER,
+    iconText: 'AWS',
     label: 'AWS Practitioner',
     title: 'AWS Practitioner Track',
     detailPath: '/fellow/learning-tracks/aws-practitioner',
@@ -55,6 +63,8 @@ export const LEARNING_TRACKS = {
   },
   AWS_ARCHITECT: {
     value: 'AWS_ARCHITECT',
+    selectedTrack: FELLOW_TRACK_VALUES.AWS_ARCHITECT,
+    iconText: 'ARC',
     label: 'AWS Architect',
     title: 'AWS Architect Track',
     detailPath: '/fellow/learning-tracks/aws-architect',
