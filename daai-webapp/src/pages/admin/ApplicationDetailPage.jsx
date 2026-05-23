@@ -1,8 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import {
+  ArrowLeft,
+  CheckCircle,
+  Download,
+  Eye,
+  FileText,
+  Mail,
+  RefreshCcw,
+  Save,
+  XCircle,
+} from 'lucide-react'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/Card'
+import Select from '../../components/ui/Select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
+import Textarea from '../../components/ui/Textarea'
 import { FELLOWSHIP_PATHWAYS } from '../../constants/pathways'
 import {
   getApplication,
@@ -12,22 +37,31 @@ import {
 } from '../../services/applicationService'
 
 const statusTone = {
-  NEW: 'primary',
-  REVIEWING: 'warning',
-  MORE_INFO: 'info',
+  NEW: 'default',
+  REVIEWING: 'info',
+  MORE_INFO: 'warning',
   ACCEPTED: 'success',
   REJECTED: 'danger',
   ENROLLED: 'success',
 }
 
 const statusLabels = {
-  NEW: 'New',
-  REVIEWING: 'Reviewing',
-  MORE_INFO: 'Request more info',
+  NEW: 'Submitted',
+  REVIEWING: 'Under review',
+  MORE_INFO: 'Test sent',
   ACCEPTED: 'Accepted',
   REJECTED: 'Rejected',
   ENROLLED: 'Enrollment confirmed',
 }
+
+const statusOptions = [
+  { value: 'NEW', label: 'submitted' },
+  { value: 'REVIEWING', label: 'under_review' },
+  { value: 'MORE_INFO', label: 'test_sent' },
+  { value: 'ACCEPTED', label: 'accepted' },
+  { value: 'REJECTED', label: 'rejected' },
+  { value: 'ENROLLED', label: 'enrollment_confirmed' },
+]
 
 const getErrorMessage = (error, fallback) => {
   const detail = error?.response?.data?.detail
@@ -41,6 +75,17 @@ const getDocumentHref = (documentUrl) => {
     import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') ??
     'http://127.0.0.1:8000'
   return `${baseUrl}${documentUrl}`
+}
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm font-medium text-slate-900">{children}</dd>
+    </div>
+  )
 }
 
 export default function ApplicationDetailPage() {
@@ -70,7 +115,7 @@ export default function ApplicationDetailPage() {
   useEffect(() => {
     let isMounted = true
 
-    const loadApplication = async () => {
+    const load = async () => {
       setIsLoading(true)
       setError('')
 
@@ -91,12 +136,28 @@ export default function ApplicationDetailPage() {
       }
     }
 
-    loadApplication()
+    load()
 
     return () => {
       isMounted = false
     }
   }, [applicationId])
+
+  const refreshApplication = async () => {
+    if (!applicationId) return
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const data = await getApplication(applicationId)
+      setApplication(data)
+      setAdminNotes(data.adminNotes ?? '')
+    } catch (refreshError) {
+      setError(getErrorMessage(refreshError, 'Unable to refresh application.'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const updateStatus = async (status) => {
     setIsUpdating(true)
@@ -149,9 +210,11 @@ export default function ApplicationDetailPage() {
 
   if (isLoading) {
     return (
-      <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-semibold text-slate-600">
-        Loading application...
-      </p>
+      <Card>
+        <p className="text-sm font-semibold text-slate-600">
+          Loading application...
+        </p>
+      </Card>
     )
   }
 
@@ -159,7 +222,8 @@ export default function ApplicationDetailPage() {
     return (
       <Card>
         <p className="text-sm text-red-700">{error}</p>
-        <Button to="/admin/applications" variant="secondary" className="mt-4">
+        <Button to="/admin/applications" variant="outline" className="mt-4">
+          <ArrowLeft className="h-4 w-4" />
           Back to applications
         </Button>
       </Card>
@@ -167,287 +231,304 @@ export default function ApplicationDetailPage() {
   }
 
   const documentHref = getDocumentHref(application.documentUrl)
+  const trackName = pathwayLabels[application.pathway] ?? application.pathway
+  const activityRows = [
+    {
+      event: 'Application submitted',
+      detail: 'Applicant completed the public application form.',
+      date: application.createdAt,
+    },
+    {
+      event: 'Status changed',
+      detail: statusLabels[application.status] ?? application.status,
+      date: application.updatedAt,
+    },
+    application.lastEmailStatus
+      ? {
+          event: 'Notification email',
+          detail: application.lastEmailStatus,
+          date: application.lastEmailSentAt ?? application.updatedAt,
+        }
+      : null,
+  ].filter(Boolean)
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="space-y-6 text-slate-700">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link
-            to="/admin/applications"
-            className="text-sm font-semibold text-indigo-600 hover:underline"
-          >
-            Back to applications
-          </Link>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900">
+          <Button asChild variant="ghost" size="sm" className="-ml-3">
+            <Link to="/admin/applications">
+              <ArrowLeft className="h-4 w-4" />
+              Back to applications
+            </Link>
+          </Button>
+          <h1 className="mt-3 text-3xl font-bold tracking-normal text-slate-950">
             {application.fullName}
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Applied for {pathwayLabels[application.pathway] ?? application.pathway}
-          </p>
+          <p className="mt-1 text-sm text-slate-500">Applied for {trackName}</p>
         </div>
-        <Badge tone={statusTone[application.status] ?? 'default'}>
-          {statusLabels[application.status] ?? application.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge tone={statusTone[application.status] ?? 'default'}>
+            {statusLabels[application.status] ?? application.status}
+          </Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={refreshApplication}
+            aria-label="Refresh application"
+          >
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {error ? (
-        <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Applicant profile
-            </h2>
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Full name
-                </dt>
-                <dd className="mt-1 font-medium text-slate-900">
-                  {application.fullName}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Email
-                </dt>
-                <dd className="mt-1">
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Applicant profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-5 sm:grid-cols-2">
+                <Field label="Full name">{application.fullName}</Field>
+                <Field label="Email">
                   <a
                     href={`mailto:${application.email}`}
-                    className="font-medium text-indigo-600 hover:underline"
+                    className="text-indigo-600 hover:underline"
                   >
                     {application.email}
                   </a>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Phone
-                </dt>
-                <dd className="mt-1 text-slate-900">
-                  {application.phone || 'Not provided'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  College / Organization
-                </dt>
-                <dd className="mt-1 text-slate-900">
+                </Field>
+                <Field label="Phone">{application.phone || 'Not provided'}</Field>
+                <Field label="College / Organization">
                   {application.organization || 'Not provided'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Selected learning track
-                </dt>
-                <dd className="mt-1 font-medium text-slate-900">
-                  {pathwayLabels[application.pathway] ?? application.pathway}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Submitted
-                </dt>
-                <dd className="mt-1 text-slate-900">
+                </Field>
+                <Field label="Selected learning track">{trackName}</Field>
+                <Field label="Submitted date">
                   {new Date(application.createdAt).toLocaleString()}
-                </dd>
-              </div>
-            </dl>
+                </Field>
+              </dl>
+            </CardContent>
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Motivation letter
-            </h2>
-            <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-              {application.motivation}
-            </p>
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Motivation letter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                {application.motivation}
+              </p>
+            </CardContent>
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Resume / document preview
-            </h2>
-            {application.documentUrl ? (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  {application.documentFileName || 'Uploaded document'}
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Documents</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {application.documentUrl ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+                        <FileText className="h-4 w-4 text-indigo-600" />
+                        {application.documentFileName || 'Uploaded document'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {application.documentContentType || 'File type unavailable'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Uploaded with application on{' '}
+                        {new Date(application.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className="mt-2 text-xs font-medium text-amber-700">
+                        Verification status: Not verified
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button href={documentHref} target="_blank" rel="noreferrer">
+                        <Eye className="h-4 w-4" />
+                        Open
+                      </Button>
+                      <Button
+                        href={documentHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        variant="outline"
+                        download
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  No resume or document was uploaded with this application.
                 </p>
-                {application.documentContentType ? (
-                  <p className="mt-1 text-xs text-slate-500">
-                    {application.documentContentType}
-                  </p>
-                ) : null}
-                <Button
-                  href={documentHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  variant="secondary"
-                  className="mt-4"
-                >
-                  Open resume
+              )}
+            </CardContent>
+          </Card>
+
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Admin notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                id="adminNotes"
+                name="adminNotes"
+                value={adminNotes}
+                onChange={(event) => {
+                  setAdminNotes(event.target.value)
+                  setNotesMessage('')
+                }}
+                rows={7}
+                maxLength={2000}
+                placeholder="Good motivation, basic Salesforce interest. Need to verify resume before approval."
+              />
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-slate-500">
+                  Only admins can view these notes.
+                </p>
+                <Button onClick={handleSaveNotes} disabled={isSavingNotes} size="sm">
+                  <Save className="h-4 w-4" />
+                  {isSavingNotes ? 'Saving...' : 'Save note'}
                 </Button>
               </div>
-            ) : (
-              <p className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                No resume or document was uploaded with this application.
-              </p>
-            )}
-          </Card>
-
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Assessment result
-            </h2>
-            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-medium text-slate-900">
-                No assessment result recorded yet.
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Scores, reviewer decisions, and interview rubric results can appear
-                here when assessment data is connected.
-              </p>
-            </div>
-          </Card>
-
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Admin notes</h2>
-            <label
-              className="mt-4 block text-sm font-medium text-slate-700"
-              htmlFor="adminNotes"
-            >
-              Private notes
-            </label>
-            <textarea
-              id="adminNotes"
-              name="adminNotes"
-              value={adminNotes}
-              onChange={(event) => {
-                setAdminNotes(event.target.value)
-                setNotesMessage('')
-              }}
-              rows={7}
-              maxLength={2000}
-              placeholder="Good motivation, basic Salesforce interest. Need to verify resume before approval."
-              className="mt-2 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-slate-500">
-                Only admins can view these notes.
-              </p>
-              <Button
-                onClick={handleSaveNotes}
-                disabled={isSavingNotes}
-                size="sm"
-              >
-                {isSavingNotes ? 'Saving...' : 'Save note'}
-              </Button>
-            </div>
-            {notesMessage ? (
-              <p className="mt-3 text-sm font-medium text-green-700">
-                {notesMessage}
-              </p>
-            ) : null}
-          </Card>
-
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Activity log</h2>
-            <ol className="mt-4 space-y-4 border-l border-slate-200 pl-4">
-              <li>
-                <p className="text-sm font-semibold text-slate-900">
-                  Application submitted
+              {notesMessage ? (
+                <p className="mt-3 text-sm font-medium text-green-700">
+                  {notesMessage}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {new Date(application.createdAt).toLocaleString()}
-                </p>
-              </li>
-              <li>
-                <p className="text-sm font-semibold text-slate-900">
-                  Status is {statusLabels[application.status] ?? application.status}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Last updated {new Date(application.updatedAt).toLocaleString()}
-                </p>
-              </li>
-              {application.lastEmailStatus ? (
-                <li>
-                  <p className="text-sm font-semibold text-slate-900">
-                    Last notification: {application.lastEmailStatus}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {application.lastEmailSentAt
-                      ? new Date(application.lastEmailSentAt).toLocaleString()
-                      : 'Email was attempted but not sent.'}
-                  </p>
-                </li>
               ) : null}
-            </ol>
+            </CardContent>
+          </Card>
+
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Activity log</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activityRows.length ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Detail</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activityRows.map((row) => (
+                      <TableRow key={`${row.event}-${row.date}`}>
+                        <TableCell className="font-medium text-slate-900">
+                          {row.event}
+                        </TableCell>
+                        <TableCell>{row.detail}</TableCell>
+                        <TableCell>
+                          {row.date ? new Date(row.date).toLocaleString() : 'Not recorded'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  No activity recorded yet.
+                </p>
+              )}
+            </CardContent>
           </Card>
         </div>
 
         <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Review status</h2>
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <span className="text-sm text-slate-600">Current decision</span>
-              <Badge tone={statusTone[application.status] ?? 'default'}>
-                {statusLabels[application.status] ?? application.status}
-              </Badge>
-            </div>
-            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">
-                Last notification
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                {application.lastEmailStatus || 'No status email sent yet.'}
-              </p>
-              {application.lastEmailSentAt ? (
-                <p className="mt-1 text-xs text-slate-500">
-                  Sent {new Date(application.lastEmailSentAt).toLocaleString()}
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Review status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-slate-600">Current decision</span>
+                <Badge tone={statusTone[application.status] ?? 'default'}>
+                  {statusLabels[application.status] ?? application.status}
+                </Badge>
+              </div>
+              <Select
+                label="Update status"
+                name="status"
+                value={application.status}
+                onChange={(event) => updateStatus(event.target.value)}
+                disabled={isUpdating}
+              >
+                {statusOptions.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </Select>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  Last notification
                 </p>
-              ) : null}
-              {application.lastEmailError ? (
-                <p className="mt-2 text-xs text-red-600">
-                  {application.lastEmailError}
+                <p className="mt-1 text-sm text-slate-600">
+                  {application.lastEmailStatus || 'No status email sent yet.'}
                 </p>
-              ) : null}
-              {testEmailResult ? (
-                <p
-                  className={`mt-2 text-xs ${
-                    testEmailResult.sent ? 'text-emerald-700' : 'text-red-600'
-                  }`}
-                >
-                  Test email {testEmailResult.status}
-                  {testEmailResult.error ? `: ${testEmailResult.error}` : ''}
-                </p>
-              ) : null}
-            </div>
+                {application.lastEmailSentAt ? (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Sent {new Date(application.lastEmailSentAt).toLocaleString()}
+                  </p>
+                ) : null}
+                {application.lastEmailError ? (
+                  <p className="mt-2 text-xs text-red-600">
+                    {application.lastEmailError}
+                  </p>
+                ) : null}
+                {testEmailResult ? (
+                  <p
+                    className={`mt-2 text-xs ${
+                      testEmailResult.sent ? 'text-emerald-700' : 'text-red-600'
+                    }`}
+                  >
+                    Test email {testEmailResult.status}
+                    {testEmailResult.error ? `: ${testEmailResult.error}` : ''}
+                  </p>
+                ) : null}
+              </div>
+            </CardContent>
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Quick actions</h2>
-            <div className="mt-5 grid gap-3">
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Quick actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 className="w-full justify-center"
                 onClick={handleSendTestEmail}
                 disabled={isSendingTest}
               >
+                <Mail className="h-4 w-4" />
                 {isSendingTest ? 'Sending test...' : 'Send test email'}
               </Button>
               <Button
                 type="button"
-                variant="secondary"
                 className="w-full justify-center"
-                onClick={() => updateStatus('REVIEWING')}
+                onClick={() => updateStatus('ENROLLED')}
                 disabled={isUpdating}
               >
-                Shortlist applicant
+                <CheckCircle className="h-4 w-4" />
+                Confirm enrollment
               </Button>
               <Button
                 type="button"
@@ -456,23 +537,27 @@ export default function ApplicationDetailPage() {
                 onClick={() => updateStatus('REJECTED')}
                 disabled={isUpdating}
               >
+                <XCircle className="h-4 w-4" />
                 Reject application
               </Button>
               <Button
                 type="button"
+                variant="outline"
                 className="w-full justify-center"
-                onClick={() => updateStatus('ENROLLED')}
-                disabled={isUpdating}
+                onClick={refreshApplication}
+                disabled={isLoading}
               >
-                Confirm enrollment
+                <RefreshCcw className="h-4 w-4" />
+                Refresh
               </Button>
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 className="w-full justify-center"
                 onClick={() => updateStatus('ACCEPTED')}
                 disabled={isUpdating}
               >
+                <Mail className="h-4 w-4" />
                 Send acceptance email
               </Button>
               {application.documentUrl ? (
@@ -480,49 +565,56 @@ export default function ApplicationDetailPage() {
                   href={documentHref}
                   target="_blank"
                   rel="noreferrer"
-                  variant="secondary"
+                  variant="outline"
                   className="w-full justify-center"
+                  download
                 >
+                  <Download className="h-4 w-4" />
                   Download resume
                 </Button>
               ) : (
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="outline"
                   className="w-full justify-center"
                   disabled
                 >
+                  <Download className="h-4 w-4" />
                   Download resume
                 </Button>
               )}
-            </div>
+            </CardContent>
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Track capacity</h2>
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">
-                {pathwayLabels[application.pathway] ?? application.pathway}
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Capacity data is not connected yet.
-              </p>
-            </div>
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Track capacity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">{trackName}</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Capacity data is not connected yet.
+                </p>
+              </div>
+            </CardContent>
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Interview schedule
-            </h2>
-            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-medium text-slate-900">
-                No interview scheduled.
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Interview date, owner, and meeting link can appear here when scheduling
-                is added.
-              </p>
-            </div>
+          <Card padding={false}>
+            <CardHeader>
+              <CardTitle>Interview schedule</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-medium text-slate-900">
+                  No interview scheduled.
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Interview date, owner, and meeting link can appear here when
+                  scheduling is added.
+                </p>
+              </div>
+            </CardContent>
           </Card>
         </aside>
       </div>

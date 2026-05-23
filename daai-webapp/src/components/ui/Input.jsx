@@ -1,6 +1,6 @@
 import { cn } from '../../lib/cn'
 
-export default function Input({ label, id, className, error, ...props }) {
+export function Input({ label, id, className, error, ...props }) {
   const inputId = id || props.name
 
   return (
@@ -21,3 +21,5 @@ export default function Input({ label, id, className, error, ...props }) {
     </label>
   )
 }
+
+export default Input

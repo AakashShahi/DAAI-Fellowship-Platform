@@ -84,6 +84,7 @@ export default function AdminLessonsPage() {
       }
     }
     run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId])
 
   const handleCreate = async (event) => {
