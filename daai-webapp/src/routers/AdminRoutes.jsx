@@ -19,6 +19,7 @@ import AdminSessionDetailPage from '../pages/admin/AdminSessionDetailPage'
 import AdminSessionsPage from '../pages/admin/AdminSessionsPage'
 import AdminTracksPage from '../pages/admin/AdminTracksPage'
 import ApplicationsPage from '../pages/admin/ApplicationsPage'
+import ApplicationDetailPage from '../pages/admin/ApplicationDetailPage'
 import AttendanceManagementPage from '../pages/admin/AttendanceManagementPage'
 import CohortCreatePage from '../pages/admin/CohortCreatePage'
 import CohortDetailPage from '../pages/admin/CohortDetailPage'
@@ -44,6 +45,7 @@ export const adminRoutesElement = (
     <Route index element={<Navigate to="/admin/dashboard" replace />} />
     <Route path="dashboard" element={<AdminDashboard />} />
     <Route path="applications" element={<ApplicationsPage />} />
+    <Route path="applications/:applicationId" element={<ApplicationDetailPage />} />
     <Route path="fellows" element={<FellowsPage />} />
     <Route path="cohorts" element={<CohortsPage />} />
     <Route path="cohorts/new" element={<CohortCreatePage />} />
