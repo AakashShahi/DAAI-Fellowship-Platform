@@ -24,28 +24,28 @@ export default function FellowSessionDetailPage() {
 
   const attendanceRow = useMemo(() => attendance.find((row) => row.sessionId === sessionId), [attendance, sessionId])
 
-  if (!session) return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">{error || 'Loading session...'}</p>
+  if (!session) return <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">{error || 'Loading session...'}</p>
 
   return (
     <section>
-      <Link className="text-sm font-black text-[#f26322]" to="/fellow/sessions">Sessions</Link>
-      <div className="mt-4 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+      <Link className="text-sm font-black text-[#4f46e5]" to="/fellow/sessions">Sessions</Link>
+      <div className="mt-4 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#24140e]">{session.title}</h1>
-            <p className="mt-2 text-sm font-medium text-[#6f5f57]">{session.description || 'No description.'}</p>
+            <h1 className="text-3xl font-black text-[#0f172a]">{session.title}</h1>
+            <p className="mt-2 text-sm font-medium text-[#475569]">{session.description || 'No description.'}</p>
           </div>
           <SessionStatusBadge status={session.status} />
         </div>
-        <div className="mt-5 grid gap-3 text-sm font-bold text-[#6f5f57] md:grid-cols-3">
+        <div className="mt-5 grid gap-3 text-sm font-bold text-[#475569] md:grid-cols-3">
           <p>Date: {new Date(session.sessionDate).toLocaleDateString()}</p>
           <p>Time: {session.startTime} - {session.endTime}</p>
           <p className="flex items-center gap-2">Attendance: <AttendanceStatusBadge status={attendanceRow?.status ?? 'not-marked'} /></p>
         </div>
-        {attendanceRow?.remarks ? <p className="mt-4 text-sm text-[#6f5f57]">Remarks: {attendanceRow.remarks}</p> : null}
+        {attendanceRow?.remarks ? <p className="mt-4 text-sm text-[#475569]">Remarks: {attendanceRow.remarks}</p> : null}
         <div className="mt-6 flex flex-wrap gap-3">
-          {session.meetingLink ? <a className="rounded-md bg-[#f26322] px-4 py-2 text-sm font-black text-white" href={session.meetingLink} target="_blank" rel="noreferrer">Join Session</a> : null}
-          {session.recordingLink ? <a className="rounded-md border border-orange-100 px-4 py-2 text-sm font-black text-[#f26322]" href={session.recordingLink} target="_blank" rel="noreferrer">Recording</a> : null}
+          {session.meetingLink ? <a className="rounded-md bg-[#4f46e5] px-4 py-2 text-sm font-black text-white" href={session.meetingLink} target="_blank" rel="noreferrer">Join Session</a> : null}
+          {session.recordingLink ? <a className="rounded-md border border-slate-200 px-4 py-2 text-sm font-black text-[#4f46e5]" href={session.recordingLink} target="_blank" rel="noreferrer">Recording</a> : null}
         </div>
       </div>
     </section>

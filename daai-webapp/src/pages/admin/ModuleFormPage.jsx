@@ -84,15 +84,15 @@ export default function ModuleFormPage() {
   }
 
   if (isLoading) {
-    return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading module...</p>
+    return <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">Loading module...</p>
   }
 
   return (
-    <section className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-      <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+      <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
         Curriculum
       </p>
-      <h1 className="mt-2 text-3xl font-black text-[#24140e]">
+      <h1 className="mt-2 text-3xl font-black text-[#0f172a]">
         {isEditing ? 'Edit Module' : 'Create Module'}
       </h1>
       {error ? (
@@ -101,20 +101,20 @@ export default function ModuleFormPage() {
         </p>
       ) : null}
       <form className="mt-6 grid gap-5" onSubmit={handleSubmit}>
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Title
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             value={form.title}
             onChange={(event) => updateField('title', event.target.value)}
             required
           />
         </label>
         <div className="grid gap-5 md:grid-cols-3">
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Track
             <select
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
               value={form.track}
               onChange={(event) => updateField('track', event.target.value)}
             >
@@ -123,10 +123,10 @@ export default function ModuleFormPage() {
               ))}
             </select>
           </label>
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Status
             <select
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
               value={form.status}
               onChange={(event) => updateField('status', event.target.value)}
             >
@@ -135,10 +135,10 @@ export default function ModuleFormPage() {
               ))}
             </select>
           </label>
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Order
             <input
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
               type="number"
               min="0"
               value={form.order}
@@ -146,10 +146,10 @@ export default function ModuleFormPage() {
             />
           </label>
         </div>
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Description
           <textarea
-            className="min-h-28 rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="min-h-28 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             value={form.description}
             onChange={(event) => updateField('description', event.target.value)}
           />
@@ -157,7 +157,7 @@ export default function ModuleFormPage() {
         <div>
           <button
             type="submit"
-            className="min-h-11 rounded-md bg-[#f26322] px-5 text-sm font-black text-white disabled:opacity-60"
+            className="min-h-11 rounded-md bg-[#4f46e5] px-5 text-sm font-black text-white disabled:opacity-60"
             disabled={isSaving}
           >
             {isSaving ? 'Saving...' : 'Save Module'}

@@ -63,19 +63,19 @@ export default function AdminModulesPage() {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Curriculum
         </p>
         <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#24140e]">Modules</h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium text-[#6f5f57]">
+            <h1 className="text-3xl font-black text-[#0f172a]">Modules</h1>
+            <p className="mt-3 max-w-2xl text-sm font-medium text-[#475569]">
               Create track-based learning modules and publish lessons for fellows.
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
+            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white transition hover:bg-[#4338ca]"
             to="/admin/modules/new"
           >
             Create Module
@@ -83,10 +83,10 @@ export default function AdminModulesPage() {
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#24140e] sm:max-w-xs">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
             Track
             <select
-              className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569]"
               value={trackFilter}
               onChange={(event) => {
                 setIsLoading(true)
@@ -101,10 +101,10 @@ export default function AdminModulesPage() {
               ))}
             </select>
           </label>
-          <label className="grid gap-2 text-sm font-black text-[#24140e] sm:max-w-xs">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
             Status
             <select
-              className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569]"
               value={statusFilter}
               onChange={(event) => {
                 setIsLoading(true)
@@ -129,7 +129,7 @@ export default function AdminModulesPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold text-[#6f5f57]">
+        <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569]">
           Loading modules...
         </p>
       ) : (

@@ -50,7 +50,7 @@ export default function FellowTrackGuard() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
         Loading your learning track...
       </div>
     )

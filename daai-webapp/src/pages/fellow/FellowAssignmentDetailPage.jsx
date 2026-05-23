@@ -44,32 +44,32 @@ export default function FellowAssignmentDetailPage() {
     }
   }
 
-  if (isLoading) return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading assignment...</p>
+  if (isLoading) return <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">Loading assignment...</p>
   if (!detail) return <p className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm font-bold text-red-700">{error || 'Assignment not found.'}</p>
   const { assignment, submission } = detail
   const canSubmit = !submission || ['submitted', 'needs-resubmission'].includes(submission.status)
 
   return (
     <section>
-      <Link className="text-sm font-bold text-[#f26322]" to="/fellow/assignments">Assignments</Link>
-      <div className="mt-4 mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h1 className="text-3xl font-black text-[#24140e]">{assignment.title}</h1>
-        <p className="mt-3 text-sm font-medium text-[#6f5f57]">{assignment.description}</p>
-        <p className="mt-3 text-sm font-bold text-[#6f5f57]">Due {new Date(assignment.dueDate).toLocaleString()} · {assignment.totalMarks} marks</p>
+      <Link className="text-sm font-bold text-[#4f46e5]" to="/fellow/assignments">Assignments</Link>
+      <div className="mt-4 mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h1 className="text-3xl font-black text-[#0f172a]">{assignment.title}</h1>
+        <p className="mt-3 text-sm font-medium text-[#475569]">{assignment.description}</p>
+        <p className="mt-3 text-sm font-bold text-[#475569]">Due {new Date(assignment.dueDate).toLocaleString()} · {assignment.totalMarks} marks</p>
       </div>
       {error ? <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</p> : null}
       {submission ? (
-        <div className="mb-6 rounded-lg border border-orange-100 bg-white p-5">
+        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-black text-[#24140e]">Current submission</h2>
+            <h2 className="text-lg font-black text-[#0f172a]">Current submission</h2>
             <SubmissionStatusBadge status={submission.status} />
           </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm text-[#6f5f57]">{submission.submissionText}</p>
-          {submission.status === 'reviewed' ? <p className="mt-3 text-sm font-bold text-[#24140e]">Marks: {submission.marksObtained ?? '—'} / {assignment.totalMarks}</p> : null}
-          {submission.feedback ? <p className="mt-2 whitespace-pre-wrap text-sm text-[#6f5f57]">{submission.feedback}</p> : null}
+          <p className="mt-3 whitespace-pre-wrap text-sm text-[#475569]">{submission.submissionText}</p>
+          {submission.status === 'reviewed' ? <p className="mt-3 text-sm font-bold text-[#0f172a]">Marks: {submission.marksObtained ?? '—'} / {assignment.totalMarks}</p> : null}
+          {submission.feedback ? <p className="mt-2 whitespace-pre-wrap text-sm text-[#475569]">{submission.feedback}</p> : null}
         </div>
       ) : null}
-      {canSubmit ? <SubmissionForm initialSubmission={submission} onSubmit={submit} isSaving={isSaving} /> : <p className="rounded-lg border border-orange-100 bg-[#fffaf6] p-5 text-sm font-bold text-[#6f5f57]">This submission is locked after review.</p>}
+      {canSubmit ? <SubmissionForm initialSubmission={submission} onSubmit={submit} isSaving={isSaving} /> : <p className="rounded-lg border border-slate-200 bg-[#f8fafc] p-5 text-sm font-bold text-[#475569]">This submission is locked after review.</p>}
     </section>
   )
 }

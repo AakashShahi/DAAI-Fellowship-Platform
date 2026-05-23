@@ -50,32 +50,32 @@ export default function AdminSessionsPage() {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">Sessions</p>
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">Sessions</p>
         <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#24140e]">Session Management</h1>
-            <p className="mt-2 text-sm font-medium text-[#6f5f57]">Create cohort sessions and track attendance.</p>
+            <h1 className="text-3xl font-black text-[#0f172a]">Session Management</h1>
+            <p className="mt-2 text-sm font-medium text-[#475569]">Create cohort sessions and track attendance.</p>
           </div>
-          <Link className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white" to="/admin/sessions/new">Create Session</Link>
+          <Link className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white" to="/admin/sessions/new">Create Session</Link>
         </div>
       </div>
       {error ? <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</p> : null}
-      <div className="mb-5 grid gap-3 rounded-lg border border-orange-100 bg-white p-4 md:grid-cols-3">
-        <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={filters.track} onChange={(event) => setFilters((current) => ({ ...current, track: event.target.value }))}>
+      <div className="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-3">
+        <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={filters.track} onChange={(event) => setFilters((current) => ({ ...current, track: event.target.value }))}>
           <option value="">All tracks</option>
           {FELLOW_TRACK_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
-        <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={filters.cohortId} onChange={(event) => setFilters((current) => ({ ...current, cohortId: event.target.value }))}>
+        <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={filters.cohortId} onChange={(event) => setFilters((current) => ({ ...current, cohortId: event.target.value }))}>
           <option value="">All cohorts</option>
           {cohorts.map((cohort) => <option key={cohort.id} value={cohort.id}>{cohort.name}</option>)}
         </select>
-        <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
+        <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
           <option value="">All statuses</option>
           {SESSION_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>
-      {isLoading ? <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading sessions...</p> : <SessionTable sessions={sessions} onArchive={archiveSession} isBusy={isBusy} />}
+      {isLoading ? <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">Loading sessions...</p> : <SessionTable sessions={sessions} onArchive={archiveSession} isBusy={isBusy} />}
     </section>
   )
 }

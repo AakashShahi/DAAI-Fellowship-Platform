@@ -48,15 +48,15 @@ export default function AttendanceManagementPage() {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <Link className="text-sm font-black text-[#f26322]" to={session ? `/admin/sessions/${session.id}` : '/admin/sessions'}>Session Detail</Link>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e]">{session?.title ?? 'Attendance'}</h1>
-        {session ? <p className="mt-2 text-sm font-bold text-[#6f5f57]">{new Date(session.sessionDate).toLocaleDateString()} · {session.startTime} - {session.endTime}</p> : null}
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <Link className="text-sm font-black text-[#4f46e5]" to={session ? `/admin/sessions/${session.id}` : '/admin/sessions'}>Session Detail</Link>
+        <h1 className="mt-2 text-3xl font-black text-[#0f172a]">{session?.title ?? 'Attendance'}</h1>
+        {session ? <p className="mt-2 text-sm font-bold text-[#475569]">{new Date(session.sessionDate).toLocaleDateString()} · {session.startTime} - {session.endTime}</p> : null}
       </div>
       {error ? <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</p> : null}
       {success ? <p className="mb-5 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700">{success}</p> : null}
       <AttendanceTable rows={rows} onChange={updateRow} editable />
-      <button className="mt-5 min-h-11 rounded-md bg-[#f26322] px-5 text-sm font-black text-white disabled:opacity-60" disabled={isSaving || session?.status === 'archived'} onClick={save} type="button">{isSaving ? 'Saving...' : 'Save Attendance'}</button>
+      <button className="mt-5 min-h-11 rounded-md bg-[#4f46e5] px-5 text-sm font-black text-white disabled:opacity-60" disabled={isSaving || session?.status === 'archived'} onClick={save} type="button">{isSaving ? 'Saving...' : 'Save Attendance'}</button>
     </section>
   )
 }

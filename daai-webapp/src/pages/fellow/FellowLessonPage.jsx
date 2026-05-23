@@ -56,7 +56,7 @@ export default function FellowLessonPage() {
     }
   }
 
-  if (loading) return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading lesson...</p>
+  if (loading) return <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">Loading lesson...</p>
   if (loadError || !lesson) {
     return (
       <section className="mx-auto max-w-4xl px-4 py-8">
@@ -69,25 +69,25 @@ export default function FellowLessonPage() {
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-8 lg:px-0">
-      <Link to={`/fellow/learning/${moduleId}`} className="text-sm font-bold text-[#f26322]">
+      <Link to={`/fellow/learning/${moduleId}`} className="text-sm font-bold text-[#4f46e5]">
         Back to module
       </Link>
-      <h1 className="mt-4 text-3xl font-black text-[#24140e]">{lesson.title}</h1>
-      <p className="mt-2 text-xs font-bold uppercase text-[#6f5f57]">
+      <h1 className="mt-4 text-3xl font-black text-[#0f172a]">{lesson.title}</h1>
+      <p className="mt-2 text-xs font-bold uppercase text-[#475569]">
         {lesson.estimatedDurationMinutes} minutes · {lesson.completed ? 'Completed' : 'In progress'}
       </p>
-      <p className="mt-3 text-sm font-medium text-[#6f5f57]">{lesson.description}</p>
+      <p className="mt-3 text-sm font-medium text-[#475569]">{lesson.description}</p>
 
       {lesson.videoUrl ? (
-        <div className="mt-5 overflow-hidden rounded-lg border border-orange-100 bg-white p-4">
-          <a className="text-sm font-black text-[#f26322] underline" href={lesson.videoUrl} target="_blank" rel="noreferrer">
+        <div className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white p-4">
+          <a className="text-sm font-black text-[#4f46e5] underline" href={lesson.videoUrl} target="_blank" rel="noreferrer">
             Open video
           </a>
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <div className="prose prose-sm max-w-none whitespace-pre-wrap text-[#6f5f57]">
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <div className="prose prose-sm max-w-none whitespace-pre-wrap text-[#475569]">
           {lesson.content || 'No written content for this lesson yet.'}
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function FellowLessonPage() {
             type="button"
             disabled={saving}
             onClick={handleComplete}
-            className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
+            className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Mark as Completed'}
           </button>

@@ -114,11 +114,11 @@ export default function AdminBatchesPage() {
   return (
     <section>
       <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Cohorts
         </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">Batches</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
+        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">Batches</h1>
+        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
           Create a batch under a track, set schedule, then enroll fellows into that
           batch.
         </p>
@@ -131,10 +131,10 @@ export default function AdminBatchesPage() {
       ) : null}
 
       <div className="mb-6">
-        <label className="block text-sm font-bold text-[#24140e]">
+        <label className="block text-sm font-bold text-[#0f172a]">
           Track
           <select
-            className="mt-1 w-full max-w-md rounded-md border border-orange-100 px-3 py-2 text-sm sm:w-auto"
+            className="mt-1 w-full max-w-md rounded-md border border-slate-200 px-3 py-2 text-sm sm:w-auto"
             value={selectedTrackId}
             onChange={(e) => setSelectedTrackId(e.target.value)}
             disabled={isLoading}
@@ -148,42 +148,42 @@ export default function AdminBatchesPage() {
         </label>
       </div>
 
-      <div className="mb-8 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Create batch</h2>
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Create batch</h2>
         <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleCreate}>
-          <label className="block text-sm font-bold text-[#24140e] sm:col-span-2">
+          <label className="block text-sm font-bold text-[#0f172a] sm:col-span-2">
             Batch name
             <input
               required
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Start
             <input
               required
               type="datetime-local"
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             End
             <input
               required
               type="datetime-local"
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.endDate}
               onChange={(e) => setForm({ ...form, endDate: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Status
             <select
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
             >
@@ -198,7 +198,7 @@ export default function AdminBatchesPage() {
             <button
               type="submit"
               disabled={isSaving || !selectedTrackId}
-              className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
+              className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
             >
               {isSaving ? 'Saving…' : 'Create batch'}
             </button>
@@ -206,21 +206,21 @@ export default function AdminBatchesPage() {
         </form>
       </div>
 
-      <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Batches for selected track</h2>
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Batches for selected track</h2>
         {batches.length === 0 ? (
-          <p className="mt-4 text-sm font-medium text-[#6f5f57]">No batches yet.</p>
+          <p className="mt-4 text-sm font-medium text-[#475569]">No batches yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-orange-100">
+          <ul className="mt-4 divide-y divide-slate-200">
             {batches.map((b) => (
               <li
                 key={b.id}
                 className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-black text-[#24140e]">{b.name}</p>
-                  <p className="text-xs font-bold uppercase text-[#f26322]">{b.status}</p>
-                  <p className="mt-1 text-sm text-[#6f5f57]">
+                  <p className="font-black text-[#0f172a]">{b.name}</p>
+                  <p className="text-xs font-bold uppercase text-[#4f46e5]">{b.status}</p>
+                  <p className="mt-1 text-sm text-[#475569]">
                     {new Date(b.startDate).toLocaleString()} →{' '}
                     {new Date(b.endDate).toLocaleString()}
                   </p>
@@ -228,7 +228,7 @@ export default function AdminBatchesPage() {
                 <button
                   type="button"
                   onClick={() => handleDelete(b.id)}
-                  className="self-start rounded-md border border-orange-100 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
+                  className="self-start rounded-md border border-slate-200 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
                 >
                   Delete
                 </button>

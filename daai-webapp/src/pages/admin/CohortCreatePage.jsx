@@ -44,11 +44,11 @@ export default function CohortCreatePage() {
   }
 
   return (
-    <section className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-      <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+      <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
         New Cohort
       </p>
-      <h1 className="mt-2 text-3xl font-black text-[#24140e]">
+      <h1 className="mt-2 text-3xl font-black text-[#0f172a]">
         Create Cohort
       </h1>
 
@@ -59,10 +59,10 @@ export default function CohortCreatePage() {
       ) : null}
 
       <form className="mt-6 grid gap-5" onSubmit={handleSubmit}>
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Name
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
             value={form.name}
             onChange={(event) => updateField('name', event.target.value)}
             required
@@ -70,10 +70,10 @@ export default function CohortCreatePage() {
         </label>
 
         <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Track
             <select
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
               value={form.track}
               onChange={(event) => updateField('track', event.target.value)}
             >
@@ -85,10 +85,10 @@ export default function CohortCreatePage() {
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Status
             <select
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
               value={form.status}
               onChange={(event) => updateField('status', event.target.value)}
             >
@@ -101,20 +101,20 @@ export default function CohortCreatePage() {
           </label>
         </div>
 
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Description
           <textarea
-            className="min-h-28 rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+            className="min-h-28 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
             value={form.description}
             onChange={(event) => updateField('description', event.target.value)}
           />
         </label>
 
         <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             Start date
             <input
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
               type="date"
               value={form.startDate}
               onChange={(event) => updateField('startDate', event.target.value)}
@@ -122,10 +122,10 @@ export default function CohortCreatePage() {
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-black text-[#24140e]">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
             End date
             <input
-              className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
               type="date"
               value={form.endDate}
               onChange={(event) => updateField('endDate', event.target.value)}
@@ -137,7 +137,7 @@ export default function CohortCreatePage() {
         <div>
           <button
             type="submit"
-            className="min-h-11 rounded-md bg-[#f26322] px-5 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-11 rounded-md bg-[#4f46e5] px-5 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSaving}
           >
             {isSaving ? 'Creating...' : 'Create Cohort'}

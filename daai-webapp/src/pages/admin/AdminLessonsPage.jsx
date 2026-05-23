@@ -139,11 +139,11 @@ export default function AdminLessonsPage() {
   return (
     <section>
       <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Course content
         </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">Lessons</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
+        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">Lessons</h1>
+        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
           Create lessons under a module. Fellows only see published lessons for their
           enrolled track.
         </p>
@@ -156,10 +156,10 @@ export default function AdminLessonsPage() {
       ) : null}
 
       <div className="mb-6 flex flex-wrap gap-4">
-        <label className="block text-sm font-bold text-[#24140e]">
+        <label className="block text-sm font-bold text-[#0f172a]">
           Track
           <select
-            className="mt-1 block w-56 rounded-md border border-orange-100 px-3 py-2 text-sm"
+            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
             value={trackId}
             onChange={(e) => setTrackId(e.target.value)}
             disabled={isLoading}
@@ -171,10 +171,10 @@ export default function AdminLessonsPage() {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-bold text-[#24140e]">
+        <label className="block text-sm font-bold text-[#0f172a]">
           Module
           <select
-            className="mt-1 block w-56 rounded-md border border-orange-100 px-3 py-2 text-sm"
+            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
             value={moduleId}
             onChange={(e) => setModuleId(e.target.value)}
           >
@@ -187,68 +187,68 @@ export default function AdminLessonsPage() {
         </label>
       </div>
 
-      <div className="mb-8 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Create lesson</h2>
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Create lesson</h2>
         <form className="mt-4 space-y-4" onSubmit={handleCreate}>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Title
             <input
               required
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Content
             <textarea
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               rows={8}
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-bold text-[#24140e]">
+            <label className="block text-sm font-bold text-[#0f172a]">
               Video URL
               <input
-                className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 value={form.videoUrl}
                 onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
               />
             </label>
-            <label className="block text-sm font-bold text-[#24140e]">
+            <label className="block text-sm font-bold text-[#0f172a]">
               Resource URL
               <input
-                className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 value={form.resourceUrl}
                 onChange={(e) => setForm({ ...form, resourceUrl: e.target.value })}
               />
             </label>
-            <label className="block text-sm font-bold text-[#24140e]">
+            <label className="block text-sm font-bold text-[#0f172a]">
               Order
               <input
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 value={form.order}
                 onChange={(e) => setForm({ ...form, order: e.target.value })}
               />
             </label>
-            <label className="block text-sm font-bold text-[#24140e]">
+            <label className="block text-sm font-bold text-[#0f172a]">
               Est. minutes
               <input
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 value={form.estimatedMinutes}
                 onChange={(e) => setForm({ ...form, estimatedMinutes: e.target.value })}
               />
             </label>
-            <label className="block text-sm font-bold text-[#24140e]">
+            <label className="block text-sm font-bold text-[#0f172a]">
               Status
               <select
-                className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
               >
@@ -263,38 +263,38 @@ export default function AdminLessonsPage() {
           <button
             type="submit"
             disabled={isSaving || !moduleId}
-            className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
+            className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
           >
             {isSaving ? 'Saving…' : 'Create lesson'}
           </button>
         </form>
       </div>
 
-      <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Lessons in selected module</h2>
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Lessons in selected module</h2>
         {!moduleId ? (
-          <p className="mt-4 text-sm text-[#6f5f57]">Select a module with lessons.</p>
+          <p className="mt-4 text-sm text-[#475569]">Select a module with lessons.</p>
         ) : lessons.length === 0 ? (
-          <p className="mt-4 text-sm text-[#6f5f57]">No lessons yet.</p>
+          <p className="mt-4 text-sm text-[#475569]">No lessons yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-orange-100">
+          <ul className="mt-4 divide-y divide-slate-200">
             {lessons.map((lesson) => (
               <li
                 key={lesson.id}
                 className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-black text-[#24140e]">
+                  <p className="font-black text-[#0f172a]">
                     {lesson.order}. {lesson.title}
                   </p>
-                  <p className="text-xs font-bold uppercase text-[#f26322]">
+                  <p className="text-xs font-bold uppercase text-[#4f46e5]">
                     {lesson.status} · ~{lesson.estimatedMinutes} min
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleDelete(lesson.id)}
-                  className="self-start rounded-md border border-orange-100 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
+                  className="self-start rounded-md border border-slate-200 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
                 >
                   Delete
                 </button>

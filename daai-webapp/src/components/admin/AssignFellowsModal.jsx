@@ -33,11 +33,11 @@ export default function AssignFellowsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <section className="max-h-[86vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-2xl">
-        <div className="border-b border-orange-100 p-5">
-          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <div className="border-b border-slate-200 p-5">
+          <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
             Assign Fellows
           </p>
-          <h2 className="mt-2 text-2xl font-black text-[#24140e]">
+          <h2 className="mt-2 text-2xl font-black text-[#0f172a]">
             {cohort.name}
           </h2>
           <div className="mt-3">
@@ -47,7 +47,7 @@ export default function AssignFellowsModal({
 
         <div className="max-h-[52vh] overflow-y-auto p-5">
           {eligibleFellows.length === 0 ? (
-            <p className="rounded-lg border border-orange-100 bg-[#fff8f3] p-4 text-sm font-bold text-[#6f5f57]">
+            <p className="rounded-lg border border-slate-200 bg-[#f8fafc] p-4 text-sm font-bold text-[#475569]">
               No fellows have selected this track yet.
             </p>
           ) : (
@@ -55,7 +55,7 @@ export default function AssignFellowsModal({
               {eligibleFellows.map((fellow) => (
                 <label
                   key={fellow.id}
-                  className="flex items-start gap-3 rounded-lg border border-orange-100 p-4"
+                  className="flex items-start gap-3 rounded-lg border border-slate-200 p-4"
                 >
                   <input
                     className="mt-1"
@@ -64,8 +64,8 @@ export default function AssignFellowsModal({
                     onChange={() => toggleFellow(fellow.id)}
                   />
                   <span>
-                    <strong className="block text-[#24140e]">{fellow.fullName}</strong>
-                    <small className="block text-sm font-medium text-[#6f5f57]">
+                    <strong className="block text-[#0f172a]">{fellow.fullName}</strong>
+                    <small className="block text-sm font-medium text-[#475569]">
                       {fellow.email}
                     </small>
                   </span>
@@ -75,10 +75,10 @@ export default function AssignFellowsModal({
           )}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-orange-100 p-5 sm:flex-row sm:justify-end">
+        <div className="flex flex-col gap-3 border-t border-slate-200 p-5 sm:flex-row sm:justify-end">
           <button
             type="button"
-            className="min-h-10 rounded-md border border-orange-100 px-4 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+            className="min-h-10 rounded-md border border-slate-200 px-4 text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
             onClick={onClose}
             disabled={isSaving}
           >
@@ -86,7 +86,7 @@ export default function AssignFellowsModal({
           </button>
           <button
             type="button"
-            className="min-h-10 rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-10 rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => onSave([...selectedIds])}
             disabled={isSaving}
           >

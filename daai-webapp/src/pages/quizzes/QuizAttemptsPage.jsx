@@ -56,13 +56,13 @@ export default function QuizAttemptsPage() {
     : attempts
 
   return (
-    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
-        <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+          <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
             Quiz Attempts
           </p>
-          <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+          <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
             Your quiz results
           </h1>
           <p className="mt-3 max-w-2xl text-sm font-medium">
@@ -73,7 +73,7 @@ export default function QuizAttemptsPage() {
         </div>
 
         {isLoading ? (
-          <p className="mt-5 rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+          <p className="mt-5 rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
             Loading attempts...
           </p>
         ) : null}
@@ -85,7 +85,7 @@ export default function QuizAttemptsPage() {
         ) : null}
 
         {!isLoading && !error && visibleAttempts.length === 0 ? (
-          <p className="mt-5 rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+          <p className="mt-5 rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
             {selectedTrack
               ? `No ${selectedTrack.label} quiz attempts yet.`
               : 'No quiz attempts yet.'}
@@ -97,25 +97,25 @@ export default function QuizAttemptsPage() {
             <Link
               key={attempt.id}
               to={`/fellow/quizzes/attempts/${attempt.id}`}
-              className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-[#c7d2fe]"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-[#24140e]">
+                  <h2 className="text-xl font-black text-[#0f172a]">
                     {attempt.category_title}
                   </h2>
-                  <div className="mt-3 grid gap-2 text-sm font-medium text-[#6f5f57] sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="mt-3 grid gap-2 text-sm font-medium text-[#475569] sm:grid-cols-2 lg:grid-cols-3">
                     <p>
-                      <span className="font-black text-[#24140e]">Score:</span>{' '}
+                      <span className="font-black text-[#0f172a]">Score:</span>{' '}
                       {attempt.score}/{attempt.total_questions} (
                       {getAttemptPercentage(attempt)}%)
                     </p>
                     <p>
-                      <span className="font-black text-[#24140e]">Date:</span>{' '}
+                      <span className="font-black text-[#0f172a]">Date:</span>{' '}
                       {new Date(attempt.submitted_at).toLocaleString()}
                     </p>
                     <p>
-                      <span className="font-black text-[#24140e]">Category:</span>{' '}
+                      <span className="font-black text-[#0f172a]">Category:</span>{' '}
                       {attempt.category_title}
                     </p>
                   </div>
@@ -131,7 +131,7 @@ export default function QuizAttemptsPage() {
                   >
                     {getAttemptStatus(attempt)}
                   </span>
-                  <span className="rounded-full bg-[#fff1e8] px-4 py-2 text-sm font-black text-[#f26322]">
+                  <span className="rounded-full bg-[#eef2ff] px-4 py-2 text-sm font-black text-[#4f46e5]">
                     Reopen Result
                   </span>
                 </div>

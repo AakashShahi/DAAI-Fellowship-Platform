@@ -106,13 +106,13 @@ export default function AdminEnrollmentsPage() {
   return (
     <section>
       <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Program roster
         </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
           Enrollments
         </h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
+        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
           Assign a fellow to exactly one track and batch. A fellow may only have one
           active enrollment at a time.
         </p>
@@ -124,14 +124,14 @@ export default function AdminEnrollmentsPage() {
         </p>
       ) : null}
 
-      <div className="mb-8 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Enroll fellow</h2>
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Enroll fellow</h2>
         <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleEnroll}>
-          <label className="block text-sm font-bold text-[#24140e] sm:col-span-2">
+          <label className="block text-sm font-bold text-[#0f172a] sm:col-span-2">
             Fellow
             <select
               required
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.fellowId}
               onChange={(e) => setForm({ ...form, fellowId: e.target.value })}
               disabled={isLoading}
@@ -144,10 +144,10 @@ export default function AdminEnrollmentsPage() {
               ))}
             </select>
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Track
             <select
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={selectedTrackId}
               onChange={(e) => setSelectedTrackId(e.target.value)}
             >
@@ -158,11 +158,11 @@ export default function AdminEnrollmentsPage() {
               ))}
             </select>
           </label>
-          <label className="block text-sm font-bold text-[#24140e]">
+          <label className="block text-sm font-bold text-[#0f172a]">
             Batch
             <select
               required
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               value={form.batchId}
               onChange={(e) => setForm({ ...form, batchId: e.target.value })}
             >
@@ -177,7 +177,7 @@ export default function AdminEnrollmentsPage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
+              className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
             >
               {isSaving ? 'Saving…' : 'Create enrollment'}
             </button>
@@ -185,18 +185,18 @@ export default function AdminEnrollmentsPage() {
         </form>
       </div>
 
-      <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Recent enrollments</h2>
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <h2 className="text-lg font-black text-[#0f172a]">Recent enrollments</h2>
         {enrollments.length === 0 ? (
-          <p className="mt-4 text-sm font-medium text-[#6f5f57]">No enrollments yet.</p>
+          <p className="mt-4 text-sm font-medium text-[#475569]">No enrollments yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-orange-100">
+          <ul className="mt-4 divide-y divide-slate-200">
             {enrollments.map((e) => (
               <li key={e.id} className="py-4">
-                <p className="font-black text-[#24140e]">
+                <p className="font-black text-[#0f172a]">
                   {e.track.title} · {e.batch.name}
                 </p>
-                <p className="text-xs text-[#6f5f57]">
+                <p className="text-xs text-[#475569]">
                   Fellow ID {e.fellowId} · {e.status} · enrolled{' '}
                   {new Date(e.enrolledAt).toLocaleString()}
                 </p>
@@ -207,7 +207,7 @@ export default function AdminEnrollmentsPage() {
                       type="button"
                       disabled={s === e.status}
                       onClick={() => handleStatusChange(e.id, s)}
-                      className="rounded-md border border-orange-100 px-2 py-1 text-xs font-bold text-[#6f5f57] hover:bg-[#fff1e8] disabled:opacity-40"
+                      className="rounded-md border border-slate-200 px-2 py-1 text-xs font-bold text-[#475569] hover:bg-[#eef2ff] disabled:opacity-40"
                     >
                       Mark {s}
                     </button>

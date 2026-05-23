@@ -17,22 +17,22 @@ export default function FellowAssignmentSubmissionsPage() {
 
   return (
     <section>
-      <h1 className="text-3xl font-black text-[#24140e]">My Submissions</h1>
+      <h1 className="text-3xl font-black text-[#0f172a]">My Submissions</h1>
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</p> : null}
-      {isLoading ? <p className="mt-5 text-sm font-bold">Loading submissions...</p> : rows.length === 0 ? <p className="mt-5 rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">No submissions yet.</p> : (
+      {isLoading ? <p className="mt-5 text-sm font-bold">Loading submissions...</p> : rows.length === 0 ? <p className="mt-5 rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">No submissions yet.</p> : (
         <div className="mt-5 grid gap-3">
           {rows.map((row) => (
-            <article key={row.id} className="rounded-lg border border-orange-100 bg-white p-5 shadow-sm">
+            <article key={row.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-black text-[#24140e]">{row.assignmentTitle}</h2>
-                  <p className="mt-1 text-sm font-medium text-[#6f5f57]">Submitted {new Date(row.submittedAt).toLocaleString()}</p>
+                  <h2 className="font-black text-[#0f172a]">{row.assignmentTitle}</h2>
+                  <p className="mt-1 text-sm font-medium text-[#475569]">Submitted {new Date(row.submittedAt).toLocaleString()}</p>
                 </div>
                 <SubmissionStatusBadge status={row.status} />
               </div>
-              <p className="mt-3 text-sm font-bold text-[#24140e]">Marks: {row.marksObtained ?? '—'}</p>
-              {row.feedback ? <p className="mt-2 whitespace-pre-wrap text-sm text-[#6f5f57]">{row.feedback}</p> : null}
-              <Link className="mt-3 inline-block text-sm font-black text-[#f26322]" to={`/fellow/assignments/${row.assignmentId}`}>Open assignment</Link>
+              <p className="mt-3 text-sm font-bold text-[#0f172a]">Marks: {row.marksObtained ?? '—'}</p>
+              {row.feedback ? <p className="mt-2 whitespace-pre-wrap text-sm text-[#475569]">{row.feedback}</p> : null}
+              <Link className="mt-3 inline-block text-sm font-black text-[#4f46e5]" to={`/fellow/assignments/${row.assignmentId}`}>Open assignment</Link>
             </article>
           ))}
         </div>

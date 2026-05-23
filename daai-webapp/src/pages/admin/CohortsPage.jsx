@@ -73,22 +73,22 @@ export default function CohortsPage() {
 
   return (
     <section>
-      <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Cohorts
         </p>
         <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#24140e]">
+            <h1 className="text-3xl font-black text-[#0f172a]">
               Program Cohorts
             </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium text-[#6f5f57]">
+            <p className="mt-3 max-w-2xl text-sm font-medium text-[#475569]">
               Create cohorts, track timelines, and manage fellow assignments by
               selected learning track.
             </p>
           </div>
           <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#f26322] px-4 text-sm font-black text-white transition hover:bg-[#d94f13]"
+            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white transition hover:bg-[#4338ca]"
             to="/admin/cohorts/new"
           >
             Create Cohort
@@ -96,10 +96,10 @@ export default function CohortsPage() {
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#24140e] sm:max-w-xs">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
             Track Filter
             <select
-              className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none transition focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569] outline-none transition focus:border-[#4f46e5]"
               value={trackFilter}
               onChange={(event) => {
                 setIsLoading(true)
@@ -116,10 +116,10 @@ export default function CohortsPage() {
               ))}
             </select>
           </label>
-          <label className="grid gap-2 text-sm font-black text-[#24140e] sm:max-w-xs">
+          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
             Status Filter
             <select
-              className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-bold text-[#6f5f57] outline-none transition focus:border-[#f26322]"
+              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569] outline-none transition focus:border-[#4f46e5]"
               value={statusFilter}
               onChange={(event) => {
                 setIsLoading(true)
@@ -145,7 +145,7 @@ export default function CohortsPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold text-[#6f5f57]">
+        <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569]">
           Loading cohorts...
         </p>
       ) : (

@@ -58,23 +58,23 @@ export default function AssignmentFormPage() {
   }
 
   return (
-    <section className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-      <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">Assignments</p>
-      <h1 className="mt-2 text-3xl font-black text-[#24140e]">{isEditing ? 'Edit Assignment' : 'Create Assignment'}</h1>
+    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+      <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">Assignments</p>
+      <h1 className="mt-2 text-3xl font-black text-[#0f172a]">{isEditing ? 'Edit Assignment' : 'Create Assignment'}</h1>
       {error ? <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</p> : null}
       <form className="mt-6 grid gap-5" onSubmit={submit}>
-        <input className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" placeholder="Title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
-        <textarea className="min-h-28 rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" placeholder="Description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} required />
+        <input className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" placeholder="Title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
+        <textarea className="min-h-28 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" placeholder="Description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} required />
         <div className="grid gap-4 md:grid-cols-3">
-          <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={form.track} onChange={(e) => { setLessons([]); setForm((f) => ({ ...f, track: e.target.value, moduleId: '', lessonId: '' })) }}>{FELLOW_TRACK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-          <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={form.moduleId} onChange={(e) => { setLessons([]); setForm((f) => ({ ...f, moduleId: e.target.value, lessonId: '' })) }} required><option value="">Select module</option>{modules.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}</select>
-          <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={form.lessonId} onChange={(e) => setForm((f) => ({ ...f, lessonId: e.target.value }))}><option value="">No lesson</option>{lessons.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}</select>
-          <input className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" type="datetime-local" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} required />
-          <input className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" type="number" min="0" value={form.totalMarks} onChange={(e) => setForm((f) => ({ ...f, totalMarks: e.target.value }))} />
-          <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={form.submissionType} onChange={(e) => setForm((f) => ({ ...f, submissionType: e.target.value }))}>{SUBMISSION_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-          <select className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>{ASSIGNMENT_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+          <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={form.track} onChange={(e) => { setLessons([]); setForm((f) => ({ ...f, track: e.target.value, moduleId: '', lessonId: '' })) }}>{FELLOW_TRACK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+          <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={form.moduleId} onChange={(e) => { setLessons([]); setForm((f) => ({ ...f, moduleId: e.target.value, lessonId: '' })) }} required><option value="">Select module</option>{modules.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}</select>
+          <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={form.lessonId} onChange={(e) => setForm((f) => ({ ...f, lessonId: e.target.value }))}><option value="">No lesson</option>{lessons.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}</select>
+          <input className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" type="datetime-local" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} required />
+          <input className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" type="number" min="0" value={form.totalMarks} onChange={(e) => setForm((f) => ({ ...f, totalMarks: e.target.value }))} />
+          <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={form.submissionType} onChange={(e) => setForm((f) => ({ ...f, submissionType: e.target.value }))}>{SUBMISSION_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+          <select className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>{ASSIGNMENT_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
         </div>
-        <button className="min-h-11 rounded-md bg-[#f26322] px-5 text-sm font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">{isSaving ? 'Saving...' : 'Save Assignment'}</button>
+        <button className="min-h-11 rounded-md bg-[#4f46e5] px-5 text-sm font-black text-white disabled:opacity-60" disabled={isSaving} type="submit">{isSaving ? 'Saving...' : 'Save Assignment'}</button>
       </form>
     </section>
   )

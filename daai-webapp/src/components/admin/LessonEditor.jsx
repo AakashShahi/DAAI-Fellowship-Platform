@@ -44,7 +44,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
 
   return (
     <form
-      className="grid gap-4 rounded-lg border border-orange-100 bg-[#fff8f3] p-5"
+      className="grid gap-4 rounded-lg border border-slate-200 bg-[#f8fafc] p-5"
       onSubmit={(event) => {
         event.preventDefault()
         onSave({
@@ -55,44 +55,44 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
         })
       }}
     >
-      <label className="grid gap-2 text-sm font-black text-[#24140e]">
+      <label className="grid gap-2 text-sm font-black text-[#0f172a]">
         Title
         <input
-          className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+          className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
           value={lesson.title}
           onChange={(event) => updateField('title', event.target.value)}
           required
         />
       </label>
-      <label className="grid gap-2 text-sm font-black text-[#24140e]">
+      <label className="grid gap-2 text-sm font-black text-[#0f172a]">
         Description
         <textarea
-          className="min-h-20 rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+          className="min-h-20 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
           value={lesson.description}
           onChange={(event) => updateField('description', event.target.value)}
         />
       </label>
-      <label className="grid gap-2 text-sm font-black text-[#24140e]">
+      <label className="grid gap-2 text-sm font-black text-[#0f172a]">
         Content
         <textarea
-          className="min-h-40 rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+          className="min-h-40 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
           value={lesson.content}
           onChange={(event) => updateField('content', event.target.value)}
         />
       </label>
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Video URL
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             value={lesson.videoUrl}
             onChange={(event) => updateField('videoUrl', event.target.value)}
           />
         </label>
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Estimated minutes
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             type="number"
             min="0"
             value={lesson.estimatedDurationMinutes}
@@ -101,17 +101,17 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
             }
           />
         </label>
-        <label className="grid gap-2 text-sm font-black text-[#24140e]">
+        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
           Order
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             type="number"
             min="0"
             value={lesson.order}
             onChange={(event) => updateField('order', event.target.value)}
           />
         </label>
-        <label className="flex items-center gap-2 text-sm font-black text-[#24140e]">
+        <label className="flex items-center gap-2 text-sm font-black text-[#0f172a]">
           <input
             type="checkbox"
             checked={lesson.isPublished}
@@ -121,11 +121,11 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
         </label>
       </div>
 
-      <div className="rounded-lg border border-orange-100 bg-white p-4">
-        <p className="text-sm font-black text-[#24140e]">Resource links</p>
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <p className="text-sm font-black text-[#0f172a]">Resource links</p>
         <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_150px_auto]">
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             placeholder="Title"
             value={resourceDraft.title}
             onChange={(event) =>
@@ -136,7 +136,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
             }
           />
           <input
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             placeholder="URL"
             value={resourceDraft.url}
             onChange={(event) =>
@@ -147,7 +147,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
             }
           />
           <select
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-bold text-[#6f5f57]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569]"
             value={resourceDraft.type}
             onChange={(event) =>
               setResourceDraft((current) => ({
@@ -164,7 +164,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
           </select>
           <button
             type="button"
-            className="rounded-md border border-orange-100 px-3 py-2 text-sm font-black text-[#f26322]"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-black text-[#4f46e5]"
             onClick={addResource}
           >
             Add
@@ -174,7 +174,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
           {(lesson.resourceLinks ?? []).map((resource, index) => (
             <div
               key={`${resource.title}-${resource.url}`}
-              className="flex items-center justify-between rounded-md bg-[#fff8f3] px-3 py-2 text-sm font-bold text-[#6f5f57]"
+              className="flex items-center justify-between rounded-md bg-[#f8fafc] px-3 py-2 text-sm font-bold text-[#475569]"
             >
               <span>
                 {resource.title} · {resource.type}
@@ -194,7 +194,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
       <div className="flex flex-wrap gap-3">
         <button
           type="submit"
-          className="min-h-10 rounded-md bg-[#f26322] px-4 text-sm font-black text-white"
+          className="min-h-10 rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white"
           disabled={isSaving}
         >
           {isSaving ? 'Saving...' : 'Save Lesson'}
@@ -202,7 +202,7 @@ export default function LessonEditor({ initialLesson, onSave, onCancel, isSaving
         {onCancel ? (
           <button
             type="button"
-            className="min-h-10 rounded-md border border-orange-100 px-4 text-sm font-black text-[#f26322]"
+            className="min-h-10 rounded-md border border-slate-200 px-4 text-sm font-black text-[#4f46e5]"
             onClick={onCancel}
             disabled={isSaving}
           >
