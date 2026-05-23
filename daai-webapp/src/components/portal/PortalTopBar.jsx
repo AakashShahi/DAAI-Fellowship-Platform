@@ -1,22 +1,43 @@
 import { Link } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 
-export default function PortalTopBar({ profilePath = '/profile/settings', contextSlot }) {
+export default function PortalTopBar({
+  profilePath = '/profile/settings',
+  contextSlot,
+  isMenuOpen = false,
+  onMenuToggle,
+}) {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <Link to="/dashboard" className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 text-lg font-bold text-white">
-            D
-          </span>
-          <span className="hidden sm:block">
-            <span className="block text-sm font-bold text-slate-900">DAAI Fellowship</span>
-            <span className="block text-xs text-slate-500">Learning portal</span>
-          </span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
+          >
+            <span className="flex h-4 w-5 flex-col justify-between" aria-hidden="true">
+              <span className="h-0.5 rounded-full bg-current" />
+              <span className="h-0.5 rounded-full bg-current" />
+              <span className="h-0.5 rounded-full bg-current" />
+            </span>
+          </button>
+
+          <Link to="/dashboard" className="flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 text-lg font-bold text-white">
+              D
+            </span>
+            <span className="hidden sm:block">
+              <span className="block text-sm font-bold text-slate-900">DAAI Fellowship</span>
+              <span className="block text-xs text-slate-500">Learning portal</span>
+            </span>
+          </Link>
+        </div>
 
         {contextSlot ? (
           <div className="hidden flex-1 px-4 md:block">{contextSlot}</div>
