@@ -6,6 +6,12 @@ import EmptyState from '../../components/ui/EmptyState'
 import ProgressBar from '../../components/ui/ProgressBar'
 import Skeleton from '../../components/ui/Skeleton'
 import { getMyEnrollment } from '../../services/fellowshipService'
+import { getMyLearningProgressByTrack } from '../../services/learningProgressService'
+import {
+  getMyQuizAttempts,
+  getQuizCategories,
+} from '../../services/quizService'
+import { getMyProfile, updateLearningTrack } from '../../services/profileService'
 import { getFellowAssignmentsSummary } from '../../services/assignmentService'
 import { getMyCohort } from '../../services/cohortService'
 import { getFellowLearningSummary } from '../../services/learningService'
@@ -39,6 +45,13 @@ const getScoreStats = (attempts) => {
   return { averageScore, bestScore }
 }
 
+const formatLearningStatus = (status = 'not_started') =>
+  status
+    .split('_')
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(' ')
+
+const clampProgress = (progress = 0) => Math.min(Math.max(progress, 0), 100)
 function StatTile({ label, value, helper }) {
   return (
     <Card className="!p-4">
@@ -57,6 +70,7 @@ export default function FellowDashboard() {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
   const [dashboardError, setDashboardError] = useState('')
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
+  const [learningProgress, setLearningProgress] = useState(null)
   const [myCohort, setMyCohort] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
   const [assignmentSummary, setAssignmentSummary] = useState(undefined)
@@ -66,6 +80,13 @@ export default function FellowDashboard() {
   useEffect(() => {
     let isMounted = true
     const loadDashboard = async () => {
+      const [
+        enrollmentResult,
+        profileResult,
+        categoryResult,
+        attemptResult,
+      ] = await Promise.allSettled([
+        getMyEnrollment(),
       const results = await Promise.allSettled([
         getMyEnrollment(),
         getFellowLearningSummary(),
@@ -90,6 +111,57 @@ export default function FellowDashboard() {
         attemptResult,
       ] = results
 
+      let learningProgressResult = null
+      if (profileResult.status === 'fulfilled') {
+        const profileTrack = LEARNING_TRACKS[profileResult.value?.learningTrack]
+        if (profileTrack?.quizSlug) {
+          learningProgressResult = await getMyLearningProgressByTrack(
+            profileTrack.quizSlug,
+          ).then(
+            (value) => ({ status: 'fulfilled', value }),
+            (reason) => ({ status: 'rejected', reason }),
+          )
+        }
+      }
+
+      if (isMounted) {
+        if (enrollmentResult.status === 'fulfilled') {
+          setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
+        }
+
+        if (profileResult.status === 'fulfilled') {
+          setProfile(profileResult.value)
+          updateUser({
+            full_name: profileResult.value.fullName,
+            email: profileResult.value.email,
+            role: profileResult.value.role,
+            learningTrack: profileResult.value.learningTrack,
+          })
+        }
+
+        if (categoryResult.status === 'fulfilled') {
+          setCategories(categoryResult.value)
+        }
+
+        if (attemptResult.status === 'fulfilled') {
+          setAttempts(attemptResult.value)
+        }
+
+        if (learningProgressResult?.status === 'fulfilled') {
+          setLearningProgress(learningProgressResult.value)
+        } else {
+          setLearningProgress(null)
+        }
+
+        if (
+          profileResult.status === 'rejected' ||
+          categoryResult.status === 'rejected' ||
+          learningProgressResult?.status === 'rejected'
+        ) {
+          setDashboardError('Unable to load some dashboard details right now.')
+        }
+
+        setIsLoadingDashboard(false)
       if (enrollmentResult.status === 'fulfilled') {
         setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
       }
@@ -141,6 +213,224 @@ export default function FellowDashboard() {
     return attempts.filter((attempt) => matchesTrack(attempt, selectedTrack))
   }, [attempts, selectedTrack])
   const { averageScore, bestScore } = getScoreStats(selectedTrackAttempts)
+  const selectedCategory = categories.find(
+    (category) => category.slug === selectedTrack?.quizSlug,
+  )
+  const learningProgressPercent = clampProgress(
+    learningProgress?.completionPercentage ?? 0,
+  )
+  const learningStatus = formatLearningStatus(learningProgress?.status)
+  const learningModules = useMemo(
+    () => learningProgress?.modules ?? [],
+    [learningProgress],
+  )
+  const learningMilestones = useMemo(
+    () => learningProgress?.milestones ?? [],
+    [learningProgress],
+  )
+  const completedModules = learningModules.filter(
+    (module) => module.status === 'completed',
+  ).length
+  const completedMilestones = learningMilestones.filter(
+    (milestone) => milestone.status === 'completed',
+  ).length
+  const nextLearningModule = learningModules.find(
+    (module) => module.status !== 'completed',
+  )
+
+  const dashboardStats = [
+    {
+      label: 'Selected Track',
+      value: selectedTrack?.label ?? 'None',
+      helper: selectedTrack ? selectedTrack.pathLabel : 'Choose a learning track',
+    },
+    {
+      label: 'Learning Progress',
+      value: `${learningProgressPercent}%`,
+      helper: selectedTrack ? learningStatus : 'No track selected',
+    },
+    {
+      label: 'Modules',
+      value: learningModules.length
+        ? `${completedModules}/${learningModules.length}`
+        : 0,
+      helper: learningModules.length ? 'Completed modules' : 'No modules yet',
+    },
+    {
+      label: 'Best Score',
+      value: `${bestScore}%`,
+      helper: selectedTrackAttempts.length ? 'Highest track score' : 'No attempts yet',
+    },
+  ]
+
+  const fellowshipPanels = useMemo(() => {
+    if (!selectedTrack) {
+      return []
+    }
+
+    return [
+      {
+        title: 'Current track',
+        body: `${selectedTrack.title} — ${selectedTrack.pathLabel}.`,
+        cta: { label: 'Open track overview', to: selectedTrack.detailPath },
+      },
+      {
+        title: 'Progress',
+        body:
+          learningProgress
+            ? `Learning progress is ${learningProgressPercent}% (${learningStatus}). Quiz: best ${bestScore}% - avg ${averageScore}% across ${selectedTrackAttempts.length} attempt${
+                selectedTrackAttempts.length === 1 ? '' : 's'
+              }.`
+            : 'No progress found yet. Start your first module to begin tracking your learning journey.',
+      },
+      {
+        title: 'Modules',
+        body: learningModules.length
+          ? `${completedModules} of ${learningModules.length} modules completed. ${
+              nextLearningModule
+                ? `Continue with ${nextLearningModule.title}.`
+                : 'All tracked modules are complete.'
+            }`
+          : 'No module progress has been recorded for this track yet.',
+        cta: { label: 'View learning', to: '/fellow/learning' },
+      },
+      {
+        title: 'Continue learning',
+        body: nextLearningModule
+          ? `Pick up ${nextLearningModule.title} and keep your progress moving.`
+          : 'Jump into published modules and lessons for your enrolled track.',
+        cta: {
+          label: programEnrollment ? 'Open learning' : 'Open course',
+          to: programEnrollment ? '/fellow/learning' : selectedTrack.detailPath,
+        },
+      },
+      {
+        title: 'Milestones',
+        body: learningMilestones.length
+          ? `${completedMilestones} of ${learningMilestones.length} milestones completed.`
+          : 'No milestones found yet. They will appear here once progress is saved.',
+        cta: { label: 'View quizzes', to: '/fellow/quizzes' },
+      },
+      {
+        title: 'Assignments',
+        body: 'Written assignments, labs, and submission deadlines will be listed here.',
+        cta: { label: 'Assignments (soon)', to: '/fellow/assignments' },
+      },
+      {
+        title: 'Announcements',
+        body: 'Staff announcements, calendar updates, and cohort reminders will appear here.',
+        cta: { label: 'Announcements (soon)', to: '/fellow/announcements' },
+      },
+    ]
+  }, [
+    selectedTrack,
+    averageScore,
+    bestScore,
+    selectedTrackAttempts.length,
+    learningProgress,
+    learningProgressPercent,
+    learningStatus,
+    learningModules,
+    learningMilestones,
+    completedModules,
+    completedMilestones,
+    nextLearningModule,
+    programEnrollment,
+  ])
+
+  const trackActions = selectedTrack
+    ? [
+        {
+          title: 'Active Course',
+          description: `${selectedTrack.title} is your selected fellowship course.`,
+          to: selectedTrack.detailPath,
+          cta: 'Open course',
+          status: selectedTrack.pathLabel,
+        },
+        {
+          title: `Start ${selectedTrack.label} Quiz`,
+          description: selectedCategory?.description ?? selectedTrack.description,
+          to: selectedTrack.quizPath,
+          cta: 'Start quiz',
+          status: 'Available',
+        },
+        {
+          title: 'Quiz Progress',
+          description: selectedTrackAttempts.length
+            ? `Best score ${bestScore}% and average score ${averageScore}%.`
+            : 'Start your first quiz to build progress.',
+          to: selectedTrack.quizPath,
+          cta: selectedTrackAttempts.length ? 'Retake quiz' : 'Start quiz',
+          status: `${selectedTrackAttempts.length} attempts`,
+        },
+        {
+          title: 'Recent Result',
+          description: latestAttempt
+            ? `Latest score: ${latestPercentage}% in ${latestAttempt.category_title}.`
+            : 'No results yet for your active course.',
+          to: '/fellow/quizzes/attempts',
+          cta: latestAttempt ? 'View result' : 'View results',
+          status: latestAttempt ? 'Latest' : 'Empty',
+        },
+        {
+          title: 'Learning Track Progress',
+          description:
+            learningModules.length > 0
+              ? `${learningProgressPercent}% complete across ${learningModules.length} module${
+                  learningModules.length === 1 ? '' : 's'
+                }.`
+              : 'No progress found yet. Start your first module to begin tracking learning.',
+          to: '/fellow/learning',
+          cta: 'View learning',
+          status: `${learningProgressPercent}%`,
+          disabled: !programEnrollment && learningModules.length === 0,
+        },
+      ]
+    : []
+
+  const handleSelectTrack = async (trackValue) => {
+    setIsSavingTrack(true)
+    setDashboardError('')
+    setSuccessMessage('')
+
+    try {
+      const updatedProfile = await updateLearningTrack({
+        learningTrack: trackValue,
+      })
+
+      setProfile(updatedProfile)
+      updateUser({
+        full_name: updatedProfile.fullName,
+        email: updatedProfile.email,
+        role: updatedProfile.role,
+        learningTrack: updatedProfile.learningTrack,
+      })
+      setIsChangingTrack(false)
+      setSuccessMessage('Learning track saved.')
+
+      const savedTrack = LEARNING_TRACKS[updatedProfile.learningTrack]
+      if (savedTrack?.quizSlug) {
+        try {
+          const savedProgress = await getMyLearningProgressByTrack(savedTrack.quizSlug)
+          setLearningProgress(savedProgress)
+        } catch {
+          setLearningProgress(null)
+        }
+      }
+
+      if (savedTrack?.detailPath) {
+        navigate(savedTrack.detailPath)
+      }
+    } catch (error) {
+      const detail = error?.response?.data?.detail
+      setDashboardError(
+        typeof detail === 'string'
+          ? detail
+          : 'Unable to save learning track.',
+      )
+    } finally {
+      setIsSavingTrack(false)
+    }
   const nextSession = sessions.find((s) => s.status === 'scheduled') ?? null
 
   const trackTitle =
@@ -247,6 +537,116 @@ export default function FellowDashboard() {
                 {new Date(nextSession.sessionDate).toLocaleDateString()} ·{' '}
                 {nextSession.startTime} – {nextSession.endTime}
               </p>
+            </div>
+
+            {isLoadingDashboard ? (
+              <p className="track-selection-loading">Loading track options...</p>
+            ) : null}
+
+            <div className="track-selection-grid">
+              {LEARNING_TRACK_OPTIONS.map((track) => (
+                <TrackSelectionCard
+                  key={track.value}
+                  track={track}
+                  isSaving={isSavingTrack}
+                  onSelect={handleSelectTrack}
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <>
+            <div className="fellow-hero">
+              <div>
+                <p className="eyebrow">Fellow Dashboard</p>
+                <h1>{selectedTrack.title}</h1>
+                <p>
+                  Welcome back, {user?.full_name ?? 'Fellow'}. This is your hub
+                  for coursework, assessments, assignments, and program updates
+                  for the {selectedTrack.label} track.
+                </p>
+                <div className="fellow-hero-actions">
+                  <Link className="outline-button" to={selectedTrack.detailPath}>
+                    View Course
+                  </Link>
+                  <Link className="secondary-button" to={selectedTrack.quizPath}>
+                    Start {selectedTrack.label} Quiz
+                  </Link>
+                  <Link className="outline-button" to="/fellow/quizzes/attempts">
+                    View Results
+                  </Link>
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={handleChangeTrack}
+                  >
+                    Change learning track
+                  </button>
+                </div>
+              </div>
+              <div className="fellow-profile-summary">
+                <span className="fellow-avatar" aria-hidden="true">
+                  {(user?.full_name || user?.email || 'F').charAt(0)}
+                </span>
+                <div>
+                  <strong>{user?.full_name ?? 'Fellow Profile'}</strong>
+                  <span>{user?.email ?? 'Signed in'}</span>
+                  <em>{user?.role ?? 'FELLOW'}</em>
+                </div>
+              </div>
+            </div>
+
+            <section className="dashboard-section">
+              <div className="dashboard-section-heading">
+                <p className="eyebrow">Program</p>
+                <h2>Your fellowship at a glance</h2>
+              </div>
+              <div className="fellowship-overview-grid">
+                {fellowshipPanels.map((panel) => (
+                  <article key={panel.title} className="fellowship-panel">
+                    <h3>{panel.title}</h3>
+                    <p>{panel.body}</p>
+                    {panel.cta ? (
+                      <Link className="text-button" to={panel.cta.to}>
+                        {panel.cta.label}
+                      </Link>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dashboard-section">
+              <div className="dashboard-section-heading">
+                <p className="eyebrow">Overview</p>
+                <h2>{selectedTrack.label} progress</h2>
+              </div>
+              <div className="fellow-stats-grid">
+                {dashboardStats.map((stat) => (
+                  <DashboardStatCard key={stat.label} {...stat} />
+                ))}
+              </div>
+            </section>
+
+            <SelectedTrackOverview
+              track={selectedTrack}
+              attemptsCount={selectedTrackAttempts.length}
+              bestScore={bestScore}
+              learningProgressPercent={learningProgressPercent}
+              learningStatus={learningStatus}
+              latestAttempt={latestAttempt}
+              latestPercentage={latestPercentage}
+            />
+
+            <section className="dashboard-section">
+              <div className="dashboard-section-heading">
+                <p className="eyebrow">Next Actions</p>
+                <h2>Track shortcuts</h2>
+              </div>
+              <div className="dashboard-actions selected-track-actions-grid">
+                {trackActions.map((action) => (
+                  <DashboardActionCard key={action.title} {...action} />
+                ))}
               <div className="mt-4 flex flex-wrap gap-2">
                 {nextSession.meetingLink ? (
                   <Button href={nextSession.meetingLink} size="sm">

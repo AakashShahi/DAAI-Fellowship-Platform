@@ -10,6 +10,7 @@ from app.models.attendance_model import Attendance
 from app.models.batch_model import Batch
 from app.models.enrollment_model import Enrollment
 from app.models.learning_module_model import LearningModule
+from app.models.learning_progress_model import LearningProgress
 from app.models.lesson_model import Lesson
 from app.models.lesson_progress_model import LessonProgress
 from app.models.quiz_model import QuizAttempt, QuizQuestion
@@ -45,6 +46,7 @@ async def init_db() -> AsyncDatabase:
             Batch,
             Enrollment,
             LearningModule,
+            LearningProgress,
             Lesson,
             LessonProgress,
             Assignment,

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
 from app.api.v1.router import api_router
+from app.api.v1.routes import learning_progress_routes, profile_routes, quiz_routes
 from app.api.v1.routes import (
     admin_cohort_routes,
     admin_curriculum_routes,
@@ -59,6 +60,11 @@ async def root():
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(quiz_routes.router, prefix="/api/quizzes", tags=["Quizzes"])
 app.include_router(profile_routes.router, prefix="/api/profile", tags=["Profile"])
+app.include_router(
+    learning_progress_routes.router,
+    prefix="/api/learning-progress",
+    tags=["Learning Progress"],
+)
 app.include_router(fellow_routes.router, prefix="/api/fellow", tags=["Fellow"])
 app.include_router(admin_fellow_routes.router, prefix="/api/admin", tags=["Admin Fellow Management"])
 app.include_router(admin_cohort_routes.router, prefix="/api/admin", tags=["Admin Cohort Management"])
