@@ -1,34 +1,18 @@
 import { create } from 'zustand'
+import { authStorage } from '../lib/authStorage'
 
-const storedToken = localStorage.getItem('token')
-const storedUser = localStorage.getItem('user')
-
-const parseStoredUser = () => {
-  if (!storedUser) {
-    return null
-  }
-
-  try {
-    return JSON.parse(storedUser)
-  } catch {
-    localStorage.removeItem('user')
-    return null
-  }
-}
+const storedToken = authStorage.getToken()
+const storedUser = authStorage.getUser()
 
 const useAuthStore = create((set) => ({
   token: storedToken,
-  user: parseStoredUser(),
+  user: storedUser,
   isAuthenticated: Boolean(storedToken),
 
-  setAuth: ({ token, user }) => {
-    localStorage.setItem('token', token)
-
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user))
-    } else {
-      localStorage.removeItem('user')
-    }
+  setAuth: ({ token, user, refreshToken }) => {
+    authStorage.setToken(token)
+    authStorage.setRefreshToken(refreshToken)
+    authStorage.setUser(user)
 
     set({
       token,
@@ -44,7 +28,7 @@ const useAuthStore = create((set) => ({
         ...updates,
       }
 
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+      authStorage.setUser(updatedUser)
 
       return {
         user: updatedUser,
@@ -53,8 +37,7 @@ const useAuthStore = create((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    authStorage.clear()
     set({
       token: null,
       user: null,
