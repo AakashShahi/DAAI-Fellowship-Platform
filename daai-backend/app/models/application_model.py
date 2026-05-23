@@ -9,8 +9,10 @@ from pymongo import DESCENDING, IndexModel
 class ApplicationStatus(str, Enum):
     NEW = "NEW"
     REVIEWING = "REVIEWING"
+    MORE_INFO = "MORE_INFO"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
+    ENROLLED = "ENROLLED"
 
 
 class FellowshipApplication(Document):
@@ -24,6 +26,9 @@ class FellowshipApplication(Document):
     document_content_type: str | None = Field(default=None, max_length=120)
     document_url: str | None = Field(default=None, max_length=500)
     status: ApplicationStatus = ApplicationStatus.NEW
+    last_email_status: str | None = Field(default=None, max_length=30)
+    last_email_error: str | None = Field(default=None, max_length=500)
+    last_email_sent_at: datetime | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

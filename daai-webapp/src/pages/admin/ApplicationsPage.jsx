@@ -13,11 +13,29 @@ import {
 const statusTone = {
   NEW: 'primary',
   REVIEWING: 'warning',
+  MORE_INFO: 'info',
   ACCEPTED: 'success',
   REJECTED: 'danger',
+  ENROLLED: 'success',
 }
 
-const statusOptions = ['NEW', 'REVIEWING', 'ACCEPTED', 'REJECTED']
+const statusLabels = {
+  NEW: 'New',
+  REVIEWING: 'Reviewing',
+  MORE_INFO: 'Request more info',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+  ENROLLED: 'Enrollment confirmed',
+}
+
+const statusOptions = [
+  'NEW',
+  'REVIEWING',
+  'MORE_INFO',
+  'ACCEPTED',
+  'REJECTED',
+  'ENROLLED',
+]
 
 const getErrorMessage = (error, fallback) => {
   const detail = error?.response?.data?.detail
@@ -126,6 +144,7 @@ export default function ApplicationsPage() {
                   <th className="px-4 py-3 font-semibold">Pathway</th>
                   <th className="px-4 py-3 font-semibold">Submitted</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold">Email</th>
                   <th className="px-4 py-3 font-semibold">Documents</th>
                   <th className="px-4 py-3 font-semibold">Action</th>
                 </tr>
@@ -160,7 +179,7 @@ export default function ApplicationsPage() {
                     </td>
                     <td className="px-4 py-4">
                       <Badge tone={statusTone[application.status] ?? 'default'}>
-                        {application.status}
+                        {statusLabels[application.status] ?? application.status}
                       </Badge>
                       <Select
                         name={`status-${application.id}`}
@@ -173,10 +192,34 @@ export default function ApplicationsPage() {
                       >
                         {statusOptions.map((status) => (
                           <option key={status} value={status}>
-                            {status}
+                            {statusLabels[status]}
                           </option>
                         ))}
                       </Select>
+                    </td>
+                    <td className="px-4 py-4 text-slate-600">
+                      {application.lastEmailStatus ? (
+                        <>
+                          <Badge
+                            tone={
+                              application.lastEmailStatus === 'sent'
+                                ? 'success'
+                                : application.lastEmailStatus === 'failed'
+                                  ? 'danger'
+                                  : 'warning'
+                            }
+                          >
+                            {application.lastEmailStatus}
+                          </Badge>
+                          {application.lastEmailError ? (
+                            <p className="mt-2 max-w-48 text-xs text-red-600">
+                              {application.lastEmailError}
+                            </p>
+                          ) : null}
+                        </>
+                      ) : (
+                        'Not sent'
+                      )}
                     </td>
                     <td className="px-4 py-4 text-slate-600">
                       {application.documentUrl ? 'Uploaded' : 'None'}

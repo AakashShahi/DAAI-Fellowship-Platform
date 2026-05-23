@@ -30,5 +30,18 @@ class ApplicationResponse(BaseModel):
     documentContentType: str | None = None
     documentUrl: str | None = None
     status: ApplicationStatus
+    lastEmailStatus: str | None = None
+    lastEmailError: str | None = None
+    lastEmailSentAt: datetime | None = None
     createdAt: datetime
     updatedAt: datetime
+
+
+class TestEmailRequest(BaseModel):
+    email: EmailStr
+
+
+class TestEmailResponse(BaseModel):
+    sent: bool
+    status: str
+    error: str | None = None

@@ -8,8 +8,11 @@ from app.schema.application_schema import (
     ApplicationCreate,
     ApplicationResponse,
     ApplicationStatusUpdate,
+    TestEmailRequest,
+    TestEmailResponse,
 )
 from app.services.application_service import ApplicationService
+from app.services.email_service import EmailService
 
 router = APIRouter()
 
@@ -57,6 +60,29 @@ async def submit_application(request: Request):
 async def list_applications(_: User = Depends(current_admin)):
     applications = await ApplicationService().list_all()
     return [ApplicationService.to_response(application) for application in applications]
+
+
+@router.post(
+    "/admin/test-email",
+    response_model=TestEmailResponse,
+)
+async def send_test_email(
+    payload: TestEmailRequest,
+    _: User = Depends(current_admin),
+):
+    result = await EmailService().send_email(
+        to_email=payload.email,
+        subject="DAAI Fellowship email test",
+        body=(
+            "This is a test email from the DAAI Fellowship Platform. "
+            "If you received this, SMTP email sending is working."
+        ),
+    )
+    return TestEmailResponse(
+        sent=result.sent,
+        status=result.status,
+        error=result.error,
+    )
 
 
 @router.get(
