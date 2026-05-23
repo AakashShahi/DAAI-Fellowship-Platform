@@ -5,7 +5,13 @@ from pydantic import ValidationError
 
 from app.dependencies.auth_dependency import current_user
 from app.models.user_model import User
-from app.schema.auth_schema import TokenResponse
+from app.schema.auth_schema import (
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    MessageResponse,
+    ResetPasswordRequest,
+    TokenResponse,
+)
 from app.schema.user_schema import UserCreate, UserLogin, UserResponse
 from app.services.auth_service import AuthService
 from app.utils.jwt import create_access_token
@@ -57,6 +63,19 @@ async def login(credentials: UserLogin = Depends(parse_login_credentials)):
     access_token = create_access_token(subject=str(user.id))
 
     return TokenResponse(access_token=access_token, user=user_response)
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def forgot_password(password_data: ForgotPasswordRequest):
+    auth_service = AuthService()
+    return await auth_service.request_password_reset(password_data.email)
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(password_data: ResetPasswordRequest):
+    auth_service = AuthService()
+    await auth_service.reset_password(password_data)
+    return MessageResponse(message="Password has been reset successfully.")
 
 
 @router.get("/me", response_model=UserResponse)
