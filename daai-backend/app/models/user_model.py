@@ -32,6 +32,8 @@ class User(Document):
     bio: str | None = Field(default=None, max_length=500)
     avatar_url: str | None = Field(default=None, max_length=500)
     learning_track: LearningTrack | None = None
+    password_reset_token_hash: str | None = None
+    password_reset_expires_at: datetime | None = None
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
