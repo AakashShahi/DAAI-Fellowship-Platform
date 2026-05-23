@@ -131,6 +131,9 @@ api_router.include_router(
     learning_progress_routes.router,
     prefix="/learning-progress",
     tags=["Learning Progress"],
+)
+
+api_router.include_router(
     assignment_admin_routes.router,
     prefix="/assignments",
     tags=["Assignments"],
