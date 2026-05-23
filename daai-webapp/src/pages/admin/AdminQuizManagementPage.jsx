@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   createAdminQuizQuestion,
-  getAdminQuizPerformance,
   getAdminQuizQuestions,
   getQuizCategories,
   updateAdminQuizQuestion,
@@ -37,7 +36,6 @@ const toFormState = (question) => ({
 export default function AdminQuizManagementPage() {
   const [categories, setCategories] = useState([])
   const [questions, setQuestions] = useState([])
-  const [performance, setPerformance] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [editingQuestionId, setEditingQuestionId] = useState('')
   const [selectedQuestion, setSelectedQuestion] = useState(null)
@@ -91,16 +89,14 @@ export default function AdminQuizManagementPage() {
 
     const loadAdminQuizData = async () => {
       try {
-        const [categoryData, questionData, performanceData] = await Promise.all([
+        const [categoryData, questionData] = await Promise.all([
           getQuizCategories(),
           getAdminQuizQuestions(),
-          getAdminQuizPerformance(),
         ])
 
         if (isMounted) {
           setCategories(categoryData)
           setQuestions(questionData)
-          setPerformance(performanceData)
           setForm((currentForm) => ({
             ...currentForm,
             category: categoryData[0]?.slug ?? '',
@@ -125,12 +121,8 @@ export default function AdminQuizManagementPage() {
   }, [])
 
   const refreshAdminData = async () => {
-    const [questionData, performanceData] = await Promise.all([
-      getAdminQuizQuestions(),
-      getAdminQuizPerformance(),
-    ])
+    const questionData = await getAdminQuizQuestions()
     setQuestions(questionData)
-    setPerformance(performanceData)
   }
 
   const handleFieldChange = (event) => {
@@ -295,50 +287,6 @@ export default function AdminQuizManagementPage() {
 
       {!isLoading ? (
         <>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {performance.map((item) => (
-              <article
-                key={item.category}
-                className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.3)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-base font-black text-[#0f172a]">
-                    {item.category_title}
-                  </h2>
-                  <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-xs font-black text-[#4f46e5]">
-                    {item.total_questions} questions
-                  </span>
-                </div>
-                <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Attempts
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#0f172a]">
-                      {item.attempts}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Avg
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#0f172a]">
-                      {item.average_percentage}%
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Pass
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#0f172a]">
-                      {item.pass_rate}%
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
-          </div>
-
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>

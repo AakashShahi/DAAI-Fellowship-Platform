@@ -3,9 +3,12 @@ import { ROLES } from '../constants/roles'
 import AdminLayout from '../layouts/AdminLayout'
 import AdminAssignmentEditPage from '../pages/admin/AdminAssignmentEditPage'
 import AdminAssignmentsPage from '../pages/admin/AdminAssignmentsPage'
+import AdminAnnouncementsPage from '../pages/admin/AdminAnnouncementsPage'
 import AssignmentFormPage from '../pages/admin/AssignmentFormPage'
 import AssignmentSubmissionsPage from '../pages/admin/AssignmentSubmissionsPage'
+import AdminAttendancePage from '../pages/admin/AdminAttendancePage'
 import AdminBatchesPage from '../pages/admin/AdminBatchesPage'
+import AdminCertificatesPage from '../pages/admin/AdminCertificatesPage'
 import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
 import AdminLessonsPage from '../pages/admin/AdminLessonsPage'
@@ -31,7 +34,6 @@ import ReportsPage from '../pages/admin/ReportsPage'
 import SettingsPage from '../pages/admin/SettingsPage'
 import SessionFormPage from '../pages/admin/SessionFormPage'
 import TrainersPage from '../pages/admin/TrainersPage'
-import ComingSoonPage from '../pages/ComingSoonPage'
 import { protectRole } from './routeGuards'
 
 export const adminRoutesElement = (
@@ -74,33 +76,9 @@ export const adminRoutesElement = (
     <Route path="submissions" element={<AdminSubmissionsPage />} />
     <Route path="submissions/:submissionId" element={<AdminSubmissionReviewPage />} />
     <Route path="quizzes" element={<AdminQuizManagementPage />} />
-    <Route
-      path="attendance"
-      element={
-        <ComingSoonPage
-          title="Attendance overview"
-          description="Cross-cohort attendance summaries will appear here. Mark attendance per session from Sessions → open session → Attendance."
-        />
-      }
-    />
-    <Route
-      path="announcements"
-      element={
-        <ComingSoonPage
-          title="Announcements"
-          description="Broadcast announcements to cohorts and tracks from this hub."
-        />
-      }
-    />
-    <Route
-      path="certificates"
-      element={
-        <ComingSoonPage
-          title="Certificates"
-          description="Approve and issue fellowship certificates when fellows meet criteria."
-        />
-      }
-    />
+    <Route path="attendance" element={<AdminAttendancePage />} />
+    <Route path="announcements" element={<AdminAnnouncementsPage />} />
+    <Route path="certificates" element={<AdminCertificatesPage />} />
     <Route path="reports" element={<ReportsPage />} />
     <Route path="settings" element={<SettingsPage />} />
   </Route>

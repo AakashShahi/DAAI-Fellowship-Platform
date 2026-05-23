@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { RefreshCcw } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { ErrorState, LoadingState } from '../../components/admin/AdminStates'
 import FellowsTable from '../../components/admin/FellowsTable'
 import TrackFilter from '../../components/admin/TrackFilter'
-import FilterBar from '../../components/ui/FilterBar'
-import PageHeader from '../../components/ui/PageHeader'
-import Skeleton from '../../components/ui/Skeleton'
+import Button from '../../components/ui/Button'
 import {
   getAdminFellows,
   updateAdminFellowTrack,
@@ -107,13 +108,17 @@ export default function FellowsPage() {
 
   return (
     <section>
-      <PageHeader
-        eyebrow="Admin"
-        title="Fellows"
-        description="View each fellow's selected learning track and safely update or reset track enrollment when staff need to intervene."
-      />
-
-      <FilterBar className="mb-6">
+      <AdminPageHeader
+        label="Fellows"
+        title="Fellow Management"
+        description="Manage registered fellows, track assignments, and enrollment status."
+        actions={
+          <Button variant="outline" onClick={refreshFellows} disabled={isLoading || isUpdating}>
+            <RefreshCcw className="h-4 w-4" />
+            Refresh
+          </Button>
+        }
+      >
         <TrackFilter
           value={trackFilter}
           onChange={(value) => {
@@ -124,12 +129,10 @@ export default function FellowsPage() {
           }}
           disabled={isLoading || isUpdating}
         />
-      </FilterBar>
+      </AdminPageHeader>
 
       {error ? (
-        <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
+        <ErrorState message={error} onRetry={refreshFellows} />
       ) : null}
 
       {successMessage ? (
@@ -139,7 +142,7 @@ export default function FellowsPage() {
       ) : null}
 
       {isLoading ? (
-        <Skeleton className="h-48 w-full" />
+        <LoadingState message="Loading fellows..." />
       ) : (
         <FellowsTable
           key={`${trackFilter}-${fellows.map((fellow) => `${fellow.id}:${fellow.selectedTrack ?? ''}`).join('|')}`}
