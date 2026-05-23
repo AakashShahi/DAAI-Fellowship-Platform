@@ -6,6 +6,8 @@ from fastapi import UploadFile
 
 from app.models.application_model import FellowshipApplication
 from app.schema.application_schema import (
+    AdminApplicationResponse,
+    ApplicationAdminNotesUpdate,
     ApplicationCreate,
     ApplicationResponse,
     ApplicationStatusUpdate,
@@ -64,6 +66,21 @@ class ApplicationService:
         await application.save()
         return application
 
+    async def update_admin_notes(
+        self,
+        application_id: str,
+        payload: ApplicationAdminNotesUpdate,
+    ) -> FellowshipApplication | None:
+        application = await FellowshipApplication.get(application_id)
+        if application is None:
+            return None
+
+        notes = payload.adminNotes.strip() if payload.adminNotes else None
+        application.admin_notes = notes
+        application.updated_at = datetime.now(timezone.utc)
+        await application.save()
+        return application
+
     @staticmethod
     def to_response(application: FellowshipApplication) -> ApplicationResponse:
         return ApplicationResponse(
@@ -80,6 +97,14 @@ class ApplicationService:
             status=application.status,
             createdAt=application.created_at,
             updatedAt=application.updated_at,
+        )
+
+    @staticmethod
+    def to_admin_response(application: FellowshipApplication) -> AdminApplicationResponse:
+        response = ApplicationService.to_response(application)
+        return AdminApplicationResponse(
+            **response.model_dump(),
+            adminNotes=application.admin_notes,
         )
 
     @staticmethod

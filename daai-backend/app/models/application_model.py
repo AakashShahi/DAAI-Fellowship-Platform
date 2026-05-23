@@ -23,6 +23,7 @@ class FellowshipApplication(Document):
     document_file_name: str | None = Field(default=None, max_length=255)
     document_content_type: str | None = Field(default=None, max_length=120)
     document_url: str | None = Field(default=None, max_length=500)
+    admin_notes: str | None = Field(default=None, max_length=2000)
     status: ApplicationStatus = ApplicationStatus.NEW
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

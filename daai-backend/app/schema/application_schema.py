@@ -18,6 +18,10 @@ class ApplicationStatusUpdate(BaseModel):
     status: ApplicationStatus
 
 
+class ApplicationAdminNotesUpdate(BaseModel):
+    adminNotes: str | None = Field(default=None, max_length=2000)
+
+
 class ApplicationResponse(BaseModel):
     id: str
     fullName: str
@@ -32,3 +36,7 @@ class ApplicationResponse(BaseModel):
     status: ApplicationStatus
     createdAt: datetime
     updatedAt: datetime
+
+
+class AdminApplicationResponse(ApplicationResponse):
+    adminNotes: str | None = None

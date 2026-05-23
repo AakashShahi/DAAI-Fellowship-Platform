@@ -36,3 +36,11 @@ export const updateApplicationStatus = async (applicationId, status) => {
   )
   return response.data
 }
+
+export const updateApplicationAdminNotes = async (applicationId, adminNotes) => {
+  const response = await axiosClient.patch(
+    `/applications/admin/${applicationId}/notes`,
+    { adminNotes },
+  )
+  return response.data
+}
