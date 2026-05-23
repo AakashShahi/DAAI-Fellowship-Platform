@@ -12,21 +12,21 @@ export default function PortalLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-700">
+    <div className="flex h-svh flex-col overflow-hidden bg-slate-50 text-slate-700">
       <PortalTopBar
         profilePath={profilePath}
         contextSlot={contextSlot}
         isMenuOpen={isSidebarOpen}
         onMenuToggle={() => setIsSidebarOpen((isOpen) => !isOpen)}
       />
-      <div className="lg:flex">
+      <div className="min-h-0 flex-1 lg:flex">
         <PortalSidebar
           items={navigation}
           sectionLabel={portalLabel}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
-        <main className="min-w-0 flex-1 p-4 lg:p-8">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 lg:p-8">
           <Outlet />
         </main>
       </div>

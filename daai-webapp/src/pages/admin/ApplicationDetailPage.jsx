@@ -7,6 +7,7 @@ import Select from '../../components/ui/Select'
 import { FELLOWSHIP_PATHWAYS } from '../../constants/pathways'
 import {
   getApplication,
+  sendApplicationTestEmail,
   updateApplicationAdminNotes,
   updateApplicationStatus,
 } from '../../services/applicationService'
@@ -14,11 +15,29 @@ import {
 const statusTone = {
   NEW: 'primary',
   REVIEWING: 'warning',
+  MORE_INFO: 'info',
   ACCEPTED: 'success',
   REJECTED: 'danger',
+  ENROLLED: 'success',
 }
 
-const statusOptions = ['NEW', 'REVIEWING', 'ACCEPTED', 'REJECTED']
+const statusLabels = {
+  NEW: 'New',
+  REVIEWING: 'Reviewing',
+  MORE_INFO: 'Request more info',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+  ENROLLED: 'Enrollment confirmed',
+}
+
+const statusOptions = [
+  'NEW',
+  'REVIEWING',
+  'MORE_INFO',
+  'ACCEPTED',
+  'REJECTED',
+  'ENROLLED',
+]
 
 const getErrorMessage = (error, fallback) => {
   const detail = error?.response?.data?.detail
@@ -41,6 +60,8 @@ export default function ApplicationDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isSavingNotes, setIsSavingNotes] = useState(false)
+  const [isSendingTest, setIsSendingTest] = useState(false)
+  const [testEmailResult, setTestEmailResult] = useState(null)
   const [error, setError] = useState('')
   const [notesMessage, setNotesMessage] = useState('')
 
@@ -124,6 +145,21 @@ export default function ApplicationDetailPage() {
     }
   }
 
+  const handleSendTestEmail = async () => {
+    setIsSendingTest(true)
+    setTestEmailResult(null)
+    setError('')
+
+    try {
+      const result = await sendApplicationTestEmail(application.email)
+      setTestEmailResult(result)
+    } catch (testError) {
+      setError(getErrorMessage(testError, 'Unable to send test email.'))
+    } finally {
+      setIsSendingTest(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-semibold text-slate-600">
@@ -163,7 +199,7 @@ export default function ApplicationDetailPage() {
           </p>
         </div>
         <Badge tone={statusTone[application.status] ?? 'default'}>
-          {application.status}
+          {statusLabels[application.status] ?? application.status}
         </Badge>
       </div>
 
@@ -257,10 +293,50 @@ export default function ApplicationDetailPage() {
             >
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                  {statusLabels[status]}
                 </option>
               ))}
             </Select>
+            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">
+                Last notification
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                {application.lastEmailStatus
+                  ? application.lastEmailStatus
+                  : 'No status email sent yet.'}
+              </p>
+              {application.lastEmailSentAt ? (
+                <p className="mt-1 text-xs text-slate-500">
+                  Sent {new Date(application.lastEmailSentAt).toLocaleString()}
+                </p>
+              ) : null}
+              {application.lastEmailError ? (
+                <p className="mt-2 text-xs text-red-600">
+                  {application.lastEmailError}
+                </p>
+              ) : null}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="mt-4"
+                onClick={handleSendTestEmail}
+                disabled={isSendingTest}
+              >
+                {isSendingTest ? 'Sending test...' : 'Send test email'}
+              </Button>
+              {testEmailResult ? (
+                <p
+                  className={`mt-2 text-xs ${
+                    testEmailResult.sent ? 'text-emerald-700' : 'text-red-600'
+                  }`}
+                >
+                  Test email {testEmailResult.status}
+                  {testEmailResult.error ? `: ${testEmailResult.error}` : ''}
+                </p>
+              ) : null}
+            </div>
           </Card>
 
           <Card>

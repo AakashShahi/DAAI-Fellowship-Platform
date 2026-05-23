@@ -44,3 +44,10 @@ export const updateApplicationAdminNotes = async (applicationId, adminNotes) => 
   )
   return response.data
 }
+
+export const sendApplicationTestEmail = async (email) => {
+  const response = await axiosClient.post('/applications/admin/test-email', {
+    email,
+  })
+  return response.data
+}
