@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
-import Select from '../../components/ui/Select'
 import { FELLOWSHIP_PATHWAYS } from '../../constants/pathways'
 import {
   getApplication,
@@ -29,15 +28,6 @@ const statusLabels = {
   REJECTED: 'Rejected',
   ENROLLED: 'Enrollment confirmed',
 }
-
-const statusOptions = [
-  'NEW',
-  'REVIEWING',
-  'MORE_INFO',
-  'ACCEPTED',
-  'REJECTED',
-  'ENROLLED',
-]
 
 const getErrorMessage = (error, fallback) => {
   const detail = error?.response?.data?.detail
@@ -108,15 +98,12 @@ export default function ApplicationDetailPage() {
     }
   }, [applicationId])
 
-  const handleStatusChange = async (event) => {
+  const updateStatus = async (status) => {
     setIsUpdating(true)
     setError('')
 
     try {
-      const updatedApplication = await updateApplicationStatus(
-        application.id,
-        event.target.value,
-      )
+      const updatedApplication = await updateApplicationStatus(application.id, status)
       setApplication(updatedApplication)
     } catch (updateError) {
       setError(getErrorMessage(updateError, 'Unable to update status.'))
@@ -282,21 +269,87 @@ export default function ApplicationDetailPage() {
 
         <div className="space-y-6">
           <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Review status</h2>
-            <Select
-              label="Application status"
-              name="status"
-              value={application.status}
-              onChange={handleStatusChange}
-              disabled={isUpdating}
-              className="mt-4"
-            >
-              {statusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {statusLabels[status]}
-                </option>
-              ))}
-            </Select>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Quick actions
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Current status: {statusLabels[application.status] ?? application.status}
+                </p>
+              </div>
+              <Badge tone={statusTone[application.status] ?? 'default'}>
+                {statusLabels[application.status] ?? application.status}
+              </Badge>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full justify-center"
+                onClick={handleSendTestEmail}
+                disabled={isSendingTest}
+              >
+                {isSendingTest ? 'Sending test...' : 'Send test email'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full justify-center"
+                onClick={() => updateStatus('REVIEWING')}
+                disabled={isUpdating}
+              >
+                Shortlist applicant
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                className="w-full justify-center"
+                onClick={() => updateStatus('REJECTED')}
+                disabled={isUpdating}
+              >
+                Reject application
+              </Button>
+              <Button
+                type="button"
+                className="w-full justify-center"
+                onClick={() => updateStatus('ENROLLED')}
+                disabled={isUpdating}
+              >
+                Confirm enrollment
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full justify-center"
+                onClick={() => updateStatus('ACCEPTED')}
+                disabled={isUpdating}
+              >
+                Send acceptance email
+              </Button>
+              {application.documentUrl ? (
+                <Button
+                  href={documentHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  variant="secondary"
+                  className="w-full justify-center"
+                >
+                  Download resume
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full justify-center"
+                  disabled
+                >
+                  Download resume
+                </Button>
+              )}
+            </div>
+
             <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-900">
                 Last notification
@@ -316,16 +369,6 @@ export default function ApplicationDetailPage() {
                   {application.lastEmailError}
                 </p>
               ) : null}
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="mt-4"
-                onClick={handleSendTestEmail}
-                disabled={isSendingTest}
-              >
-                {isSendingTest ? 'Sending test...' : 'Send test email'}
-              </Button>
               {testEmailResult ? (
                 <p
                   className={`mt-2 text-xs ${
@@ -376,11 +419,11 @@ export default function ApplicationDetailPage() {
             ) : null}
           </Card>
 
-          <Card>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Resume / documents
-            </h2>
-            {application.documentUrl ? (
+          {application.documentUrl ? (
+            <Card>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Resume / documents
+              </h2>
               <div className="mt-4">
                 <p className="text-sm font-medium text-slate-900">
                   {application.documentFileName || 'Uploaded document'}
@@ -390,16 +433,9 @@ export default function ApplicationDetailPage() {
                     {application.documentContentType}
                   </p>
                 ) : null}
-                <Button href={documentHref} target="_blank" rel="noreferrer" className="mt-4">
-                  Open document
-                </Button>
               </div>
-            ) : (
-              <p className="mt-4 text-sm text-slate-600">
-                No resume or document was uploaded with this application.
-              </p>
-            )}
-          </Card>
+            </Card>
+          ) : null}
         </div>
       </div>
     </section>
