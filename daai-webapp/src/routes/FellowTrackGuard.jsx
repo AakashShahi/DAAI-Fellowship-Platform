@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { getFellowMe } from '../services/fellowService'
 import useAuthStore from '../store/authStore'
+import { getFellowTrack } from '../utils/learningTrackAccess'
 
 const toUserUpdates = (profile) => ({
   full_name: profile.fullName,
@@ -60,7 +61,11 @@ export default function FellowTrackGuard() {
     return <p className="dashboard-alert">{error}</p>
   }
 
-  const selectedTrack = profile?.selectedTrack ?? storedUser?.selectedTrack
+  const selectedTrack = getFellowTrack({
+    ...storedUser,
+    selectedTrack: profile?.selectedTrack ?? storedUser?.selectedTrack,
+    learningTrack: profile?.learningTrack ?? storedUser?.learningTrack,
+  })
 
   if (!selectedTrack) {
     return (

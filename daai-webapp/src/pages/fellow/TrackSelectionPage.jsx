@@ -27,7 +27,7 @@ export default function TrackSelectionPage() {
           learningTrack: profile.learningTrack,
         })
 
-        if (profile.selectedTrack) {
+        if (profile.selectedTrack || profile.learningTrack) {
           navigate('/fellow/dashboard', { replace: true })
         }
       } catch {
