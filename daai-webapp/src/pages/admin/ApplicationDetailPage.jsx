@@ -196,10 +196,12 @@ export default function ApplicationDetailPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
           <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Full profile</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Applicant profile
+            </h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -265,24 +267,169 @@ export default function ApplicationDetailPage() {
               {application.motivation}
             </p>
           </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Resume / document preview
+            </h2>
+            {application.documentUrl ? (
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  {application.documentFileName || 'Uploaded document'}
+                </p>
+                {application.documentContentType ? (
+                  <p className="mt-1 text-xs text-slate-500">
+                    {application.documentContentType}
+                  </p>
+                ) : null}
+                <Button
+                  href={documentHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  variant="secondary"
+                  className="mt-4"
+                >
+                  Open resume
+                </Button>
+              </div>
+            ) : (
+              <p className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                No resume or document was uploaded with this application.
+              </p>
+            )}
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Assessment result
+            </h2>
+            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-900">
+                No assessment result recorded yet.
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Scores, reviewer decisions, and interview rubric results can appear
+                here when assessment data is connected.
+              </p>
+            </div>
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Admin notes</h2>
+            <label
+              className="mt-4 block text-sm font-medium text-slate-700"
+              htmlFor="adminNotes"
+            >
+              Private notes
+            </label>
+            <textarea
+              id="adminNotes"
+              name="adminNotes"
+              value={adminNotes}
+              onChange={(event) => {
+                setAdminNotes(event.target.value)
+                setNotesMessage('')
+              }}
+              rows={7}
+              maxLength={2000}
+              placeholder="Good motivation, basic Salesforce interest. Need to verify resume before approval."
+              className="mt-2 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                Only admins can view these notes.
+              </p>
+              <Button
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+                size="sm"
+              >
+                {isSavingNotes ? 'Saving...' : 'Save note'}
+              </Button>
+            </div>
+            {notesMessage ? (
+              <p className="mt-3 text-sm font-medium text-green-700">
+                {notesMessage}
+              </p>
+            ) : null}
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Activity log</h2>
+            <ol className="mt-4 space-y-4 border-l border-slate-200 pl-4">
+              <li>
+                <p className="text-sm font-semibold text-slate-900">
+                  Application submitted
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {new Date(application.createdAt).toLocaleString()}
+                </p>
+              </li>
+              <li>
+                <p className="text-sm font-semibold text-slate-900">
+                  Status is {statusLabels[application.status] ?? application.status}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Last updated {new Date(application.updatedAt).toLocaleString()}
+                </p>
+              </li>
+              {application.lastEmailStatus ? (
+                <li>
+                  <p className="text-sm font-semibold text-slate-900">
+                    Last notification: {application.lastEmailStatus}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {application.lastEmailSentAt
+                      ? new Date(application.lastEmailSentAt).toLocaleString()
+                      : 'Email was attempted but not sent.'}
+                  </p>
+                </li>
+              ) : null}
+            </ol>
+          </Card>
         </div>
 
-        <div className="space-y-6">
+        <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
           <Card>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Quick actions
-                </h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Current status: {statusLabels[application.status] ?? application.status}
-                </p>
-              </div>
+            <h2 className="text-lg font-semibold text-slate-900">Review status</h2>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <span className="text-sm text-slate-600">Current decision</span>
               <Badge tone={statusTone[application.status] ?? 'default'}>
                 {statusLabels[application.status] ?? application.status}
               </Badge>
             </div>
+            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">
+                Last notification
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                {application.lastEmailStatus || 'No status email sent yet.'}
+              </p>
+              {application.lastEmailSentAt ? (
+                <p className="mt-1 text-xs text-slate-500">
+                  Sent {new Date(application.lastEmailSentAt).toLocaleString()}
+                </p>
+              ) : null}
+              {application.lastEmailError ? (
+                <p className="mt-2 text-xs text-red-600">
+                  {application.lastEmailError}
+                </p>
+              ) : null}
+              {testEmailResult ? (
+                <p
+                  className={`mt-2 text-xs ${
+                    testEmailResult.sent ? 'text-emerald-700' : 'text-red-600'
+                  }`}
+                >
+                  Test email {testEmailResult.status}
+                  {testEmailResult.error ? `: ${testEmailResult.error}` : ''}
+                </p>
+              ) : null}
+            </div>
+          </Card>
 
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Quick actions</h2>
             <div className="mt-5 grid gap-3">
               <Button
                 type="button"
@@ -349,94 +496,35 @@ export default function ApplicationDetailPage() {
                 </Button>
               )}
             </div>
+          </Card>
 
-            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Track capacity</h2>
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-900">
-                Last notification
+                {pathwayLabels[application.pathway] ?? application.pathway}
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                {application.lastEmailStatus
-                  ? application.lastEmailStatus
-                  : 'No status email sent yet.'}
+                Capacity data is not connected yet.
               </p>
-              {application.lastEmailSentAt ? (
-                <p className="mt-1 text-xs text-slate-500">
-                  Sent {new Date(application.lastEmailSentAt).toLocaleString()}
-                </p>
-              ) : null}
-              {application.lastEmailError ? (
-                <p className="mt-2 text-xs text-red-600">
-                  {application.lastEmailError}
-                </p>
-              ) : null}
-              {testEmailResult ? (
-                <p
-                  className={`mt-2 text-xs ${
-                    testEmailResult.sent ? 'text-emerald-700' : 'text-red-600'
-                  }`}
-                >
-                  Test email {testEmailResult.status}
-                  {testEmailResult.error ? `: ${testEmailResult.error}` : ''}
-                </p>
-              ) : null}
             </div>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Admin notes</h2>
-            <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="adminNotes">
-              Private notes
-            </label>
-            <textarea
-              id="adminNotes"
-              name="adminNotes"
-              value={adminNotes}
-              onChange={(event) => {
-                setAdminNotes(event.target.value)
-                setNotesMessage('')
-              }}
-              rows={7}
-              maxLength={2000}
-              placeholder="Good motivation, basic Salesforce interest. Need to verify resume before approval."
-              className="mt-2 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-slate-500">
-                Only admins can view these notes.
+            <h2 className="text-lg font-semibold text-slate-900">
+              Interview schedule
+            </h2>
+            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-900">
+                No interview scheduled.
               </p>
-              <Button
-                onClick={handleSaveNotes}
-                disabled={isSavingNotes}
-                size="sm"
-              >
-                {isSavingNotes ? 'Saving...' : 'Save note'}
-              </Button>
+              <p className="mt-1 text-sm text-slate-600">
+                Interview date, owner, and meeting link can appear here when scheduling
+                is added.
+              </p>
             </div>
-            {notesMessage ? (
-              <p className="mt-3 text-sm font-medium text-green-700">
-                {notesMessage}
-              </p>
-            ) : null}
           </Card>
-
-          {application.documentUrl ? (
-            <Card>
-              <h2 className="text-lg font-semibold text-slate-900">
-                Resume / documents
-              </h2>
-              <div className="mt-4">
-                <p className="text-sm font-medium text-slate-900">
-                  {application.documentFileName || 'Uploaded document'}
-                </p>
-                {application.documentContentType ? (
-                  <p className="mt-1 text-xs text-slate-500">
-                    {application.documentContentType}
-                  </p>
-                ) : null}
-              </div>
-            </Card>
-          ) : null}
-        </div>
+        </aside>
       </div>
     </section>
   )
