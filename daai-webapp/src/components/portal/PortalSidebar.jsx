@@ -7,7 +7,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
       <button
         type="button"
         className={cn(
-          'fixed inset-0 z-30 bg-slate-950/35 transition-opacity lg:hidden',
+          'fixed inset-0 z-30 bg-slate-950/35 transition-opacity',
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         aria-label="Close menu"
@@ -16,7 +16,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-72 max-w-[82vw] border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 lg:sticky lg:top-16 lg:z-auto lg:min-h-[calc(100vh-4rem)] lg:w-64 lg:max-w-none lg:translate-x-0 lg:shadow-none',
+          'fixed inset-y-0 left-0 z-40 w-72 max-w-[82vw] border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 lg:w-64 lg:max-w-none',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -27,7 +27,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
             </p>
             <button
               type="button"
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
               aria-label="Close menu"
               onClick={onClose}
             >
