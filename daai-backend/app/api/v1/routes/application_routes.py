@@ -5,6 +5,8 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 from app.dependencies.auth_dependency import current_admin
 from app.models.user_model import User
 from app.schema.application_schema import (
+    AdminApplicationResponse,
+    ApplicationAdminNotesUpdate,
     ApplicationCreate,
     ApplicationResponse,
     ApplicationStatusUpdate,
@@ -55,11 +57,11 @@ async def submit_application(request: Request):
 
 @router.get(
     "/admin",
-    response_model=list[ApplicationResponse],
+    response_model=list[AdminApplicationResponse],
 )
 async def list_applications(_: User = Depends(current_admin)):
     applications = await ApplicationService().list_all()
-    return [ApplicationService.to_response(application) for application in applications]
+    return [ApplicationService.to_admin_response(application) for application in applications]
 
 
 @router.post(
@@ -87,7 +89,7 @@ async def send_test_email(
 
 @router.get(
     "/admin/{application_id}",
-    response_model=ApplicationResponse,
+    response_model=AdminApplicationResponse,
 )
 async def get_application(application_id: str, _: User = Depends(current_admin)):
     application = await ApplicationService().get(application_id)
@@ -97,12 +99,12 @@ async def get_application(application_id: str, _: User = Depends(current_admin))
             detail="Application not found",
         )
 
-    return ApplicationService.to_response(application)
+    return ApplicationService.to_admin_response(application)
 
 
 @router.patch(
     "/admin/{application_id}/status",
-    response_model=ApplicationResponse,
+    response_model=AdminApplicationResponse,
 )
 async def update_application_status(
     application_id: str,
@@ -116,4 +118,23 @@ async def update_application_status(
             detail="Application not found",
         )
 
-    return ApplicationService.to_response(application)
+    return ApplicationService.to_admin_response(application)
+
+
+@router.patch(
+    "/admin/{application_id}/notes",
+    response_model=AdminApplicationResponse,
+)
+async def update_application_admin_notes(
+    application_id: str,
+    payload: ApplicationAdminNotesUpdate,
+    _: User = Depends(current_admin),
+):
+    application = await ApplicationService().update_admin_notes(application_id, payload)
+    if application is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Application not found",
+        )
+
+    return ApplicationService.to_admin_response(application)

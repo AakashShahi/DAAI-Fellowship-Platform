@@ -8,6 +8,7 @@ import { FELLOWSHIP_PATHWAYS } from '../../constants/pathways'
 import {
   getApplication,
   sendApplicationTestEmail,
+  updateApplicationAdminNotes,
   updateApplicationStatus,
 } from '../../services/applicationService'
 
@@ -55,11 +56,14 @@ const getDocumentHref = (documentUrl) => {
 export default function ApplicationDetailPage() {
   const { applicationId } = useParams()
   const [application, setApplication] = useState(null)
+  const [adminNotes, setAdminNotes] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
   const [isSendingTest, setIsSendingTest] = useState(false)
   const [testEmailResult, setTestEmailResult] = useState(null)
   const [error, setError] = useState('')
+  const [notesMessage, setNotesMessage] = useState('')
 
   const pathwayLabels = useMemo(
     () =>
@@ -84,6 +88,7 @@ export default function ApplicationDetailPage() {
         const data = await getApplication(applicationId)
         if (isMounted) {
           setApplication(data)
+          setAdminNotes(data.adminNotes ?? '')
         }
       } catch (loadError) {
         if (isMounted) {
@@ -117,6 +122,26 @@ export default function ApplicationDetailPage() {
       setError(getErrorMessage(updateError, 'Unable to update status.'))
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true)
+    setError('')
+    setNotesMessage('')
+
+    try {
+      const updatedApplication = await updateApplicationAdminNotes(
+        application.id,
+        adminNotes,
+      )
+      setApplication(updatedApplication)
+      setAdminNotes(updatedApplication.adminNotes ?? '')
+      setNotesMessage('Admin notes saved.')
+    } catch (notesError) {
+      setError(getErrorMessage(notesError, 'Unable to save admin notes.'))
+    } finally {
+      setIsSavingNotes(false)
     }
   }
 
@@ -312,6 +337,43 @@ export default function ApplicationDetailPage() {
                 </p>
               ) : null}
             </div>
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Admin notes</h2>
+            <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="adminNotes">
+              Private notes
+            </label>
+            <textarea
+              id="adminNotes"
+              name="adminNotes"
+              value={adminNotes}
+              onChange={(event) => {
+                setAdminNotes(event.target.value)
+                setNotesMessage('')
+              }}
+              rows={7}
+              maxLength={2000}
+              placeholder="Good motivation, basic Salesforce interest. Need to verify resume before approval."
+              className="mt-2 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                Only admins can view these notes.
+              </p>
+              <Button
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+                size="sm"
+              >
+                {isSavingNotes ? 'Saving...' : 'Save note'}
+              </Button>
+            </div>
+            {notesMessage ? (
+              <p className="mt-3 text-sm font-medium text-green-700">
+                {notesMessage}
+              </p>
+            ) : null}
           </Card>
 
           <Card>
