@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
@@ -58,6 +60,8 @@ async def root():
 
 
 app.include_router(api_router, prefix="/api/v1")
+Path("uploads").mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(quiz_routes.router, prefix="/api/quizzes", tags=["Quizzes"])
 app.include_router(profile_routes.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(
