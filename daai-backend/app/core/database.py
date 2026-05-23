@@ -7,7 +7,6 @@ from pymongo.asynchronous.database import AsyncDatabase
 from app.core.config import settings
 from app.models.assignment_model import Assignment
 from app.models.attendance_model import Attendance
-from app.models.application_model import FellowshipApplication
 from app.models.batch_model import Batch
 from app.models.enrollment_model import Enrollment
 from app.models.learning_module_model import LearningModule
@@ -41,7 +40,6 @@ async def init_db() -> AsyncDatabase:
         database=db,
         document_models=[
             User,
-            FellowshipApplication,
             QuizQuestion,
             QuizAttempt,
             Track,

@@ -5,7 +5,6 @@ from app.api.v1.routes import (
     admin_curriculum_routes,
     admin_assignment_v2_routes,
     admin_session_routes,
-    application_routes,
     assignment_admin_routes,
     admin_fellow_routes,
     auth_routes,
@@ -30,12 +29,6 @@ api_router.include_router(
     auth_routes.router,
     prefix="/auth",
     tags=["Authentication"]
-)
-
-api_router.include_router(
-    application_routes.router,
-    prefix="/applications",
-    tags=["Applications"],
 )
 
 api_router.include_router(
