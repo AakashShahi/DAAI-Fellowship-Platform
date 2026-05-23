@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Loader2, Plus, RefreshCcw } from 'lucide-react'
 import CohortTable from '../../components/admin/CohortTable'
+import Button from '../../components/ui/Button'
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/Card'
+import Select from '../../components/ui/Select'
 import { ADMIN_COHORT_STATUS_FILTER_OPTIONS } from '../../constants/cohortStatuses'
 import { FELLOW_TRACK_OPTIONS } from '../../constants/fellowTracks'
 import {
@@ -21,32 +30,38 @@ export default function CohortsPage() {
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState('')
 
+  const loadCohorts = async (isMounted = true) => {
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const data = await getAdminCohorts({
+        ...(trackFilter ? { track: trackFilter } : {}),
+        ...(statusFilter ? { status: statusFilter } : {}),
+      })
+      if (isMounted) {
+        setCohorts(data)
+      }
+    } catch (loadError) {
+      if (isMounted) {
+        setError(getErrorMessage(loadError, 'Failed to load cohorts.'))
+      }
+    } finally {
+      if (isMounted) {
+        setIsLoading(false)
+      }
+    }
+  }
+
   useEffect(() => {
     let isMounted = true
-
-    getAdminCohorts({
-      ...(trackFilter ? { track: trackFilter } : {}),
-      ...(statusFilter ? { status: statusFilter } : {}),
-    })
-      .then((data) => {
-        if (isMounted) {
-          setCohorts(data)
-        }
-      })
-      .catch((loadError) => {
-        if (isMounted) {
-          setError(getErrorMessage(loadError, 'Unable to load cohorts.'))
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      })
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCohorts(isMounted)
 
     return () => {
       isMounted = false
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackFilter, statusFilter])
 
   const handleArchive = async (cohort) => {
@@ -72,38 +87,36 @@ export default function CohortsPage() {
   }
 
   return (
-    <section>
-      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
-          Cohorts
-        </p>
-        <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-black text-[#0f172a]">
-              Program Cohorts
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm font-medium text-[#475569]">
-              Create cohorts, track timelines, and manage fellow assignments by
-              selected learning track.
-            </p>
+    <section className="space-y-6">
+      <Card padding={false}>
+        <CardHeader>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                Cohorts
+              </p>
+              <CardTitle className="mt-2 text-3xl">Program Cohorts</CardTitle>
+              <CardDescription className="mt-3 max-w-2xl">
+                Create cohorts, track timelines, and manage fellow assignments by
+                selected learning track.
+              </CardDescription>
+            </div>
+            <Button asChild>
+              <Link to="/admin/cohorts/new">
+                <Plus className="h-4 w-4" />
+                Create Cohort
+              </Link>
+            </Button>
           </div>
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#4f46e5] px-4 text-sm font-black text-white transition hover:bg-[#4338ca]"
-            to="/admin/cohorts/new"
-          >
-            Create Cohort
-          </Link>
-        </div>
+        </CardHeader>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
-            Track Filter
-            <select
-              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569] outline-none transition focus:border-[#4f46e5]"
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Select
+              label="Track Filter"
+              name="trackFilter"
               value={trackFilter}
               onChange={(event) => {
-                setIsLoading(true)
-                setError('')
                 setTrackFilter(event.target.value)
               }}
               disabled={isLoading || isBusy}
@@ -114,16 +127,13 @@ export default function CohortsPage() {
                   {track.label}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-black text-[#0f172a] sm:max-w-xs">
-            Status Filter
-            <select
-              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#475569] outline-none transition focus:border-[#4f46e5]"
+            </Select>
+
+            <Select
+              label="Status Filter"
+              name="statusFilter"
               value={statusFilter}
               onChange={(event) => {
-                setIsLoading(true)
-                setError('')
                 setStatusFilter(event.target.value)
               }}
               disabled={isLoading || isBusy}
@@ -133,21 +143,58 @@ export default function CohortsPage() {
                   {option.label}
                 </option>
               ))}
-            </select>
-          </label>
-        </div>
-      </div>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {error ? (
-        <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
+        <Card>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-semibold text-red-700">
+              Failed to load cohorts.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => loadCohorts()}
+              disabled={isLoading}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+          {error !== 'Failed to load cohorts.' ? (
+            <p className="mt-2 text-sm text-red-600">{error}</p>
+          ) : null}
+        </Card>
       ) : null}
 
       {isLoading ? (
-        <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569]">
-          Loading cohorts...
-        </p>
+        <Card>
+          <div className="flex items-center justify-center py-10 text-sm text-slate-500">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading cohorts...
+          </div>
+        </Card>
+      ) : cohorts.length === 0 ? (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <p className="text-lg font-semibold text-slate-900">
+              No cohorts found
+            </p>
+            <p className="mt-2 max-w-md text-sm text-slate-500">
+              Create your first cohort to organize fellows by track and timeline.
+            </p>
+            <Button asChild className="mt-5">
+              <Link to="/admin/cohorts/new">
+                <Plus className="h-4 w-4" />
+                Create Cohort
+              </Link>
+            </Button>
+          </div>
+        </Card>
       ) : (
         <CohortTable
           cohorts={cohorts}

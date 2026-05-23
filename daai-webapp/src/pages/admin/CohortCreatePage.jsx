@@ -1,16 +1,27 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+import Button from '../../components/ui/Button'
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/Card'
+import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
+import Textarea from '../../components/ui/Textarea'
 import { COHORT_STATUS_OPTIONS } from '../../constants/cohortStatuses'
 import { FELLOW_TRACK_OPTIONS } from '../../constants/fellowTracks'
 import { createAdminCohort } from '../../services/cohortService'
 
 const initialForm = {
   name: '',
-  track: 'qa',
+  track: '',
   description: '',
   startDate: '',
   endDate: '',
-  status: 'upcoming',
+  status: '',
 }
 
 const getErrorMessage = (error, fallback) => {
@@ -18,18 +29,61 @@ const getErrorMessage = (error, fallback) => {
   return typeof detail === 'string' ? detail : fallback
 }
 
+const validateCohortForm = (form) => {
+  const errors = {}
+
+  if (!form.name.trim()) {
+    errors.name = 'Name is required'
+  }
+
+  if (!form.track) {
+    errors.track = 'Track is required'
+  }
+
+  if (!form.status) {
+    errors.status = 'Status is required'
+  }
+
+  if (!form.startDate) {
+    errors.startDate = 'Start date is required'
+  }
+
+  if (!form.endDate) {
+    errors.endDate = 'End date is required'
+  }
+
+  if (
+    form.startDate &&
+    form.endDate &&
+    new Date(form.endDate) <= new Date(form.startDate)
+  ) {
+    errors.endDate = 'End date must be after start date'
+  }
+
+  return errors
+}
+
 export default function CohortCreatePage() {
   const navigate = useNavigate()
   const [form, setForm] = useState(initialForm)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }))
+    setFieldErrors((current) => ({ ...current, [field]: '' }))
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    const validationErrors = validateCohortForm(form)
+    setFieldErrors(validationErrors)
+
+    if (Object.keys(validationErrors).length > 0) {
+      return
+    }
+
     setIsSaving(true)
     setError('')
 
@@ -44,106 +98,126 @@ export default function CohortCreatePage() {
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-      <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
-        New Cohort
-      </p>
-      <h1 className="mt-2 text-3xl font-black text-[#0f172a]">
-        Create Cohort
-      </h1>
+    <section className="space-y-6">
+      <Button
+        type="button"
+        variant="ghost"
+        className="-ml-3"
+        onClick={() => navigate('/admin/cohorts')}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to cohorts
+      </Button>
 
-      {error ? (
-        <p className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
-      ) : null}
+      <Card padding={false}>
+        <CardHeader>
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            New Cohort
+          </p>
+          <CardTitle className="text-3xl">Create Cohort</CardTitle>
+          <CardDescription>
+            Set up a cohort timeline and assign it to a learning track.
+          </CardDescription>
+        </CardHeader>
 
-      <form className="mt-6 grid gap-5" onSubmit={handleSubmit}>
-        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-          Name
-          <input
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-            value={form.name}
-            onChange={(event) => updateField('name', event.target.value)}
-            required
-          />
-        </label>
+        <CardContent>
+          {error ? (
+            <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+              {error}
+            </p>
+          ) : null}
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-            Track
-            <select
-              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-              value={form.track}
-              onChange={(event) => updateField('track', event.target.value)}
-            >
-              {FELLOW_TRACK_OPTIONS.map((track) => (
-                <option key={track.value} value={track.value}>
-                  {track.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+            <div>
+              <Input
+                label="Name"
+                name="name"
+                value={form.name}
+                onChange={(event) => updateField('name', event.target.value)}
+                error={fieldErrors.name}
+              />
+            </div>
 
-          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-            Status
-            <select
-              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-              value={form.status}
-              onChange={(event) => updateField('status', event.target.value)}
-            >
-              {COHORT_STATUS_OPTIONS.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <Select
+                label="Track"
+                name="track"
+                value={form.track}
+                onChange={(event) => updateField('track', event.target.value)}
+                error={fieldErrors.track}
+              >
+                <option value="">Select track</option>
+                {FELLOW_TRACK_OPTIONS.map((track) => (
+                  <option key={track.value} value={track.value}>
+                    {track.label}
+                  </option>
+                ))}
+              </Select>
 
-        <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-          Description
-          <textarea
-            className="min-h-28 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-            value={form.description}
-            onChange={(event) => updateField('description', event.target.value)}
-          />
-        </label>
+              <Select
+                label="Status"
+                name="status"
+                value={form.status}
+                onChange={(event) => updateField('status', event.target.value)}
+                error={fieldErrors.status}
+              >
+                <option value="">Select status</option>
+                {COHORT_STATUS_OPTIONS.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-            Start date
-            <input
-              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-              type="date"
-              value={form.startDate}
-              onChange={(event) => updateField('startDate', event.target.value)}
-              required
-            />
-          </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                Description
+              </span>
+              <Textarea
+                value={form.description}
+                onChange={(event) => updateField('description', event.target.value)}
+                rows={4}
+              />
+            </label>
 
-          <label className="grid gap-2 text-sm font-black text-[#0f172a]">
-            End date
-            <input
-              className="rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-[#475569] outline-none focus:border-[#4f46e5]"
-              type="date"
-              value={form.endDate}
-              onChange={(event) => updateField('endDate', event.target.value)}
-              required
-            />
-          </label>
-        </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <Input
+                label="Start date"
+                name="startDate"
+                type="date"
+                value={form.startDate}
+                onChange={(event) => updateField('startDate', event.target.value)}
+                error={fieldErrors.startDate}
+              />
 
-        <div>
-          <button
-            type="submit"
-            className="min-h-11 rounded-md bg-[#4f46e5] px-5 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSaving}
-          >
-            {isSaving ? 'Creating...' : 'Create Cohort'}
-          </button>
-        </div>
-      </form>
+              <Input
+                label="End date"
+                name="endDate"
+                type="date"
+                value={form.endDate}
+                onChange={(event) => updateField('endDate', event.target.value)}
+                error={fieldErrors.endDate}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/admin/cohorts')}
+              >
+                Cancel
+              </Button>
+
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isSaving ? 'Creating...' : 'Create Cohort'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </section>
   )
 }
