@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { requestPasswordReset, resetPassword } from '../services/authService'
 
 const getErrorMessage = (error, fallback) => {
@@ -18,6 +18,7 @@ const getErrorMessage = (error, fallback) => {
 
 export default function ForgotPassword() {
   const location = useLocation()
+  const navigate = useNavigate()
   const initialToken = useMemo(
     () => new URLSearchParams(location.search).get('token') ?? '',
     [location.search],
@@ -93,6 +94,10 @@ export default function ForgotPassword() {
       setMessage(data.message)
       setNewPassword('')
       setConfirmPassword('')
+
+      window.setTimeout(() => {
+        navigate('/login')
+      }, 900)
     } catch (resetError) {
       setError(
         getErrorMessage(
