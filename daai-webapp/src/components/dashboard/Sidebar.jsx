@@ -6,7 +6,7 @@ export default function Sidebar({
   sectionLabel = 'Admin',
 }) {
   return (
-    <aside className="border-slate-200 bg-[#f8fafc] lg:min-h-screen lg:w-72 lg:border-r">
+    <aside className="min-h-0 shrink-0 overflow-y-auto border-slate-200 bg-[#f8fafc] lg:h-full lg:w-72 lg:border-r">
       <div className="px-4 py-5 lg:px-5">
         <p className="text-xs font-bold uppercase tracking-wide text-[#4f46e5]">
           {sectionLabel}
