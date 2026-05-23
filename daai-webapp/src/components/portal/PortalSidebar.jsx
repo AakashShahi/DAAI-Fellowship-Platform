@@ -1,5 +1,49 @@
 import { NavLink } from 'react-router-dom'
+import {
+  Award,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CircleHelp,
+  ClipboardList,
+  FileText,
+  GraduationCap,
+  Inbox,
+  Layers,
+  LayoutDashboard,
+  Megaphone,
+  NotebookText,
+  Settings,
+  Target,
+  UserCheck,
+  Users,
+} from 'lucide-react'
 import { cn } from '../../lib/cn'
+
+const navigationIcons = {
+  Applications: FileText,
+  Assignments: ClipboardList,
+  Attendance: UserCheck,
+  Batches: Layers,
+  Certificates: Award,
+  Cohorts: GraduationCap,
+  Dashboard: LayoutDashboard,
+  Enrollments: UserCheck,
+  Fellows: Users,
+  Lessons: NotebookText,
+  Modules: BookOpen,
+  Announcements: Megaphone,
+  'My Learning': BookOpen,
+  Profile: Users,
+  Progress: BarChart3,
+  Quizzes: CircleHelp,
+  Reports: BarChart3,
+  'Review assignments': ClipboardList,
+  Sessions: Calendar,
+  Settings,
+  Submissions: Inbox,
+  Tracks: Target,
+}
 
 export default function PortalSidebar({ items, sectionLabel, isOpen = false, onClose }) {
   return (
@@ -21,10 +65,13 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
         )}
       >
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
-              {sectionLabel}
-            </p>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                {sectionLabel}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">DAAI Admin</p>
+            </div>
             <button
               type="button"
               className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
@@ -35,24 +82,29 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
             </button>
           </div>
           <nav className="mt-4 flex flex-col gap-2">
-            {items.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  cn(
-                    'whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition',
-                    isActive
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
+            {items.map((item) => {
+              const Icon = navigationIcons[item.label] || FileText
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                      isActive
+                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                    )
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              )
+            })}
           </nav>
         </div>
       </aside>
