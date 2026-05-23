@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import AdminPageHeader from '../../components/admin/AdminPageHeader'
 import { EmptyState } from '../../components/admin/AdminStates'
 import Button from '../../components/ui/Button'
@@ -11,17 +11,17 @@ import {
   TableRow,
 } from '../../components/ui/Table'
 
-export default function ReportsPage() {
+export default function AdminCertificatesPage() {
   return (
     <section>
       <AdminPageHeader
-        label="Reports"
-        title="Reports"
-        description="View fellowship progress, activity, and performance reports."
+        label="Certificates"
+        title="Certificates"
+        description="Issue and manage fellowship certificates."
         actions={
-          <Button variant="outline" disabled>
-            <Download className="h-4 w-4" />
-            Export
+          <Button disabled>
+            <Plus className="h-4 w-4" />
+            Issue Certificate
           </Button>
         }
       />
@@ -29,10 +29,10 @@ export default function ReportsPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
-              <TableHead>Report</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Fellow</TableHead>
+              <TableHead>Track/Cohort</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Updated</TableHead>
+              <TableHead>Issued date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -40,8 +40,8 @@ export default function ReportsPage() {
         </Table>
         <div className="p-5">
           <EmptyState
-            title="No reports found."
-            description="Reports will appear here when analytics data is available."
+            title="No certificates found."
+            description="Issued certificates will appear here when the certificate workflow is connected."
           />
         </div>
       </Card>

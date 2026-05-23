@@ -1,4 +1,28 @@
 import { useEffect, useState } from 'react'
+import { Loader2, Plus, Trash2 } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import StatusBadge from '../../components/admin/StatusBadge'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/Dialog'
+import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
+import Textarea from '../../components/ui/Textarea'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
 import { getTracks } from '../../services/fellowshipService'
 import {
   createLesson,
@@ -8,6 +32,15 @@ import {
 } from '../../services/learningService'
 
 const STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
+const emptyForm = {
+  title: '',
+  content: '',
+  videoUrl: '',
+  resourceUrl: '',
+  order: 0,
+  estimatedMinutes: 0,
+  status: 'DRAFT',
+}
 
 export default function AdminLessonsPage() {
   const [tracks, setTracks] = useState([])
@@ -18,42 +51,46 @@ export default function AdminLessonsPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    content: '',
-    videoUrl: '',
-    resourceUrl: '',
-    order: 0,
-    estimatedMinutes: 0,
-    status: 'DRAFT',
-  })
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+
+  const selectedModule = modules.find((module) => module.id === moduleId)
+
+  const loadTracks = async () => {
+    setError('')
+    setIsLoading(true)
+    try {
+      const data = await getTracks()
+      setTracks(data)
+      if (data[0]?.id) setTrackId(data[0].id)
+    } catch {
+      setError('Failed to load tracks.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const refreshLessons = async (id = moduleId) => {
+    if (!id) {
+      setLessons([])
+      return
+    }
+    const list = await getLessonsAdmin({ moduleId: id })
+    setLessons(list)
+  }
 
   useEffect(() => {
-    const loadTracks = async () => {
-      try {
-        const t = await getTracks()
-        setTracks(t)
-        if (t[0]?.id) {
-          setTrackId(t[0].id)
-        }
-      } catch {
-        setError('Unable to load tracks.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTracks()
   }, [])
 
   useEffect(() => {
-    if (!trackId) {
-      return
-    }
+    if (!trackId) return
     const run = async () => {
       try {
-        const m = await getModulesAdmin(trackId)
-        setModules(m)
-        setModuleId(m[0]?.id ?? '')
+        const data = await getModulesAdmin(trackId)
+        setModules(data)
+        setModuleId(data[0]?.id ?? '')
       } catch {
         setModules([])
         setModuleId('')
@@ -62,25 +99,13 @@ export default function AdminLessonsPage() {
     run()
   }, [trackId])
 
-  const refreshLessons = async () => {
-    if (!moduleId) {
-      setLessons([])
-      return
-    }
-    const list = await getLessonsAdmin({ moduleId })
-    setLessons(list)
-  }
-
   useEffect(() => {
-    if (!moduleId) {
-      return
-    }
     const run = async () => {
       setError('')
       try {
-        await refreshLessons()
+        await refreshLessons(moduleId)
       } catch {
-        setError('Unable to load lessons.')
+        setError('Failed to load lessons.')
       }
     }
     run()
@@ -89,9 +114,7 @@ export default function AdminLessonsPage() {
 
   const handleCreate = async (event) => {
     event.preventDefault()
-    if (!moduleId) {
-      return
-    }
+    if (!moduleId) return
     setIsSaving(true)
     setError('')
     try {
@@ -105,16 +128,9 @@ export default function AdminLessonsPage() {
         estimatedMinutes: Number(form.estimatedMinutes) || 0,
         status: form.status,
       })
-      setForm({
-        title: '',
-        content: '',
-        videoUrl: '',
-        resourceUrl: '',
-        order: 0,
-        estimatedMinutes: 0,
-        status: 'DRAFT',
-      })
-      await refreshLessons()
+      setForm(emptyForm)
+      setIsDialogOpen(false)
+      await refreshLessons(moduleId)
     } catch (err) {
       const detail = err?.response?.data?.detail
       setError(typeof detail === 'string' ? detail : 'Unable to create lesson.')
@@ -124,13 +140,11 @@ export default function AdminLessonsPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this lesson? No fellow progress may exist.')) {
-      return
-    }
+    if (!window.confirm('Delete this lesson? No fellow progress may exist.')) return
     setError('')
     try {
       await deleteLesson(id)
-      await refreshLessons()
+      await refreshLessons(moduleId)
     } catch (err) {
       const detail = err?.response?.data?.detail
       setError(typeof detail === 'string' ? detail : 'Unable to delete lesson.')
@@ -139,171 +153,176 @@ export default function AdminLessonsPage() {
 
   return (
     <section>
-      <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
-          Course content
-        </p>
-        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">Lessons</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
-          Create lessons under a module. Fellows only see published lessons for their
-          enrolled track.
-        </p>
-      </div>
-
-      {error ? (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
-      ) : null}
-
-      <div className="mb-6 flex flex-wrap gap-4">
-        <label className="block text-sm font-bold text-[#0f172a]">
-          Track
-          <select
-            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
+      <AdminPageHeader
+        label="Lessons"
+        title="Learning Lessons"
+        description="Manage lessons, content, and learning materials."
+        actions={
+          <Button onClick={() => setIsDialogOpen(true)} disabled={!moduleId}>
+            <Plus className="h-4 w-4" />
+            Create Lesson
+          </Button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Select
+            label="Track"
             value={trackId}
-            onChange={(e) => setTrackId(e.target.value)}
+            onChange={(event) => setTrackId(event.target.value)}
             disabled={isLoading}
           >
-            {tracks.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
+            {tracks.map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.title}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="block text-sm font-bold text-[#0f172a]">
-          Module
-          <select
-            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
+          </Select>
+          <Select
+            label="Module"
             value={moduleId}
-            onChange={(e) => setModuleId(e.target.value)}
+            onChange={(event) => setModuleId(event.target.value)}
           >
-            {modules.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.order}. {m.title}
+            {modules.map((module) => (
+              <option key={module.id} value={module.id}>
+                {module.order}. {module.title}
               </option>
             ))}
-          </select>
-        </label>
-      </div>
+          </Select>
+        </div>
+      </AdminPageHeader>
 
-      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">Create lesson</h2>
-        <form className="mt-4 space-y-4" onSubmit={handleCreate}>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Title
-            <input
+      {error ? <ErrorState message={error} onRetry={() => refreshLessons(moduleId)} /> : null}
+
+      {isLoading ? (
+        <LoadingState message="Loading lessons..." />
+      ) : !moduleId || lessons.length === 0 ? (
+        <EmptyState
+          title="No lessons found."
+          description="Create your first lesson for the selected module."
+          action={
+            <Button onClick={() => setIsDialogOpen(true)} disabled={!moduleId}>
+              <Plus className="h-4 w-4" />
+              Create Lesson
+            </Button>
+          }
+        />
+      ) : (
+        <Card className="rounded-xl" padding={false}>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50">
+                <TableHead>Lesson</TableHead>
+                <TableHead>Module</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lessons.map((lesson) => (
+                <TableRow key={lesson.id}>
+                  <TableCell>
+                    <p className="font-semibold text-slate-900">
+                      {lesson.order}. {lesson.title}
+                    </p>
+                  </TableCell>
+                  <TableCell>{selectedModule?.title ?? 'Module'}</TableCell>
+                  <TableCell>{lesson.videoUrl ? 'Video' : 'Reading'}</TableCell>
+                  <TableCell>{lesson.estimatedMinutes ?? 0} min</TableCell>
+                  <TableCell>
+                    <StatusBadge status={lesson.status} />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => handleDelete(lesson.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Lesson</DialogTitle>
+            <DialogDescription>
+              Add a lesson under {selectedModule?.title ?? 'the selected module'}.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="mt-5 space-y-4" onSubmit={handleCreate}>
+            <Input
               required
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              label="Title"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(event) => setForm({ ...form, title: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Content
-            <textarea
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-              rows={8}
-              value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-            />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-bold text-[#0f172a]">
-              Video URL
-              <input
-                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">Content</span>
+              <Textarea
+                rows={6}
+                value={form.content}
+                onChange={(event) => setForm({ ...form, content: event.target.value })}
+              />
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Video URL"
                 value={form.videoUrl}
-                onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+                onChange={(event) => setForm({ ...form, videoUrl: event.target.value })}
               />
-            </label>
-            <label className="block text-sm font-bold text-[#0f172a]">
-              Resource URL
-              <input
-                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              <Input
+                label="Resource URL"
                 value={form.resourceUrl}
-                onChange={(e) => setForm({ ...form, resourceUrl: e.target.value })}
+                onChange={(event) => setForm({ ...form, resourceUrl: event.target.value })}
               />
-            </label>
-            <label className="block text-sm font-bold text-[#0f172a]">
-              Order
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                label="Order"
                 value={form.order}
-                onChange={(e) => setForm({ ...form, order: e.target.value })}
+                onChange={(event) => setForm({ ...form, order: event.target.value })}
               />
-            </label>
-            <label className="block text-sm font-bold text-[#0f172a]">
-              Est. minutes
-              <input
+              <Input
                 type="number"
                 min={0}
-                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                label="Est. minutes"
                 value={form.estimatedMinutes}
-                onChange={(e) => setForm({ ...form, estimatedMinutes: e.target.value })}
+                onChange={(event) => setForm({ ...form, estimatedMinutes: event.target.value })}
               />
-            </label>
-            <label className="block text-sm font-bold text-[#0f172a]">
-              Status
-              <select
-                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              <Select
+                label="Status"
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                onChange={(event) => setForm({ ...form, status: event.target.value })}
               >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
+                {STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
                   </option>
                 ))}
-              </select>
-            </label>
-          </div>
-          <button
-            type="submit"
-            disabled={isSaving || !moduleId}
-            className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
-          >
-            {isSaving ? 'Saving…' : 'Create lesson'}
-          </button>
-        </form>
-      </div>
-
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">Lessons in selected module</h2>
-        {!moduleId ? (
-          <p className="mt-4 text-sm text-[#475569]">Select a module with lessons.</p>
-        ) : lessons.length === 0 ? (
-          <p className="mt-4 text-sm text-[#475569]">No lessons yet.</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-slate-200">
-            {lessons.map((lesson) => (
-              <li
-                key={lesson.id}
-                className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-black text-[#0f172a]">
-                    {lesson.order}. {lesson.title}
-                  </p>
-                  <p className="text-xs font-bold uppercase text-[#4f46e5]">
-                    {lesson.status} · ~{lesson.estimatedMinutes} min
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(lesson.id)}
-                  className="self-start rounded-md border border-slate-200 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving || !moduleId}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isSaving ? 'Creating...' : 'Create Lesson'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

@@ -1,4 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Loader2, Plus, Settings } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import StatusBadge from '../../components/admin/StatusBadge'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/Dialog'
+import Select from '../../components/ui/Select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
 import {
   createEnrollment,
   getBatches,
@@ -9,65 +31,83 @@ import {
 } from '../../services/fellowshipService'
 
 const ENROLLMENT_STATUSES = ['ACTIVE', 'COMPLETED', 'WITHDRAWN']
+const emptyForm = { fellowId: '', batchId: '' }
+
+const formatDate = (value) =>
+  value ? new Date(value).toLocaleDateString() : 'Unknown'
 
 export default function AdminEnrollmentsPage() {
   const [fellows, setFellows] = useState([])
   const [tracks, setTracks] = useState([])
   const [selectedTrackId, setSelectedTrackId] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('')
   const [batches, setBatches] = useState([])
   const [enrollments, setEnrollments] = useState([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState({
-    fellowId: '',
-    batchId: '',
-  })
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+
+  const fellowsById = useMemo(
+    () => Object.fromEntries(fellows.map((fellow) => [fellow.id, fellow])),
+    [fellows],
+  )
+
+  const filteredEnrollments = useMemo(
+    () =>
+      enrollments.filter((enrollment) => {
+        const matchesTrack =
+          !selectedTrackId || enrollment.track?.id === selectedTrackId || enrollment.trackId === selectedTrackId
+        const matchesStatus = !selectedStatus || enrollment.status === selectedStatus
+        return matchesTrack && matchesStatus
+      }),
+    [enrollments, selectedStatus, selectedTrackId],
+  )
+
+  const refreshEnrollments = async () => {
+    const eList = await getEnrollments()
+    setEnrollments(eList)
+  }
+
+  const load = async () => {
+    setError('')
+    setIsLoading(true)
+    try {
+      const [fList, tList, eList] = await Promise.all([
+        getFellowsForAdmin(),
+        getTracks(),
+        getEnrollments(),
+      ])
+      setFellows(fList)
+      setTracks(tList)
+      setEnrollments(eList)
+      if (tList[0]?.id) setSelectedTrackId(tList[0].id)
+    } catch {
+      setError('Failed to load enrollment data.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const boot = async () => {
-      setError('')
-      try {
-        const [fList, tList, eList] = await Promise.all([
-          getFellowsForAdmin(),
-          getTracks(),
-          getEnrollments(),
-        ])
-        setFellows(fList)
-        setTracks(tList)
-        setEnrollments(eList)
-        if (tList[0]?.id) {
-          setSelectedTrackId(tList[0].id)
-        }
-      } catch {
-        setError('Unable to load enrollment data.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    boot()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load()
   }, [])
 
   useEffect(() => {
-    if (!selectedTrackId) {
-      return
-    }
+    if (!selectedTrackId) return
     const loadBatches = async () => {
       try {
         const data = await getBatches(selectedTrackId)
         setBatches(data)
-        setForm((f) => ({ ...f, batchId: data[0]?.id ?? '' }))
+        setForm((current) => ({ ...current, batchId: data[0]?.id ?? '' }))
       } catch {
         setBatches([])
       }
     }
     loadBatches()
   }, [selectedTrackId])
-
-  const refreshEnrollments = async () => {
-    const eList = await getEnrollments()
-    setEnrollments(eList)
-  }
 
   const handleEnroll = async (event) => {
     event.preventDefault()
@@ -83,6 +123,8 @@ export default function AdminEnrollmentsPage() {
         trackId: selectedTrackId,
         batchId: form.batchId,
       })
+      setForm(emptyForm)
+      setIsDialogOpen(false)
       await refreshEnrollments()
     } catch (err) {
       const detail = err?.response?.data?.detail
@@ -105,119 +147,179 @@ export default function AdminEnrollmentsPage() {
 
   return (
     <section>
-      <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
-          Program roster
-        </p>
-        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
-          Enrollments
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
-          Assign a fellow to exactly one track and batch. A fellow may only have one
-          active enrollment at a time.
-        </p>
-      </div>
+      <AdminPageHeader
+        label="Enrollments"
+        title="Fellow Enrollments"
+        description="Manage fellow enrollment into tracks, cohorts, and batches."
+        actions={
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Enroll Fellow
+          </Button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          <Select
+            label="Track"
+            value={selectedTrackId}
+            onChange={(event) => setSelectedTrackId(event.target.value)}
+          >
+            <option value="">All tracks</option>
+            {tracks.map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.title}
+              </option>
+            ))}
+          </Select>
+          <Select label="Cohort/Batch" disabled value="">
+            <option value="">All cohorts/batches</option>
+          </Select>
+          <Select
+            label="Status"
+            value={selectedStatus}
+            onChange={(event) => setSelectedStatus(event.target.value)}
+          >
+            <option value="">All statuses</option>
+            {ENROLLMENT_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </AdminPageHeader>
 
-      {error ? (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={load} /> : null}
 
-      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">Enroll fellow</h2>
-        <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleEnroll}>
-          <label className="block text-sm font-bold text-[#0f172a] sm:col-span-2">
-            Fellow
-            <select
+      {isLoading ? (
+        <LoadingState message="Loading enrollments..." />
+      ) : filteredEnrollments.length === 0 ? (
+        <EmptyState
+          title="No enrollments found."
+          description="Enroll fellows into tracks and batches to start managing progress."
+          action={
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Enroll Fellow
+            </Button>
+          }
+        />
+      ) : (
+        <Card className="rounded-xl" padding={false}>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50">
+                <TableHead>Fellow</TableHead>
+                <TableHead>Track</TableHead>
+                <TableHead>Cohort/Batch</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Enrollment date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredEnrollments.map((enrollment) => {
+                const fellow = fellowsById[enrollment.fellowId]
+                return (
+                  <TableRow key={enrollment.id}>
+                    <TableCell>
+                      <p className="font-semibold text-slate-900">
+                        {enrollment.fellowName ?? fellow?.fullName ?? `Fellow ${enrollment.fellowId}`}
+                      </p>
+                      {fellow?.email ? (
+                        <p className="text-xs text-slate-500">{fellow.email}</p>
+                      ) : null}
+                    </TableCell>
+                    <TableCell>{enrollment.track?.title ?? 'Track'}</TableCell>
+                    <TableCell>{enrollment.batch?.name ?? 'Batch'}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={enrollment.status} />
+                    </TableCell>
+                    <TableCell>{formatDate(enrollment.enrolledAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-2">
+                        {ENROLLMENT_STATUSES.map((status) => (
+                          <Button
+                            key={status}
+                            variant="outline"
+                            size="sm"
+                            disabled={status === enrollment.status}
+                            onClick={() => handleStatusChange(enrollment.id, status)}
+                          >
+                            <Settings className="h-4 w-4" />
+                            Mark {status}
+                          </Button>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enroll Fellow</DialogTitle>
+            <DialogDescription>
+              Assign a fellow to the selected track and batch.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="mt-5 grid gap-4" onSubmit={handleEnroll}>
+            <Select
               required
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              label="Fellow"
               value={form.fellowId}
-              onChange={(e) => setForm({ ...form, fellowId: e.target.value })}
+              onChange={(event) => setForm({ ...form, fellowId: event.target.value })}
               disabled={isLoading}
             >
               <option value="">Select fellow</option>
-              {fellows.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.fullName} ({f.email})
+              {fellows.map((fellow) => (
+                <option key={fellow.id} value={fellow.id}>
+                  {fellow.fullName} ({fellow.email})
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Track
-            <select
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-              value={selectedTrackId}
-              onChange={(e) => setSelectedTrackId(e.target.value)}
-            >
-              {tracks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Batch
-            <select
-              required
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-              value={form.batchId}
-              onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-            >
-              {batches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="sm:col-span-2">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
-            >
-              {isSaving ? 'Saving…' : 'Create enrollment'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">Recent enrollments</h2>
-        {enrollments.length === 0 ? (
-          <p className="mt-4 text-sm font-medium text-[#475569]">No enrollments yet.</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-slate-200">
-            {enrollments.map((e) => (
-              <li key={e.id} className="py-4">
-                <p className="font-black text-[#0f172a]">
-                  {e.track.title} · {e.batch.name}
-                </p>
-                <p className="text-xs text-[#475569]">
-                  Fellow ID {e.fellowId} · {e.status} · enrolled{' '}
-                  {new Date(e.enrolledAt).toLocaleString()}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {ENROLLMENT_STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      disabled={s === e.status}
-                      onClick={() => handleStatusChange(e.id, s)}
-                      className="rounded-md border border-slate-200 px-2 py-1 text-xs font-bold text-[#475569] hover:bg-[#eef2ff] disabled:opacity-40"
-                    >
-                      Mark {s}
-                    </button>
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+            </Select>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label="Track"
+                value={selectedTrackId}
+                onChange={(event) => setSelectedTrackId(event.target.value)}
+              >
+                {tracks.map((track) => (
+                  <option key={track.id} value={track.id}>
+                    {track.title}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                required
+                label="Batch"
+                value={form.batchId}
+                onChange={(event) => setForm({ ...form, batchId: event.target.value })}
+              >
+                {batches.map((batch) => (
+                  <option key={batch.id} value={batch.id}>
+                    {batch.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isSaving ? 'Creating...' : 'Create Enrollment'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

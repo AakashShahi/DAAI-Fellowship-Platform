@@ -1,4 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Archive, Loader2, Plus, Settings, Trash2 } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import StatusBadge from '../../components/admin/StatusBadge'
+import Badge from '../../components/ui/Badge'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/Dialog'
+import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
+import Textarea from '../../components/ui/Textarea'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
 import {
   createTrack,
   deleteTrack,
@@ -6,28 +31,48 @@ import {
 } from '../../services/fellowshipService'
 
 const STATUSES = ['DRAFT', 'ACTIVE', 'ARCHIVED']
+const emptyForm = {
+  title: '',
+  slug: '',
+  description: '',
+  duration: '',
+  difficulty: '',
+  status: 'DRAFT',
+}
 
 export default function AdminTracksPage() {
   const [tracks, setTracks] = useState([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    slug: '',
-    description: '',
-    duration: '',
-    difficulty: '',
-    status: 'DRAFT',
-  })
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [form, setForm] = useState(emptyForm)
+
+  const filteredTracks = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase()
+    return tracks.filter((track) => {
+      const matchesStatus = !statusFilter || track.status === statusFilter
+      const matchesSearch =
+        !normalizedSearch ||
+        [track.title, track.slug, track.duration, track.difficulty]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(normalizedSearch)
+      return matchesSearch && matchesStatus
+    })
+  }, [search, statusFilter, tracks])
 
   const load = async () => {
     setError('')
+    setIsLoading(true)
     try {
       const data = await getTracks()
       setTracks(data)
     } catch {
-      setError('Unable to load tracks.')
+      setError('Failed to load tracks.')
     } finally {
       setIsLoading(false)
     }
@@ -44,14 +89,8 @@ export default function AdminTracksPage() {
     setError('')
     try {
       await createTrack(form)
-      setForm({
-        title: '',
-        slug: '',
-        description: '',
-        duration: '',
-        difficulty: '',
-        status: 'DRAFT',
-      })
+      setForm(emptyForm)
+      setIsDialogOpen(false)
       await load()
     } catch (err) {
       const detail = err?.response?.data?.detail
@@ -81,133 +120,177 @@ export default function AdminTracksPage() {
 
   return (
     <section>
-      <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
-          Fellowship tracks
-        </p>
-        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">Tracks</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
-          Create catalog tracks. Batches are scheduled under each track, then fellows
-          are enrolled into a track and batch pair.
-        </p>
-      </div>
+      <AdminPageHeader
+        label="Fellowship Tracks"
+        title="Tracks"
+        description="Create and manage learning tracks for fellowship pathways."
+        actions={
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Track
+          </Button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-[1fr_220px]">
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by title, slug, duration"
+            label="Search"
+          />
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="">All statuses</option>
+            {STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </AdminPageHeader>
 
-      {error ? (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={load} /> : null}
 
-      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">Create track</h2>
-        <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleCreate}>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Title
-            <input
+      {isLoading ? (
+        <LoadingState message="Loading tracks..." />
+      ) : filteredTracks.length === 0 ? (
+        <EmptyState
+          title="No tracks found."
+          description="Create your first track to organize fellowship pathways."
+          action={
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Create Track
+            </Button>
+          }
+        />
+      ) : (
+        <Card className="rounded-xl" padding={false}>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50">
+                <TableHead>Track title</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead>Difficulty</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTracks.map((track) => (
+                <TableRow key={track.id}>
+                  <TableCell>
+                    <p className="font-semibold text-slate-900">{track.title}</p>
+                    {track.description ? (
+                      <p className="mt-1 max-w-md text-xs text-slate-500">
+                        {track.description}
+                      </p>
+                    ) : null}
+                  </TableCell>
+                  <TableCell>
+                    <Badge tone="primary">{track.slug}</Badge>
+                  </TableCell>
+                  <TableCell>{track.duration || 'Not set'}</TableCell>
+                  <TableCell>{track.difficulty || 'Not set'}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={track.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" disabled>
+                        <Settings className="h-4 w-4" />
+                        Manage
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => handleDelete(track.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Track</DialogTitle>
+            <DialogDescription>
+              Add a new learning track without leaving the track list.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={handleCreate}>
+            <Input
               required
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              label="Title"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(event) => setForm({ ...form, title: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Slug
-            <input
+            <Input
               required
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              label="Slug"
               placeholder="e.g. full-stack-2026"
               value={form.slug}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+              onChange={(event) => setForm({ ...form, slug: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a] sm:col-span-2">
-            Description
-            <textarea
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-              rows={3}
+            <Textarea
+              label="Description"
+              className="sm:col-span-2"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Duration
-            <input
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            <Input
+              label="Duration"
               placeholder="12 weeks"
               value={form.duration}
-              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+              onChange={(event) => setForm({ ...form, duration: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Difficulty
-            <input
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            <Input
+              label="Difficulty"
               placeholder="Intermediate"
               value={form.difficulty}
-              onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
+              onChange={(event) => setForm({ ...form, difficulty: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#0f172a]">
-            Status
-            <select
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            <Select
+              label="Status"
               value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              onChange={(event) => setForm({ ...form, status: event.target.value })}
             >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
                 </option>
               ))}
-            </select>
-          </label>
-          <div className="flex items-end">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="rounded-md bg-[#4f46e5] px-5 py-2 text-sm font-black text-white hover:bg-[#4338ca] disabled:opacity-60"
-            >
-              {isSaving ? 'Saving…' : 'Create track'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
-        <h2 className="text-lg font-black text-[#0f172a]">All tracks</h2>
-        {isLoading ? (
-          <p className="mt-4 text-sm font-medium">Loading…</p>
-        ) : tracks.length === 0 ? (
-          <p className="mt-4 text-sm font-medium text-[#475569]">No tracks yet.</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-slate-200">
-            {tracks.map((t) => (
-              <li
-                key={t.id}
-                className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
+            </Select>
+            <div className="flex items-end justify-end gap-3 sm:col-span-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
               >
-                <div>
-                  <p className="font-black text-[#0f172a]">{t.title}</p>
-                  <p className="text-xs font-bold uppercase text-[#4f46e5]">
-                    {t.slug} · {t.status}
-                  </p>
-                  <p className="mt-1 text-sm text-[#475569]">{t.description}</p>
-                  <p className="text-xs text-[#475569]">
-                    {t.duration} · {t.difficulty}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(t.id)}
-                  className="self-start rounded-md border border-slate-200 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Archive className="hidden h-4 w-4" />}
+                {isSaving ? 'Creating...' : 'Create Track'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

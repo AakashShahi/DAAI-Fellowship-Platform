@@ -1,238 +1,226 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import StatCard from '../../components/admin/StatCard'
+import { useEffect, useState } from 'react'
+import { Calendar, FileText, GraduationCap, Users } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import StatusBadge from '../../components/admin/StatusBadge'
 import Button from '../../components/ui/Button'
-import PageHeader from '../../components/ui/PageHeader'
-import Skeleton from '../../components/ui/Skeleton'
+import Card from '../../components/ui/Card'
 import {
-  FELLOW_TRACK_OPTIONS,
-  getFellowTrackLabel,
-} from '../../constants/fellowTracks'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
 import { getAdminTrackStats } from '../../services/adminFellowService'
-import { getAdminCohortStats } from '../../services/cohortService'
-import { getCurriculumStats } from '../../services/learningService'
+import { getApplications } from '../../services/applicationService'
+import { getAdminCohorts, getAdminCohortStats } from '../../services/cohortService'
 import { getAssignmentStatsAdmin } from '../../services/assignmentService'
 import { getAdminSessionStats } from '../../services/sessionService'
 
-const emptyStats = { totalFellows: 0, unassigned: 0, tracks: {} }
-const emptyCohortStats = {
-  totalCohorts: 0,
-  active: 0,
-  upcoming: 0,
-  completed: 0,
-  archived: 0,
-}
-const emptyCurriculumStats = {
-  totalModules: 0,
-  publishedModules: 0,
-  draftModules: 0,
-  archivedModules: 0,
-  totalLessons: 0,
-}
-const emptyAssignmentStats = {
-  totalAssignments: 0,
-  publishedAssignments: 0,
-  pendingReviews: 0,
-  reviewedSubmissions: 0,
-  needsResubmission: 0,
-}
-const emptySessionStats = {
-  totalSessions: 0,
-  scheduled: 0,
-  completed: 0,
-  cancelled: 0,
-  averageAttendancePercentage: 0,
-  sessionsNeedingAttendance: 0,
-}
+const emptyTrackStats = { totalFellows: 0 }
+const emptyCohortStats = { active: 0 }
+const emptyAssignmentStats = { pendingReviews: 0 }
+const emptySessionStats = { scheduled: 0 }
 
-function StatSection({ title, children }) {
+function StatCard({ icon: Icon, label, value, helper }) {
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{children}</div>
-    </section>
+    <Card className="rounded-xl">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-500">{label}</p>
+          <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
+          {helper ? <p className="mt-1 text-xs font-medium text-slate-500">{helper}</p> : null}
+        </div>
+        <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600">
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+    </Card>
   )
 }
 
 export default function AdminDashboard() {
-  const [trackStats, setTrackStats] = useState(emptyStats)
+  const [trackStats, setTrackStats] = useState(emptyTrackStats)
   const [cohortStats, setCohortStats] = useState(emptyCohortStats)
-  const [curriculumStats, setCurriculumStats] = useState(emptyCurriculumStats)
   const [assignmentStats, setAssignmentStats] = useState(emptyAssignmentStats)
   const [sessionStats, setSessionStats] = useState(emptySessionStats)
+  const [applications, setApplications] = useState([])
+  const [cohorts, setCohorts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    let isMounted = true
-    const loadStats = async () => {
-      try {
-        const [trackData, cohortData, curriculumData, assignmentData, sessionData] =
-          await Promise.all([
-            getAdminTrackStats(),
-            getAdminCohortStats(),
-            getCurriculumStats(),
-            getAssignmentStatsAdmin(),
-            getAdminSessionStats(),
-          ])
-        if (isMounted) {
-          setTrackStats(trackData)
-          setCohortStats(cohortData)
-          setCurriculumStats(curriculumData)
-          setAssignmentStats(assignmentData)
-          setSessionStats(sessionData)
-        }
-      } catch {
-        if (isMounted) setError('Unable to load dashboard statistics.')
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
+  const loadDashboard = async () => {
+    setIsLoading(true)
+    setError('')
+    try {
+      const [
+        trackData,
+        cohortData,
+        assignmentData,
+        sessionData,
+        applicationData,
+        cohortList,
+      ] = await Promise.all([
+        getAdminTrackStats(),
+        getAdminCohortStats(),
+        getAssignmentStatsAdmin(),
+        getAdminSessionStats(),
+        getApplications(),
+        getAdminCohorts({ status: 'active' }),
+      ])
+      setTrackStats(trackData)
+      setCohortStats(cohortData)
+      setAssignmentStats(assignmentData)
+      setSessionStats(sessionData)
+      setApplications(applicationData.slice(0, 5))
+      setCohorts(cohortList.filter((cohort) => cohort.status === 'active').slice(0, 5))
+    } catch {
+      setError('Failed to load dashboard data.')
+    } finally {
+      setIsLoading(false)
     }
-    loadStats()
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  }
 
-  const trackDistribution = useMemo(
-    () =>
-      FELLOW_TRACK_OPTIONS.map((track) => ({
-        label: getFellowTrackLabel(track.value),
-        value: trackStats.tracks?.[track.value] ?? 0,
-      })),
-    [trackStats.tracks],
-  )
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDashboard()
+  }, [])
 
   return (
     <section>
-      <PageHeader
-        eyebrow="Admin"
-        title="Platform overview"
-        description="Monitor fellows, cohorts, curriculum, assessments, and sessions across DAAI pathways."
-        actions={
-          <>
-            <Button to="/admin/fellows" size="sm">
-              Fellows
-            </Button>
-            <Button to="/admin/cohorts" variant="secondary" size="sm">
-              Cohorts
-            </Button>
-            <Button to="/admin/submissions" variant="secondary" size="sm">
-              Reviews
-            </Button>
-          </>
-        }
+      <AdminPageHeader
+        label="Admin Dashboard"
+        title="Overview"
+        description="Monitor fellows, cohorts, applications, and learning activity."
       />
 
-      {error ? (
-        <p className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorState message={error} onRetry={loadDashboard} /> : null}
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </div>
+        <LoadingState message="Loading dashboard..." />
       ) : (
-        <>
-          <StatSection title="People & cohorts">
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
-              label="Total fellows"
-              value={trackStats.totalFellows}
+              icon={Users}
+              label="Total Fellows"
+              value={trackStats.totalFellows ?? 0}
               helper="Registered fellow accounts"
             />
             <StatCard
-              label="Unassigned"
-              value={trackStats.unassigned}
-              helper="Need track selection"
-              trend={trackStats.unassigned > 0 ? 'Action needed' : undefined}
+              icon={GraduationCap}
+              label="Active Cohorts"
+              value={cohortStats.active ?? 0}
+              helper="Running now"
             />
-            <StatCard label="Active cohorts" value={cohortStats.active} helper="Running now" />
             <StatCard
-              label="Upcoming cohorts"
-              value={cohortStats.upcoming}
-              helper="Scheduled to start"
+              icon={FileText}
+              label="Pending Reviews"
+              value={assignmentStats.pendingReviews ?? 0}
+              helper="Submissions awaiting review"
             />
-          </StatSection>
+            <StatCard
+              icon={Calendar}
+              label="Upcoming Sessions"
+              value={sessionStats.scheduled ?? 0}
+              helper="Scheduled sessions"
+            />
+          </div>
 
-          <StatSection title="Reviews & assessments">
-            <StatCard
-              label="Pending reviews"
-              value={assignmentStats.pendingReviews}
-              helper="Submissions awaiting mentor/admin"
-              action={
-                assignmentStats.pendingReviews > 0 ? (
-                  <Link
-                    to="/admin/submissions"
-                    className="text-sm font-semibold text-indigo-600 hover:underline"
-                  >
-                    Open review queue →
-                  </Link>
-                ) : null
-              }
-            />
-            <StatCard
-              label="Published assignments"
-              value={assignmentStats.publishedAssignments}
-              helper="Visible to fellows"
-            />
-            <StatCard
-              label="Needs resubmission"
-              value={assignmentStats.needsResubmission}
-              helper="Returned to fellows"
-            />
-            <StatCard
-              label="Reviewed"
-              value={assignmentStats.reviewedSubmissions}
-              helper="Completed reviews"
-            />
-          </StatSection>
+          <div className="grid gap-6 xl:grid-cols-2">
+            <Card className="rounded-xl" padding={false}>
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Recent Applications</h2>
+                  <p className="text-sm text-slate-500">Latest submitted applications.</p>
+                </div>
+                <Button to="/admin/applications" variant="outline" size="sm">
+                  View all
+                </Button>
+              </div>
+              {applications.length ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Applicant</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Submitted</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {applications.map((application) => (
+                      <TableRow key={application.id}>
+                        <TableCell className="font-semibold text-slate-900">
+                          {application.fullName}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={application.status} />
+                        </TableCell>
+                        <TableCell>
+                          {application.createdAt
+                            ? new Date(application.createdAt).toLocaleDateString()
+                            : 'Unknown'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="p-5">
+                  <EmptyState
+                    title="No applications found."
+                    description="Submitted applications will appear here."
+                  />
+                </div>
+              )}
+            </Card>
 
-          <StatSection title="Sessions & attendance">
-            <StatCard label="Total sessions" value={sessionStats.totalSessions} />
-            <StatCard label="Scheduled" value={sessionStats.scheduled} />
-            <StatCard
-              label="Avg attendance"
-              value={`${sessionStats.averageAttendancePercentage}%`}
-            />
-            <StatCard
-              label="Needs attendance"
-              value={sessionStats.sessionsNeedingAttendance}
-              helper="Sessions missing marks"
-              action={
-                sessionStats.sessionsNeedingAttendance > 0 ? (
-                  <Link
-                    to="/admin/sessions"
-                    className="text-sm font-semibold text-indigo-600 hover:underline"
-                  >
-                    Mark attendance →
-                  </Link>
-                ) : null
-              }
-            />
-          </StatSection>
-
-          <StatSection title="Curriculum">
-            <StatCard label="Total modules" value={curriculumStats.totalModules} />
-            <StatCard label="Published" value={curriculumStats.publishedModules} />
-            <StatCard label="Draft" value={curriculumStats.draftModules} />
-            <StatCard label="Total lessons" value={curriculumStats.totalLessons} />
-          </StatSection>
-
-          <StatSection title="Track distribution">
-            {trackDistribution.map((item) => (
-              <StatCard
-                key={item.label}
-                label={item.label}
-                value={item.value}
-                helper="Fellows on this track"
-              />
-            ))}
-          </StatSection>
-        </>
+            <Card className="rounded-xl" padding={false}>
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Active Cohorts</h2>
+                  <p className="text-sm text-slate-500">Currently running cohorts.</p>
+                </div>
+                <Button to="/admin/cohorts" variant="outline" size="sm">
+                  View all
+                </Button>
+              </div>
+              {cohorts.length ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cohort</TableHead>
+                      <TableHead>Track</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cohorts.map((cohort) => (
+                      <TableRow key={cohort.id}>
+                        <TableCell className="font-semibold text-slate-900">
+                          {cohort.name}
+                        </TableCell>
+                        <TableCell>{cohort.track}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={cohort.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="p-5">
+                  <EmptyState
+                    title="No active cohorts found."
+                    description="Active cohorts will appear here once they are running."
+                  />
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
       )}
     </section>
   )
