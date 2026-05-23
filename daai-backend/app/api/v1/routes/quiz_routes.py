@@ -22,13 +22,13 @@ router = APIRouter()
 @router.get("/categories", response_model=list[QuizCategoryResponse])
 async def get_quiz_categories(user: User = Depends(current_user)):
     quiz_service = QuizService()
-    return await quiz_service.get_categories()
+    return await quiz_service.get_categories(user)
 
 
 @router.get("/my-attempts", response_model=list[QuizAttemptSummaryResponse])
 async def get_my_quiz_attempts(user: User = Depends(current_user)):
     quiz_service = QuizService()
-    return await quiz_service.get_my_attempts(str(user.id))
+    return await quiz_service.get_my_attempts(str(user.id), user)
 
 
 @router.get("/my-attempts/{attempt_id}", response_model=QuizAttemptResponse)
@@ -37,7 +37,7 @@ async def get_my_quiz_attempt(
     user: User = Depends(current_user),
 ):
     quiz_service = QuizService()
-    return await quiz_service.get_my_attempt(attempt_id, str(user.id))
+    return await quiz_service.get_my_attempt(attempt_id, str(user.id), user)
 
 
 @router.get("/admin/questions", response_model=list[QuizQuestionAdminResponse])
@@ -96,7 +96,7 @@ async def get_quiz_questions(
     user: User = Depends(current_user),
 ):
     quiz_service = QuizService()
-    return await quiz_service.get_questions(category)
+    return await quiz_service.get_questions(category, user)
 
 
 @router.post("/{category}/submit", response_model=QuizAttemptResponse)
@@ -106,4 +106,4 @@ async def submit_quiz(
     user: User = Depends(current_user),
 ):
     quiz_service = QuizService()
-    return await quiz_service.submit_quiz(category, str(user.id), payload)
+    return await quiz_service.submit_quiz(category, str(user.id), payload, user)

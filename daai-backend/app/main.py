@@ -6,6 +6,16 @@ from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
 from app.api.v1.router import api_router
 from app.api.v1.routes import learning_progress_routes, profile_routes, quiz_routes
+from app.api.v1.routes import (
+    admin_cohort_routes,
+    admin_curriculum_routes,
+    admin_assignment_v2_routes,
+    admin_session_routes,
+    admin_fellow_routes,
+    fellow_routes,
+    profile_routes,
+    quiz_routes,
+)
 
 
 @asynccontextmanager
@@ -55,3 +65,9 @@ app.include_router(
     prefix="/api/learning-progress",
     tags=["Learning Progress"],
 )
+app.include_router(fellow_routes.router, prefix="/api/fellow", tags=["Fellow"])
+app.include_router(admin_fellow_routes.router, prefix="/api/admin", tags=["Admin Fellow Management"])
+app.include_router(admin_cohort_routes.router, prefix="/api/admin", tags=["Admin Cohort Management"])
+app.include_router(admin_curriculum_routes.router, prefix="/api/admin", tags=["Admin Curriculum Management"])
+app.include_router(admin_assignment_v2_routes.router, prefix="/api/admin", tags=["Admin Assignment Management"])
+app.include_router(admin_session_routes.router, prefix="/api/admin", tags=["Admin Session Management"])

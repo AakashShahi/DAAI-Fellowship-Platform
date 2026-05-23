@@ -1,11 +1,11 @@
-import DashboardLayout from './DashboardLayout'
 import { mentorNavigation } from '../constants/navigation'
+import PortalLayout from './PortalLayout'
 
 export default function MentorLayout() {
   return (
-    <DashboardLayout
+    <PortalLayout
       navigation={mentorNavigation}
-      sidebarTitle="Mentor"
+      portalLabel="Mentor"
       profilePath="/profile/settings"
     />
   )

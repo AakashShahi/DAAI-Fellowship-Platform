@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import LessonList from '../../components/learning/LessonList'
+import ProgressBar from '../../components/learning/ProgressBar'
 import { getFellowModuleDetail } from '../../services/learningService'
 
 export default function FellowModulePage() {
@@ -9,50 +11,32 @@ export default function FellowModulePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let m = true
-    const run = async () => {
-      setError('')
-      try {
-        const res = await getFellowModuleDetail(moduleId)
-        if (m) {
-          setData(res)
-        }
-      } catch (err) {
-        if (m) {
+    let isMounted = true
+    getFellowModuleDetail(moduleId)
+      .then((res) => {
+        if (isMounted) setData(res)
+      })
+      .catch((err) => {
+        if (isMounted) {
           const detail = err?.response?.data?.detail
-          setError(
-            typeof detail === 'string' ? detail : 'Unable to load this module.',
-          )
+          setError(typeof detail === 'string' ? detail : 'Unable to load this module.')
         }
-      } finally {
-        if (m) {
-          setLoading(false)
-        }
-      }
-    }
-    run()
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
     return () => {
-      m = false
+      isMounted = false
     }
   }, [moduleId])
 
-  if (loading) {
-    return (
-      <section className="mx-auto max-w-3xl px-4 py-8">
-        <p className="text-sm font-medium text-[#6f5f57]">Loading…</p>
-      </section>
-    )
-  }
-
+  if (loading) return <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">Loading module...</p>
   if (error || !data) {
     return (
-      <section className="mx-auto max-w-3xl px-4 py-8">
+      <section className="mx-auto max-w-4xl px-4 py-8">
         <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
           {error || 'Module not found.'}
         </p>
-        <Link to="/fellow/learning" className="mt-4 inline-block text-sm font-bold text-[#f26322]">
-          ← Back to learning
-        </Link>
       </section>
     )
   }
@@ -60,37 +44,26 @@ export default function FellowModulePage() {
   const { module, lessons } = data
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-8 lg:px-0">
-      <Link to="/fellow/learning" className="text-sm font-bold text-[#f26322] hover:text-[#d94f13]">
-        ← All modules
+    <section className="mx-auto max-w-5xl px-4 py-8 lg:px-0">
+      <Link to="/fellow/learning" className="text-sm font-bold text-[#f26322]">
+        All modules
       </Link>
-      <h1 className="mt-4 text-3xl font-black text-[#24140e]">{module.title}</h1>
-      <p className="mt-2 text-sm text-[#6f5f57]">{module.description}</p>
-
-      {lessons.length === 0 ? (
-        <div className="mt-8 rounded-lg border border-orange-100 bg-white p-6 text-center shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <p className="font-black text-[#24140e]">No lessons in this module yet</p>
-          <p className="mt-2 text-sm text-[#6f5f57]">
-            Published lessons will be listed here when they are ready.
+      <div className="mt-4 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+          Module {module.order}
+        </p>
+        <h1 className="mt-2 text-3xl font-black text-[#24140e]">{module.title}</h1>
+        <p className="mt-3 text-sm font-medium text-[#6f5f57]">{module.description}</p>
+        <div className="mt-5">
+          <ProgressBar value={module.completionPercentage} />
+          <p className="mt-2 text-xs font-black uppercase tracking-wide text-[#6f5f57]">
+            {module.completedLessonCount} / {module.lessonCount} lessons completed
           </p>
         </div>
-      ) : (
-        <ul className="mt-8 space-y-3">
-          {lessons.map((lesson) => (
-            <li key={lesson.id}>
-              <Link
-                to={`/fellow/lessons/${lesson.id}`}
-                className="flex items-center justify-between rounded-lg border border-orange-100 bg-white px-4 py-3 shadow-sm transition hover:border-[#ffb088]"
-              >
-                <span className="font-bold text-[#24140e]">{lesson.title}</span>
-                <span className="text-xs font-black text-[#f26322]">
-                  {lesson.completed ? 'Completed' : 'Open'} · ~{lesson.estimatedMinutes}m
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      </div>
+      <div className="mt-6">
+        <LessonList moduleId={module.id} lessons={lessons} />
+      </div>
     </section>
   )
 }

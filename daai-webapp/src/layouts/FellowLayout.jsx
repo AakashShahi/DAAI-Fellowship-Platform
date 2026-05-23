@@ -1,12 +1,14 @@
-import DashboardLayout from './DashboardLayout'
+import FellowPortalContext from '../components/portal/FellowPortalContext'
 import { fellowNavigation } from '../constants/navigation'
+import PortalLayout from './PortalLayout'
 
 export default function FellowLayout() {
   return (
-    <DashboardLayout
+    <PortalLayout
       navigation={fellowNavigation}
-      sidebarTitle="Fellow"
+      portalLabel="Fellow"
       profilePath="/fellow/profile/settings"
+      contextSlot={<FellowPortalContext />}
     />
   )
 }

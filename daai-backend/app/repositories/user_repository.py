@@ -49,6 +49,28 @@ class UserRepository:
 
     async def update_password(self, user: User, hashed_password: str) -> User:
         user.hashed_password = hashed_password
+        user.password_reset_token_hash = None
+        user.password_reset_expires_at = None
+        user.updated_at = datetime.now(timezone.utc)
+        await user.save()
+        return user
+
+    async def set_password_reset_token(
+        self,
+        user: User,
+        *,
+        token_hash: str,
+        expires_at: datetime,
+    ) -> User:
+        user.password_reset_token_hash = token_hash
+        user.password_reset_expires_at = expires_at
+        user.updated_at = datetime.now(timezone.utc)
+        await user.save()
+        return user
+
+    async def clear_password_reset_token(self, user: User) -> User:
+        user.password_reset_token_hash = None
+        user.password_reset_expires_at = None
         user.updated_at = datetime.now(timezone.utc)
         await user.save()
         return user

@@ -15,7 +15,6 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         {publicRouteElements}
 
         <Route
