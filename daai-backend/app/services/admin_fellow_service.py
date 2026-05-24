@@ -10,8 +10,15 @@ from app.constants.learning_tracks import (
     SELECTED_TRACK_VALUES,
 )
 from app.models.user_model import User, UserRole
+from app.models.attendance_model import Attendance, AttendanceStatus
+from app.models.quiz_model import QuizAttempt
+from app.models.submission_model import Submission, SubmissionStatus
 from app.schema.admin_fellow_schema import (
+    AdminFellowAttendanceSummary,
     AdminFellowListItem,
+    AdminFellowProfile,
+    AdminFellowQuizProgress,
+    AdminFellowSubmissionSummary,
     AdminFellowTrackUpdateResponse,
     AdminTrackStatsResponse,
 )
@@ -70,6 +77,87 @@ class AdminFellowService:
         users.sort(key=lambda user: user.created_at, reverse=True)
         return [_to_admin_fellow_item(user) for user in users]
 
+    async def get_fellow_profile(self, fellow_id: str) -> AdminFellowProfile:
+        fellow = await User.get(_parse_user_id(fellow_id))
+        if fellow is None or fellow.role != UserRole.FELLOW:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Fellow not found",
+            )
+
+        quiz_attempts = await QuizAttempt.find(QuizAttempt.user_id == str(fellow.id)).to_list()
+        submissions = await Submission.find(Submission.fellow_id == fellow.id).to_list()
+        attendance_records = await Attendance.find(Attendance.fellow_id == fellow.id).to_list()
+
+        scores = [
+            round((attempt.score / attempt.total_questions) * 100)
+            for attempt in quiz_attempts
+            if attempt.total_questions
+        ]
+        last_attempt_at = max(
+            (attempt.submitted_at for attempt in quiz_attempts),
+            default=None,
+        )
+
+        reviewed_statuses = {
+            SubmissionStatus.REVIEWED,
+            SubmissionStatus.REVIEWED_V2,
+        }
+        needs_revision_statuses = {
+            SubmissionStatus.NEEDS_REVISION,
+            SubmissionStatus.NEEDS_RESUBMISSION,
+        }
+        pending_review = [
+            submission
+            for submission in submissions
+            if submission.status not in reviewed_statuses | needs_revision_statuses
+        ]
+
+        attendance_counts = {
+            status_value: sum(
+                1 for record in attendance_records if record.status == status_value
+            )
+            for status_value in AttendanceStatus
+        }
+        total_sessions = len(attendance_records)
+        attended_count = (
+            attendance_counts[AttendanceStatus.PRESENT]
+            + attendance_counts[AttendanceStatus.LATE]
+        )
+        attendance_rate = round((attended_count / total_sessions) * 100) if total_sessions else 0
+        list_item = _to_admin_fellow_item(fellow)
+
+        return AdminFellowProfile(
+            **list_item.model_dump(),
+            enrollment_status="Enrolled" if list_item.selected_track else "Pending",
+            quiz_progress=AdminFellowQuizProgress(
+                attempts=len(quiz_attempts),
+                best_score=max(scores, default=None),
+                average_score=round(sum(scores) / len(scores)) if scores else None,
+                last_attempt_at=last_attempt_at,
+            ),
+            assignment_submissions=AdminFellowSubmissionSummary(
+                total=len(submissions),
+                reviewed=sum(
+                    1 for submission in submissions if submission.status in reviewed_statuses
+                ),
+                pending_review=len(pending_review),
+                needs_revision=sum(
+                    1
+                    for submission in submissions
+                    if submission.status in needs_revision_statuses
+                ),
+            ),
+            attendance=AdminFellowAttendanceSummary(
+                total_sessions=total_sessions,
+                present=attendance_counts[AttendanceStatus.PRESENT],
+                absent=attendance_counts[AttendanceStatus.ABSENT],
+                late=attendance_counts[AttendanceStatus.LATE],
+                excused=attendance_counts[AttendanceStatus.EXCUSED],
+                attendance_rate=attendance_rate,
+            ),
+        )
+
     async def update_fellow_track(
         self,
         fellow_id: str,
@@ -111,6 +199,7 @@ class AdminFellowService:
 
         return AdminTrackStatsResponse(
             totalFellows=len(fellows),
+            activeFellows=sum(1 for fellow in fellows if fellow.is_active),
             unassigned=unassigned,
             tracks=tracks,
         )

@@ -6,6 +6,11 @@ export const getAdminFellows = async (track = '') => {
   return data
 }
 
+export const getAdminFellowProfile = async (fellowId) => {
+  const { data } = await axiosClient.get(`/admin/fellows/${fellowId}`)
+  return data
+}
+
 export const updateAdminFellowTrack = async (fellowId, selectedTrack) => {
   const { data } = await axiosClient.patch(`/admin/fellows/${fellowId}/track`, {
     selectedTrack,
