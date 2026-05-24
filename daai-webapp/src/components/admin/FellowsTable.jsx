@@ -37,12 +37,18 @@ export default function FellowsTable({
   selectedFellowProfile,
   isProfileLoading,
   isUpdating,
+  currentPage,
+  totalPages,
+  showingStart,
+  showingEnd,
+  totalItems,
+  onPageChange,
   onCloseProfile,
   onViewProfile,
   onChangeTrack,
   onResetTrack,
 }) {
-  if (fellows.length === 0) {
+  if (totalItems === 0) {
     return (
       <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569]">
         No fellows match this filter.
@@ -54,7 +60,7 @@ export default function FellowsTable({
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-          <thead className="bg-[#f8fafc] text-xs font-black uppercase tracking-wide text-[#475569]">
+          <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-[#475569]">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
@@ -67,9 +73,22 @@ export default function FellowsTable({
           <tbody className="divide-y divide-slate-200">
             {fellows.map((fellow) => {
               return (
-                <tr key={fellow.id} className="align-top">
-                  <td className="px-4 py-4 font-black text-[#0f172a]">
-                    {fellow.fullName}
+                <tr
+                  key={fellow.id}
+                  className="align-top transition-colors hover:bg-slate-50"
+                >
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <AvatarInitials name={fellow.fullName} />
+                      <div>
+                        <p className="font-black text-[#0f172a]">
+                          {fellow.fullName}
+                        </p>
+                        <p className="text-xs font-bold text-[#64748b]">
+                          Joined fellow
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-4 font-medium text-[#475569]">
                     {fellow.email}
@@ -77,8 +96,8 @@ export default function FellowsTable({
                   <td className="px-4 py-4">
                     <TrackBadge selectedTrack={fellow.selectedTrack} />
                   </td>
-                  <td className="px-4 py-4 font-bold text-[#475569]">
-                    {fellow.status ?? 'Active'}
+                  <td className="px-4 py-4">
+                    <StatusBadge status={fellow.status ?? 'Active'} />
                   </td>
                   <td className="px-4 py-4 font-medium text-[#475569]">
                     {formatDate(fellow.createdAt)}
@@ -88,10 +107,11 @@ export default function FellowsTable({
                       <DropdownMenuTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-[#475569] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-black text-[#475569] transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                           disabled={isUpdating || isProfileLoading}
                           aria-label={`Open actions for ${fellow.fullName}`}
                         >
+                          Actions
                           <MoreVertical className="h-4 w-4" />
                         </button>
                       </DropdownMenuTrigger>
@@ -138,12 +158,83 @@ export default function FellowsTable({
           </tbody>
         </table>
       </div>
+      <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#475569] sm:flex-row sm:items-center sm:justify-between">
+        <p>
+          Showing {showingStart}-{showingEnd} of {totalItems}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="rounded-md border border-slate-200 px-3 py-2 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={currentPage <= 1}
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <button
+              key={page}
+              type="button"
+              className={[
+                'h-9 w-9 rounded-md border text-sm font-black transition',
+                page === currentPage
+                  ? 'border-indigo-600 bg-indigo-600 text-white'
+                  : 'border-slate-200 text-[#475569] hover:bg-slate-50',
+              ].join(' ')}
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="rounded-md border border-slate-200 px-3 py-2 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={currentPage >= totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
       <FellowProfileDialog
         fellow={selectedFellowProfile}
         isOpen={Boolean(selectedFellowProfile)}
         onClose={onCloseProfile}
       />
     </div>
+  )
+}
+
+function AvatarInitials({ name }) {
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+
+  return (
+    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-indigo-100 bg-indigo-50 text-sm font-black text-indigo-700">
+      {initials || 'F'}
+    </span>
+  )
+}
+
+function StatusBadge({ status }) {
+  const normalizedStatus = status.toLowerCase()
+  const tone = normalizedStatus.includes('pending')
+    ? 'border-amber-200 bg-amber-50 text-amber-700'
+    : normalizedStatus.includes('suspend') || normalizedStatus.includes('inactive')
+      ? 'border-red-200 bg-red-50 text-red-700'
+      : normalizedStatus.includes('complete')
+        ? 'border-blue-200 bg-blue-50 text-blue-700'
+        : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+
+  return (
+    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${tone}`}>
+      {status}
+    </span>
   )
 }
 
