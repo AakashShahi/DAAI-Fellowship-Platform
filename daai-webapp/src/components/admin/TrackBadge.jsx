@@ -6,10 +6,10 @@ export default function TrackBadge({ selectedTrack }) {
   return (
     <span
       className={[
-        'inline-flex rounded-full px-3 py-1 text-xs font-black',
+        'inline-flex rounded-full border px-3 py-1 text-xs font-black',
         isSelected
-          ? 'bg-[#eef2ff] text-[#4f46e5]'
-          : 'bg-slate-100 text-slate-600',
+          ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+          : 'border-slate-200 bg-slate-50 text-slate-600',
       ].join(' ')}
     >
       {getFellowTrackLabel(selectedTrack)}

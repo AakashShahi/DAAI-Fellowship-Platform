@@ -20,6 +20,36 @@ class AdminFellowListItem(CamelModel):
     status: str
 
 
+class AdminFellowQuizProgress(CamelModel):
+    attempts: int
+    best_score: int | None = None
+    average_score: int | None = None
+    last_attempt_at: datetime | None = None
+
+
+class AdminFellowSubmissionSummary(CamelModel):
+    total: int
+    reviewed: int
+    pending_review: int
+    needs_revision: int
+
+
+class AdminFellowAttendanceSummary(CamelModel):
+    total_sessions: int
+    present: int
+    absent: int
+    late: int
+    excused: int
+    attendance_rate: int
+
+
+class AdminFellowProfile(AdminFellowListItem):
+    enrollment_status: str
+    quiz_progress: AdminFellowQuizProgress
+    assignment_submissions: AdminFellowSubmissionSummary
+    attendance: AdminFellowAttendanceSummary
+
+
 class AdminFellowTrackUpdateRequest(BaseModel):
     selectedTrack: SelectedTrack | None = None
 
@@ -38,5 +68,6 @@ class AdminFellowTrackUpdateResponse(CamelModel):
 
 class AdminTrackStatsResponse(BaseModel):
     totalFellows: int
+    activeFellows: int
     unassigned: int
     tracks: dict[str, int]

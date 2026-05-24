@@ -4,6 +4,7 @@ from app.dependencies.auth_dependency import current_user
 from app.models.user_model import User, UserRole
 from app.schema.admin_fellow_schema import (
     AdminFellowListItem,
+    AdminFellowProfile,
     AdminFellowTrackUpdateRequest,
     AdminFellowTrackUpdateResponse,
     AdminTrackStatsResponse,
@@ -29,6 +30,14 @@ async def list_admin_fellows(
     _admin: User = Depends(current_admin_only),
 ):
     return await AdminFellowService().list_fellows(track)
+
+
+@router.get("/fellows/{fellow_id}", response_model=AdminFellowProfile)
+async def get_admin_fellow_profile(
+    fellow_id: str,
+    _admin: User = Depends(current_admin_only),
+):
+    return await AdminFellowService().get_fellow_profile(fellow_id)
 
 
 @router.patch(
