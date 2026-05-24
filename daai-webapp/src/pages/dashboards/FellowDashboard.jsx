@@ -46,6 +46,29 @@ const formatDate = (value) => {
   })
 }
 
+const unwrapData = (value) => value?.data ?? value
+
+const normalizeArray = (value, key) => {
+  const data = unwrapData(value)
+
+  if (Array.isArray(data)) return data
+  if (key && Array.isArray(data?.[key])) return data[key]
+  if (Array.isArray(data?.data)) return data.data
+
+  return []
+}
+
+const normalizeObject = (value, key) => {
+  const data = unwrapData(value)
+
+  if (key && data && Object.prototype.hasOwnProperty.call(data, key)) {
+    return data[key]
+  }
+  if (data?.data && !Array.isArray(data.data)) return data.data
+
+  return data ?? null
+}
+
 const getAttemptPercentage = (attempt) =>
   attempt?.total_questions
     ? Math.round((attempt.score / attempt.total_questions) * 100)
@@ -150,6 +173,8 @@ export default function FellowDashboard() {
   const [assignments, setAssignments] = useState([])
   const [attendanceSummary, setAttendanceSummary] = useState(undefined)
   const [sessions, setSessions] = useState([])
+  const userLearningTrack = user?.learningTrack
+  const userSelectedTrack = user?.selectedTrack
 
   useEffect(() => {
     let isMounted = true
@@ -158,123 +183,138 @@ export default function FellowDashboard() {
       setIsLoadingDashboard(true)
       setDashboardError('')
 
-      const results = await Promise.allSettled([
-        getMyEnrollment(),
-        getFellowLearningSummary(),
-        getFellowLearningModules(),
-        getFellowAssignmentsSummary(),
-        getFellowAssignments(),
-        getFellowAttendanceSummary(),
-        getFellowSessions(),
-        getMyCohort(),
-        getMyProfile(),
-        getQuizCategories(),
-        getMyQuizAttempts(),
-      ])
-
-      if (!isMounted) return
-
-      const [
-        enrollmentResult,
-        learningSummaryResult,
-        learningModulesResult,
-        assignmentSummaryResult,
-        assignmentsResult,
-        attendanceSummaryResult,
-        sessionsResult,
-        cohortResult,
-        profileResult,
-        categoryResult,
-        attemptResult,
-      ] = results
-
-      if (enrollmentResult.status === 'fulfilled') {
-        setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
-      }
-
-      if (learningSummaryResult.status === 'fulfilled') {
-        setLearningSummary(learningSummaryResult.value)
-      }
-
-      if (learningModulesResult.status === 'fulfilled') {
-        const moduleData = learningModulesResult.value
-        setLearningModules(
-          Array.isArray(moduleData) ? moduleData : moduleData?.modules ?? [],
-        )
-      }
-
-      if (assignmentSummaryResult.status === 'fulfilled') {
-        setAssignmentSummary(assignmentSummaryResult.value)
-      }
-
-      if (assignmentsResult.status === 'fulfilled') {
-        setAssignments(Array.isArray(assignmentsResult.value) ? assignmentsResult.value : [])
-      }
-
-      if (attendanceSummaryResult.status === 'fulfilled') {
-        setAttendanceSummary(attendanceSummaryResult.value)
-      }
-
-      if (sessionsResult.status === 'fulfilled') {
-        setSessions(Array.isArray(sessionsResult.value) ? sessionsResult.value : [])
-      }
-
-      if (cohortResult.status === 'fulfilled') {
-        setMyCohort(cohortResult.value?.cohort ?? null)
-      }
-
-      if (profileResult.status === 'fulfilled') {
-        setProfile(profileResult.value)
-        updateUser({
-          full_name: profileResult.value.fullName,
-          email: profileResult.value.email,
-          role: profileResult.value.role,
-          learningTrack: profileResult.value.learningTrack,
-        })
-      }
-
-      if (categoryResult.status === 'fulfilled') {
-        setCategories(categoryResult.value)
-      }
-
-      if (attemptResult.status === 'fulfilled') {
-        setAttempts(attemptResult.value)
-      }
-
-      const activeTrack = getFellowTrack({
-        ...user,
-        learningTrack:
-          profileResult.status === 'fulfilled'
-            ? profileResult.value?.learningTrack
-            : user?.learningTrack,
-      })
-
-      if (activeTrack?.quizSlug) {
-        const progressResult = await getMyLearningProgressByTrack(
-          activeTrack.quizSlug,
-        ).then(
-          (value) => ({ status: 'fulfilled', value }),
-          (reason) => ({ status: 'rejected', reason }),
-        )
+      try {
+        const results = await Promise.allSettled([
+          getMyEnrollment(),
+          getFellowLearningSummary(),
+          getFellowLearningModules(),
+          getFellowAssignmentsSummary(),
+          getFellowAssignments(),
+          getFellowAttendanceSummary(),
+          getFellowSessions(),
+          getMyCohort(),
+          getMyProfile(),
+          getQuizCategories(),
+          getMyQuizAttempts(),
+        ])
 
         if (!isMounted) return
 
-        setLearningProgress(
-          progressResult.status === 'fulfilled' ? progressResult.value : null,
+        const [
+          enrollmentResult,
+          learningSummaryResult,
+          learningModulesResult,
+          assignmentSummaryResult,
+          assignmentsResult,
+          attendanceSummaryResult,
+          sessionsResult,
+          cohortResult,
+          profileResult,
+          categoryResult,
+          attemptResult,
+        ] = results
+
+        if (enrollmentResult.status === 'fulfilled') {
+          setProgramEnrollment(normalizeObject(enrollmentResult.value, 'enrollment'))
+        }
+
+        if (learningSummaryResult.status === 'fulfilled') {
+          setLearningSummary(normalizeObject(learningSummaryResult.value))
+        }
+
+        if (learningModulesResult.status === 'fulfilled') {
+          setLearningModules(normalizeArray(learningModulesResult.value, 'modules'))
+        }
+
+        if (assignmentSummaryResult.status === 'fulfilled') {
+          setAssignmentSummary(normalizeObject(assignmentSummaryResult.value))
+        }
+
+        if (assignmentsResult.status === 'fulfilled') {
+          setAssignments(normalizeArray(assignmentsResult.value, 'assignments'))
+        }
+
+        if (attendanceSummaryResult.status === 'fulfilled') {
+          setAttendanceSummary(normalizeObject(attendanceSummaryResult.value))
+        }
+
+        if (sessionsResult.status === 'fulfilled') {
+          setSessions(normalizeArray(sessionsResult.value, 'sessions'))
+        }
+
+        if (cohortResult.status === 'fulfilled') {
+          setMyCohort(normalizeObject(cohortResult.value, 'cohort'))
+        }
+
+        let profileData = null
+        if (profileResult.status === 'fulfilled') {
+          profileData = normalizeObject(profileResult.value)
+          setProfile(profileData)
+          updateUser({
+            full_name: profileData?.fullName,
+            email: profileData?.email,
+            role: profileData?.role,
+            learningTrack: profileData?.learningTrack,
+          })
+        }
+
+        if (categoryResult.status === 'fulfilled') {
+          setCategories(normalizeArray(categoryResult.value))
+        }
+
+        if (attemptResult.status === 'fulfilled') {
+          setAttempts(normalizeArray(attemptResult.value))
+        }
+
+        const activeTrack = getFellowTrack({
+          ...user,
+          selectedTrack: userSelectedTrack,
+          learningTrack: profileData?.learningTrack ?? userLearningTrack,
+        })
+
+        if (activeTrack?.quizSlug) {
+          const progressResult = await getMyLearningProgressByTrack(
+            activeTrack.quizSlug,
+          ).then(
+            (value) => ({ status: 'fulfilled', value }),
+            (reason) => ({ status: 'rejected', reason }),
+          )
+
+          if (!isMounted) return
+
+          setLearningProgress(
+            progressResult.status === 'fulfilled'
+              ? normalizeObject(progressResult.value)
+              : null,
+          )
+        } else {
+          setLearningProgress(null)
+        }
+
+        const rejectedResult = results.find((result) => result.status === 'rejected')
+        if (rejectedResult) {
+          console.error('Failed to load part of fellow dashboard:', rejectedResult.reason)
+          const status = rejectedResult.reason?.response?.status
+          setDashboardError(
+            status === 401 || status === 403
+              ? 'Your session expired. Please login again.'
+              : 'Unable to load dashboard data. Please try refreshing the page.',
+          )
+        }
+      } catch (loadError) {
+        if (!isMounted) return
+        console.error('Failed to load fellow dashboard:', loadError)
+        const status = loadError?.response?.status
+        setDashboardError(
+          status === 401 || status === 403
+            ? 'Your session expired. Please login again.'
+            : 'Unable to load dashboard data. Please try refreshing the page.',
         )
-      } else {
-        setLearningProgress(null)
+      } finally {
+        if (isMounted) {
+          setIsLoadingDashboard(false)
+        }
       }
-
-      if (
-        profileResult.status === 'rejected' ||
-        categoryResult.status === 'rejected' ||
-        attemptResult.status === 'rejected'
-      ) {
-        setDashboardError('Unable to load some dashboard details right now.')
-      }
-
-      setIsLoadingDashboard(false)
     }
 
     loadDashboard()
@@ -282,7 +322,7 @@ export default function FellowDashboard() {
     return () => {
       isMounted = false
     }
-  }, [reloadKey, updateUser, user])
+  }, [reloadKey, updateUser, userLearningTrack, userSelectedTrack])
 
   const currentUser = {
     ...user,
