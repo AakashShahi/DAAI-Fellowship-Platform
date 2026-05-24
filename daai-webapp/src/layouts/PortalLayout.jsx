@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import PortalSidebar from '../components/portal/PortalSidebar'
 import PortalTopBar from '../components/portal/PortalTopBar'
@@ -9,7 +9,25 @@ export default function PortalLayout({
   profilePath,
   contextSlot,
 }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(min-width: 1024px)').matches
+      : false,
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)')
+    const syncSidebarForViewport = (event) => {
+      setIsSidebarOpen(event.matches)
+    }
+
+    setIsSidebarOpen(mediaQuery.matches)
+    mediaQuery.addEventListener('change', syncSidebarForViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', syncSidebarForViewport)
+    }
+  }, [])
 
   return (
     <div className="flex h-svh flex-col overflow-hidden bg-slate-50 text-slate-700">

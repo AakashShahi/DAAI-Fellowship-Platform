@@ -15,6 +15,7 @@ import {
   NotebookText,
   Settings,
   Target,
+  X,
   UserCheck,
   Users,
 } from 'lucide-react'
@@ -51,7 +52,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
       <button
         type="button"
         className={cn(
-          'fixed inset-0 z-30 bg-slate-950/35 transition-opacity lg:hidden',
+          'fixed inset-0 z-40 bg-slate-950/35 transition-opacity lg:hidden',
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         aria-label="Close menu"
@@ -60,11 +61,13 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-72 max-w-[82vw] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 lg:static lg:h-full lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex w-72 max-w-[82vw] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-200 ease-out lg:static lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none',
+          isOpen
+            ? 'translate-x-0 lg:w-64 lg:opacity-100'
+            : '-translate-x-full lg:w-0 lg:border-r-0 lg:opacity-0',
         )}
       >
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:w-64 lg:shrink-0 lg:px-5">
           <div className="flex items-center justify-between gap-3 px-1">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
@@ -78,7 +81,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
               aria-label="Close menu"
               onClick={onClose}
             >
-              <span aria-hidden="true">X</span>
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
           <nav className="mt-4 flex flex-col gap-2">
@@ -90,7 +93,11 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
                   key={item.to}
                   to={item.to}
                   end={item.end}
-                  onClick={onClose}
+                  onClick={() => {
+                    if (window.matchMedia('(max-width: 1023px)').matches) {
+                      onClose()
+                    }
+                  }}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition',
