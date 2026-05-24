@@ -1,4 +1,10 @@
-import { Eye, MoreVertical, RefreshCcw, Trash2, UserX } from 'lucide-react'
+import {
+  Eye,
+  MoreVertical,
+  RefreshCcw,
+  ShieldAlert,
+  Trash2,
+} from 'lucide-react'
 import {
   FELLOW_TRACK_OPTIONS,
   getFellowTrackLabel,
@@ -47,122 +53,144 @@ export default function FellowsTable({
   onViewProfile,
   onChangeTrack,
   onResetTrack,
+  onSuspendFellow,
+  onDeleteFellow,
 }) {
   if (totalItems === 0) {
     return (
-      <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569]">
+      <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm font-bold text-[#475569] shadow-sm">
         No fellows match this filter.
       </p>
     )
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
           <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-[#475569]">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Selected Track</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Joined Date</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="whitespace-nowrap px-4 py-3">Name</th>
+              <th className="whitespace-nowrap px-4 py-3">Email</th>
+              <th className="whitespace-nowrap px-4 py-3">Selected Track</th>
+              <th className="whitespace-nowrap px-4 py-3">Status</th>
+              <th className="whitespace-nowrap px-4 py-3">Joined Date</th>
+              <th className="whitespace-nowrap px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {fellows.map((fellow) => {
-              return (
-                <tr
-                  key={fellow.id}
-                  className="align-top transition-colors hover:bg-slate-50"
-                >
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <AvatarInitials name={fellow.fullName} />
-                      <div>
-                        <p className="font-black text-[#0f172a]">
-                          {fellow.fullName}
-                        </p>
-                        <p className="text-xs font-bold text-[#64748b]">
-                          Joined fellow
-                        </p>
-                      </div>
+            {fellows.map((fellow) => (
+              <tr
+                key={fellow.id}
+                className="align-top transition-colors hover:bg-slate-50"
+              >
+                <td className="min-w-64 px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <AvatarInitials name={fellow.fullName} />
+                    <div>
+                      <p className="font-black text-[#0f172a]">
+                        {fellow.fullName}
+                      </p>
+                      <p className="text-xs font-bold text-[#64748b]">
+                        Joined fellow
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-4 py-4 font-medium text-[#475569]">
-                    {fellow.email}
-                  </td>
-                  <td className="px-4 py-4">
-                    <TrackBadge selectedTrack={fellow.selectedTrack} />
-                  </td>
-                  <td className="px-4 py-4">
-                    <StatusBadge status={fellow.status ?? 'Active'} />
-                  </td>
-                  <td className="px-4 py-4 font-medium text-[#475569]">
-                    {formatDate(fellow.createdAt)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-black text-[#475569] transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          disabled={isUpdating || isProfileLoading}
-                          aria-label={`Open actions for ${fellow.fullName}`}
-                        >
-                          Actions
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-56">
-                        <DropdownMenuItem onSelect={() => onViewProfile(fellow)}>
-                          <Eye className="h-4 w-4" />
-                          View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Change Track</DropdownMenuLabel>
-                        {FELLOW_TRACK_OPTIONS.map((track) => (
-                          <DropdownMenuItem
-                            key={track.value}
-                            disabled={isUpdating || fellow.selectedTrack === track.value}
-                            onSelect={() =>
-                              onChangeTrack(fellow, track.value, track.label)
-                            }
-                          >
-                            {track.label}
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
+                  </div>
+                </td>
+                <td className="min-w-56 px-4 py-4 font-medium text-[#475569]">
+                  {fellow.email}
+                </td>
+                <td className="px-4 py-4">
+                  <TrackBadge selectedTrack={fellow.selectedTrack} />
+                </td>
+                <td className="px-4 py-4">
+                  <StatusBadge status={fellow.status ?? 'Active'} />
+                </td>
+                <td className="whitespace-nowrap px-4 py-4 font-medium text-[#475569]">
+                  {formatDate(fellow.createdAt)}
+                </td>
+                <td className="px-4 py-4 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-sm font-black text-[#475569] transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={isUpdating || isProfileLoading}
+                        aria-label={`Open actions for ${fellow.fullName}`}
+                      >
+                        Actions
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      collisionPadding={16}
+                      className="z-[80] min-w-64 rounded-xl border-slate-200 p-2 shadow-xl"
+                    >
+                      <DropdownMenuItem
+                        className="font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700"
+                        onSelect={() => onViewProfile(fellow)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View Profile
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs font-black uppercase tracking-wide text-slate-400">
+                        Change Track
+                      </DropdownMenuLabel>
+                      {FELLOW_TRACK_OPTIONS.map((track) => (
                         <DropdownMenuItem
-                          disabled={isUpdating || !fellow.selectedTrack}
-                          onSelect={() => onResetTrack(fellow)}
+                          key={track.value}
+                          className="font-semibold text-slate-700 hover:bg-slate-100 focus:bg-slate-100"
+                          disabled={isUpdating || fellow.selectedTrack === track.value}
+                          onSelect={() =>
+                            onChangeTrack(fellow, track.value, track.label)
+                          }
                         >
-                          <RefreshCcw className="h-4 w-4" />
-                          Reset Track
+                          {track.label}
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled>
-                          <UserX className="h-4 w-4" />
-                          Suspend Fellow
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled className="text-red-700">
-                          <Trash2 className="h-4 w-4" />
-                          Delete Fellow
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              )
-            })}
+                      ))}
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="font-semibold text-orange-700 hover:bg-orange-50 focus:bg-orange-50"
+                        disabled={isUpdating || !fellow.selectedTrack}
+                        onSelect={() => onResetTrack(fellow)}
+                      >
+                        <RefreshCcw className="h-4 w-4" />
+                        Reset Track
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="font-semibold text-amber-700 hover:bg-amber-50 focus:bg-amber-50"
+                        disabled={isUpdating}
+                        onSelect={() => onSuspendFellow(fellow)}
+                      >
+                        <ShieldAlert className="h-4 w-4" />
+                        Suspend Fellow
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="font-semibold text-red-700 hover:bg-red-50 focus:bg-red-50"
+                        disabled={isUpdating}
+                        onSelect={() => onDeleteFellow(fellow)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Fellow
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
       <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#475569] sm:flex-row sm:items-center sm:justify-between">
         <p>
           Showing {showingStart}-{showingEnd} of {totalItems}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             className="rounded-md border border-slate-200 px-3 py-2 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -196,6 +224,7 @@ export default function FellowsTable({
           </button>
         </div>
       </div>
+
       <FellowProfileDialog
         fellow={selectedFellowProfile}
         isOpen={Boolean(selectedFellowProfile)}

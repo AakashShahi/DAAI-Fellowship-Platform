@@ -16,6 +16,7 @@ import { ErrorState, LoadingState } from '../../components/admin/AdminStates'
 import FellowsTable from '../../components/admin/FellowsTable'
 import TrackFilter from '../../components/admin/TrackFilter'
 import Button from '../../components/ui/Button'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import {
   getAdminFellowProfile,
   getAdminFellows,
@@ -42,6 +43,7 @@ export default function FellowsPage() {
   const [trackFilter, setTrackFilter] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFellowProfile, setSelectedFellowProfile] = useState(null)
+  const [confirmation, setConfirmation] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -197,18 +199,11 @@ export default function FellowsPage() {
     }
   }
 
-  const handleResetTrack = async (fellow) => {
-    const confirmed = window.confirm(
-      `Reset ${fellow.fullName}'s selected track? They will need to choose again.`,
-    )
-
-    if (!confirmed) {
-      return
-    }
-
+  const resetFellowTrack = async (fellow) => {
     setIsUpdating(true)
     setError('')
     setSuccessMessage('')
+    setConfirmation(null)
 
     try {
       const data = await updateAdminFellowTrack(fellow.id, null)
@@ -219,6 +214,42 @@ export default function FellowsPage() {
     } finally {
       setIsUpdating(false)
     }
+  }
+
+  const handleResetTrack = (fellow) => {
+    setConfirmation({
+      title: 'Reset fellow track?',
+      message: `${fellow.fullName} will lose their selected track and will need to choose again.`,
+      confirmLabel: 'Reset Track',
+      variant: 'danger',
+      onConfirm: () => resetFellowTrack(fellow),
+    })
+  }
+
+  const handleSuspendFellow = (fellow) => {
+    setConfirmation({
+      title: 'Suspend fellow?',
+      message: `${fellow.fullName} will be suspended once account actions are connected.`,
+      confirmLabel: 'Suspend Fellow',
+      variant: 'danger',
+      onConfirm: () => {
+        setConfirmation(null)
+        setSuccessMessage('Suspend Fellow is ready in the UI. Backend action is not connected yet.')
+      },
+    })
+  }
+
+  const handleDeleteFellow = (fellow) => {
+    setConfirmation({
+      title: 'Delete fellow?',
+      message: `${fellow.fullName} would be permanently removed once delete support is connected.`,
+      confirmLabel: 'Delete Fellow',
+      variant: 'danger',
+      onConfirm: () => {
+        setConfirmation(null)
+        setSuccessMessage('Delete Fellow is ready in the UI. Backend action is not connected yet.')
+      },
+    })
   }
 
   return (
@@ -286,7 +317,7 @@ export default function FellowsPage() {
           label="Salesforce Track"
           value={stats?.tracks?.salesforce ?? 0}
           icon={ShieldCheck}
-          tone="green"
+          tone="violet"
         />
         <FellowStatCard
           label="Pending"
@@ -296,7 +327,7 @@ export default function FellowsPage() {
         />
       </div>
 
-      <div className="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <label className="w-full text-sm font-bold text-[#0f172a] lg:max-w-xl">
             Search fellows
@@ -313,13 +344,13 @@ export default function FellowsPage() {
             </span>
           </label>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={exportFellowsCsv} disabled={isLoading}>
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
             <Button disabled>
               <Plus className="h-4 w-4" />
               Add Fellow
+            </Button>
+            <Button variant="outline" onClick={exportFellowsCsv} disabled={isLoading}>
+              <Download className="h-4 w-4" />
+              Export CSV
             </Button>
           </div>
         </div>
@@ -347,8 +378,20 @@ export default function FellowsPage() {
           onViewProfile={handleViewProfile}
           onChangeTrack={handleChangeTrack}
           onResetTrack={handleResetTrack}
+          onSuspendFellow={handleSuspendFellow}
+          onDeleteFellow={handleDeleteFellow}
         />
       )}
+      <ConfirmDialog
+        open={Boolean(confirmation)}
+        title={confirmation?.title}
+        message={confirmation?.message}
+        confirmLabel={confirmation?.confirmLabel}
+        variant={confirmation?.variant}
+        isLoading={isUpdating}
+        onCancel={() => setConfirmation(null)}
+        onConfirm={confirmation?.onConfirm}
+      />
     </section>
   )
 }
@@ -359,12 +402,12 @@ function FellowStatCard({ label, value, icon: Icon, tone }) {
     emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     purple: 'bg-purple-50 text-purple-700 border-purple-200',
     sky: 'bg-sky-50 text-sky-700 border-sky-200',
-    green: 'bg-green-50 text-green-700 border-green-200',
+    violet: 'bg-violet-50 text-violet-700 border-violet-200',
     amber: 'bg-amber-50 text-amber-700 border-amber-200',
   }
 
   return (
-    <article className="min-h-32 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="min-h-32 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold text-slate-500">{label}</p>
         <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full border ${tones[tone]}`}>
