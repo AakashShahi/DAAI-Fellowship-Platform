@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { Award, CalendarDays, CheckCircle2, Users } from 'lucide-react'
 import PathwayCard from '../../components/public/PathwayCard'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
+import heroImage from '../../assets/hero.png'
 import {
   FELLOWSHIP_PATHWAYS,
   HOW_IT_WORKS_STEPS,
@@ -11,29 +13,78 @@ import {
 
 export default function HomePage() {
   const activePathways = FELLOWSHIP_PATHWAYS.filter((p) => !p.comingSoon)
+  const heroStats = [
+    { label: '12-16 weeks', helper: 'Structured cohort learning', icon: CalendarDays },
+    { label: '4 learning tracks', helper: 'Cloud, Salesforce, QA, Data/AI', icon: CheckCircle2 },
+    { label: 'Mentor-led', helper: 'Guidance and project review', icon: Users },
+    { label: 'Certificate included', helper: 'Earned through completion', icon: Award },
+  ]
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-            CloudMandap · DAAI Fellowship
-          </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            Build Industry-Ready Skills with the DAAI Fellowship
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-slate-600">
-            A hands-on fellowship program by CloudMandap focused on Data, Automation,
-            Artificial Intelligence, Cloud, QA, Salesforce, and real-world project
-            experience.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button to="/fellowship/apply" size="lg">
-              Apply Now
-            </Button>
-            <Button to="/fellowship#pathways" variant="secondary" size="lg">
-              Explore Pathways
-            </Button>
+      <section className="relative overflow-hidden bg-slate-950 text-white">
+        <img
+          src={heroImage}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-20"
+        />
+        <div className="absolute inset-0 bg-slate-950/70" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-indigo-200">
+              CloudMandap · DAAI Fellowship
+            </p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              DAAI Fellowship Program
+            </h1>
+            <p className="mt-5 max-w-2xl text-xl font-semibold text-indigo-100">
+              Build industry-ready skills in Cloud, Salesforce, QA, and Data/AI.
+            </p>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
+              A structured fellowship with mentor support, cohort accountability,
+              hands-on projects, quizzes, assignments, and certification.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button to="/fellowship/apply" size="lg">
+                Apply Now
+              </Button>
+              <Button
+                to="/fellowship#pathways"
+                variant="secondary"
+                size="lg"
+                className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+              >
+                Explore Tracks
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/15 bg-white/10 p-5 shadow-2xl backdrop-blur">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {heroStats.map((stat) => {
+                const Icon = stat.icon
+
+                return (
+                  <div
+                    key={stat.label}
+                    className="rounded-xl border border-white/10 bg-white/10 p-4"
+                  >
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-indigo-400/20 text-indigo-100">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <p className="mt-4 text-lg font-bold text-white">{stat.label}</p>
+                    <p className="mt-1 text-sm leading-5 text-slate-200">
+                      {stat.helper}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-4 rounded-xl border border-indigo-300/20 bg-indigo-500/20 p-4">
+              <p className="text-sm font-semibold text-indigo-100">
+                Learn by building, submitting, reviewing, and improving with your cohort.
+              </p>
+            </div>
           </div>
         </div>
       </section>
