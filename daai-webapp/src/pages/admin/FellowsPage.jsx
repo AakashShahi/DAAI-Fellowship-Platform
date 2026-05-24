@@ -11,19 +11,27 @@ import {
   TestTube2,
   Users,
 } from 'lucide-react'
-import AdminPageHeader from '../../components/admin/AdminPageHeader'
 import { ErrorState, LoadingState } from '../../components/admin/AdminStates'
 import FellowsTable from '../../components/admin/FellowsTable'
-import TrackFilter from '../../components/admin/TrackFilter'
 import Button from '../../components/ui/Button'
+import Card, {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/Card'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
+import Select from '../../components/ui/Select'
 import {
   getAdminFellowProfile,
   getAdminFellows,
   getAdminTrackStats,
   updateAdminFellowTrack,
 } from '../../services/adminFellowService'
-import { getFellowTrackLabel } from '../../constants/fellowTracks'
+import {
+  ADMIN_TRACK_FILTER_OPTIONS,
+  getFellowTrackLabel,
+} from '../../constants/fellowTracks'
 
 const PAGE_SIZE = 10
 
@@ -254,29 +262,52 @@ export default function FellowsPage() {
 
   return (
     <section>
-      <AdminPageHeader
-        label="Fellows"
-        title="Fellow Management"
-        description="Manage registered fellows, track assignments, and enrollment status."
-        compact
-        actions={
-          <Button variant="outline" onClick={refreshFellows} disabled={isLoading || isUpdating}>
-            <RefreshCcw className="h-4 w-4" />
-            Refresh
-          </Button>
-        }
-      >
-        <TrackFilter
-          value={trackFilter}
-          onChange={(value) => {
-            setIsLoading(true)
-            setError('')
-            setTrackFilter(value)
-            setSuccessMessage('')
-          }}
-          disabled={isLoading || isUpdating}
-        />
-      </AdminPageHeader>
+      <Card padding={false} className="mb-5">
+        <CardHeader className="p-5 pb-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                Fellows
+              </p>
+              <CardTitle className="mt-2 text-3xl">Fellow Management</CardTitle>
+              <CardDescription className="mt-3 max-w-2xl">
+                Manage registered fellows, track assignments, and enrollment status.
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={refreshFellows}
+              disabled={isLoading || isUpdating}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-5 pt-0">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Select
+              label="Track Filter"
+              name="trackFilter"
+              value={trackFilter}
+              onChange={(event) => {
+                setIsLoading(true)
+                setError('')
+                setTrackFilter(event.target.value)
+                setSuccessMessage('')
+              }}
+              disabled={isLoading || isUpdating}
+            >
+              {ADMIN_TRACK_FILTER_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label === 'All' ? 'All tracks' : option.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {error ? (
         <ErrorState message={error} onRetry={refreshFellows} />
