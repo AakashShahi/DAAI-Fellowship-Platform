@@ -1,11 +1,22 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
+import logging
 
 from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
 from app.api.v1.router import api_router
 from app.api.v1.routes import profile_routes, quiz_routes
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+# Set pymongo to WARNING level to reduce noise
+logging.getLogger('pymongo').setLevel(logging.WARNING)
+logging.getLogger('motor').setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -17,34 +28,27 @@ async def lifespan(app: FastAPI):
         await close_mongo_connection()
 
 
+# Create app
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
     lifespan=lifespan
 )
 
+# Add CORS middleware using Starlette's CORSMiddleware (handles errors properly)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:5175",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-    ],
-    allow_origin_regex=r"^http://(127\.0\.0\.1|localhost):517\d$",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
 @app.get("/")
 async def root():
-    return {
-        "message": "DAAI Backend Running"
-    }
+    return {"message": "DAAI Backend Running"}
 
 
 app.include_router(api_router, prefix="/api/v1")

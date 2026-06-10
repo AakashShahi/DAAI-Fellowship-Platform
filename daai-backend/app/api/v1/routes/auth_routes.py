@@ -1,4 +1,5 @@
 from typing import Any
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import ValidationError
@@ -8,6 +9,8 @@ from app.models.user_model import User
 from app.schema.auth_schema import TokenResponse
 from app.schema.user_schema import UserCreate, UserLogin, UserResponse
 from app.services.auth_service import AuthService
+
+logger = logging.getLogger(__name__)
 from app.utils.jwt import create_access_token
 
 router = APIRouter()
@@ -44,9 +47,20 @@ async def parse_login_credentials(request: Request) -> UserLogin:
     status_code=status.HTTP_201_CREATED,
 )
 async def register(user_data: UserCreate):
-    auth_service = AuthService()
-    user = await auth_service.register(user_data)
-    return AuthService.to_response(user)
+    try:
+        logger.info(f"Registration attempt for: {user_data.email}")
+        auth_service = AuthService()
+        user = await auth_service.register(user_data)
+        logger.info(f"User registered successfully: {user_data.email}")
+        return AuthService.to_response(user)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"Registration error for {user_data.email}: {type(exc).__name__}: {str(exc)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {type(exc).__name__}: {str(exc)}"
+        ) from exc
 
 
 @router.post("/login", response_model=TokenResponse)
