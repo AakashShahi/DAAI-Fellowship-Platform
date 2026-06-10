@@ -64,6 +64,10 @@ export default function Login() {
             required
           />
 
+          <div className="auth-inline-action">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </div>
+
           {error ? <p className="login-error">{error}</p> : null}
 
           <button type="submit" disabled={isLoading}>

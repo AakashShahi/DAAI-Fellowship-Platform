@@ -56,6 +56,12 @@ class ProfileService:
                 detail="Only fellows can update learning track",
             )
 
+        if user.learning_track is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Track already selected. Contact admin to change your track.",
+            )
+
         return await self.user_repository.update_learning_track(
             user,
             track_data.learningTrack,

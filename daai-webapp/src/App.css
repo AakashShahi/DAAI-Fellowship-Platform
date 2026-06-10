@@ -5,7 +5,7 @@
   padding: 32px;
   box-sizing: border-box;
   background:
-    linear-gradient(135deg, rgba(242, 99, 34, 0.1), transparent 36%),
+    linear-gradient(135deg, rgba(79, 70, 229, 0.1), transparent 36%),
     var(--bg);
 }
 
@@ -30,7 +30,7 @@
   color: #fff;
   background:
     linear-gradient(150deg, rgba(255, 255, 255, 0.16), transparent 38%),
-    #f26322;
+    #4f46e5;
 }
 
 .auth-brand-panel h1 {
@@ -145,8 +145,37 @@
   text-decoration: none;
 }
 
+.auth-inline-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.auth-inline-action a {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .auth-switch a:hover {
   color: var(--accent-hover);
+}
+
+.auth-inline-action a:hover {
+  color: var(--accent-hover);
+}
+
+.auth-stacked-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-reset-form {
+  margin-top: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
 }
 
 .login-form button,
@@ -221,7 +250,7 @@
   padding: 28px;
   box-sizing: border-box;
   background:
-    linear-gradient(135deg, rgba(242, 99, 34, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(79, 70, 229, 0.12), transparent 34%),
     var(--bg);
 }
 
@@ -351,7 +380,7 @@
 
 .dashboard-action-card:hover {
   border-color: var(--accent-border);
-  box-shadow: 0 22px 46px -30px rgba(112, 55, 23, 0.55);
+  box-shadow: 0 22px 46px -30px rgba(15, 23, 42, 0.55);
   transform: translateY(-2px);
 }
 
@@ -427,7 +456,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(242, 99, 34, 0.09), transparent 40%),
+    linear-gradient(135deg, rgba(79, 70, 229, 0.09), transparent 40%),
     var(--surface);
   box-shadow: var(--shadow);
 }
@@ -542,7 +571,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 18px 42px -34px rgba(112, 55, 23, 0.45);
+  box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.45);
 }
 
 .fellow-stat-card {
@@ -593,7 +622,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 18px 42px -34px rgba(112, 55, 23, 0.45);
+  box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.45);
 }
 
 .fellowship-panel h3 {
@@ -704,7 +733,7 @@
 
 .recommended-card {
   background:
-    linear-gradient(135deg, rgba(242, 99, 34, 0.11), transparent 48%),
+    linear-gradient(135deg, rgba(79, 70, 229, 0.11), transparent 48%),
     #fff;
 }
 
@@ -788,7 +817,7 @@
 
 .track-selection-card:hover {
   border-color: var(--accent-border);
-  box-shadow: 0 22px 46px -30px rgba(112, 55, 23, 0.55);
+  box-shadow: 0 22px 46px -30px rgba(15, 23, 42, 0.55);
   transform: translateY(-2px);
 }
 
@@ -801,6 +830,21 @@
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.track-selection-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-h);
+  background: var(--surface-soft);
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .track-selection-card h2 {
@@ -856,25 +900,6 @@
   opacity: 0.7;
 }
 
-.track-selection-actions a {
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--accent);
-  background: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.track-selection-actions a:hover {
-  border-color: var(--accent-border);
-  background: var(--accent-bg);
-}
-
 .selected-track-overview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
@@ -884,9 +909,9 @@
   border-radius: 8px;
   padding: 22px;
   background:
-    linear-gradient(135deg, rgba(242, 99, 34, 0.08), transparent 44%),
+    linear-gradient(135deg, rgba(79, 70, 229, 0.08), transparent 44%),
     #fff;
-  box-shadow: 0 18px 42px -34px rgba(112, 55, 23, 0.45);
+  box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.45);
 }
 
 .selected-track-overview > div:first-child > span {

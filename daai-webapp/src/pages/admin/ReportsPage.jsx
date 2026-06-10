@@ -1,13 +1,50 @@
+import { Download } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState } from '../../components/admin/AdminStates'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
+
 export default function ReportsPage() {
   return (
-    <section className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-      <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-        Reports
-      </p>
-      <h1 className="mt-2 text-3xl font-black text-[#24140e]">Reports</h1>
-      <p className="mt-3 text-sm font-medium text-[#6f5f57]">
-        Platform reports and analytics will be added here.
-      </p>
+    <section>
+      <AdminPageHeader
+        label="Reports"
+        title="Reports"
+        description="View fellowship progress, activity, and performance reports."
+        actions={
+          <Button variant="outline" disabled>
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        }
+      />
+      <Card className="rounded-xl" padding={false}>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50">
+              <TableHead>Report</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Updated</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody />
+        </Table>
+        <div className="p-5">
+          <EmptyState
+            title="No reports found."
+            description="Reports will appear here when analytics data is available."
+          />
+        </div>
+      </Card>
     </section>
   )
 }

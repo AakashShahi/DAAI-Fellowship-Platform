@@ -1,4 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Loader2, Plus, Trash2 } from 'lucide-react'
+import AdminPageHeader from '../../components/admin/AdminPageHeader'
+import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import StatusBadge from '../../components/admin/StatusBadge'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/Dialog'
+import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/Table'
 import {
   createBatch,
   deleteBatch,
@@ -7,31 +30,53 @@ import {
 } from '../../services/fellowshipService'
 
 const BATCH_STATUSES = ['PLANNED', 'ACTIVE', 'COMPLETED', 'CANCELLED']
+const emptyForm = { name: '', startDate: '', endDate: '', status: 'PLANNED' }
 
 const toIso = (localDateTime) => {
-  if (!localDateTime) {
-    return ''
-  }
-  const d = new Date(localDateTime)
-  return Number.isNaN(d.getTime()) ? '' : d.toISOString()
+  if (!localDateTime) return ''
+  const date = new Date(localDateTime)
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString()
 }
+
+const formatDate = (value) =>
+  value ? new Date(value).toLocaleDateString() : 'Not set'
 
 export default function AdminBatchesPage() {
   const [tracks, setTracks] = useState([])
   const [selectedTrackId, setSelectedTrackId] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [batches, setBatches] = useState([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState({
-    name: '',
-    startDate: '',
-    endDate: '',
-    status: 'PLANNED',
-  })
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+
+  const selectedTrack = tracks.find((track) => track.id === selectedTrackId)
+  const filteredBatches = useMemo(
+    () =>
+      batches.filter((batch) => !statusFilter || batch.status === statusFilter),
+    [batches, statusFilter],
+  )
+
+  const loadBatches = async (trackId = selectedTrackId) => {
+    if (!trackId) {
+      setBatches([])
+      return
+    }
+    setError('')
+    try {
+      const data = await getBatches(trackId)
+      setBatches(data)
+    } catch {
+      setError('Failed to load batches.')
+    }
+  }
 
   useEffect(() => {
     const loadTracks = async () => {
+      setIsLoading(true)
+      setError('')
       try {
         const data = await getTracks()
         setTracks(data)
@@ -39,7 +84,7 @@ export default function AdminBatchesPage() {
           setSelectedTrackId(data[0].id)
         }
       } catch {
-        setError('Unable to load tracks.')
+        setError('Failed to load tracks.')
       } finally {
         setIsLoading(false)
       }
@@ -48,26 +93,14 @@ export default function AdminBatchesPage() {
   }, [])
 
   useEffect(() => {
-    if (!selectedTrackId) {
-      return
-    }
-    const loadBatches = async () => {
-      setError('')
-      try {
-        const data = await getBatches(selectedTrackId)
-        setBatches(data)
-      } catch {
-        setError('Unable to load batches for this track.')
-      }
-    }
-    loadBatches()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadBatches(selectedTrackId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrackId])
 
   const handleCreate = async (event) => {
     event.preventDefault()
-    if (!selectedTrackId) {
-      return
-    }
+    if (!selectedTrackId) return
     setIsSaving(true)
     setError('')
     const startDate = toIso(form.startDate)
@@ -85,9 +118,9 @@ export default function AdminBatchesPage() {
         endDate,
         status: form.status,
       })
-      setForm({ name: '', startDate: '', endDate: '', status: 'PLANNED' })
-      const data = await getBatches(selectedTrackId)
-      setBatches(data)
+      setForm(emptyForm)
+      setIsDialogOpen(false)
+      await loadBatches(selectedTrackId)
     } catch (err) {
       const detail = err?.response?.data?.detail
       setError(typeof detail === 'string' ? detail : 'Unable to create batch.')
@@ -97,14 +130,11 @@ export default function AdminBatchesPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this batch? It must have no enrollments.')) {
-      return
-    }
+    if (!window.confirm('Delete this batch? It must have no enrollments.')) return
     setError('')
     try {
       await deleteBatch(id)
-      const data = await getBatches(selectedTrackId)
-      setBatches(data)
+      await loadBatches(selectedTrackId)
     } catch (err) {
       const detail = err?.response?.data?.detail
       setError(typeof detail === 'string' ? detail : 'Unable to delete batch.')
@@ -113,130 +143,157 @@ export default function AdminBatchesPage() {
 
   return (
     <section>
-      <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
-          Cohorts
-        </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">Batches</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
-          Create a batch under a track, set schedule, then enroll fellows into that
-          batch.
-        </p>
-      </div>
-
-      {error ? (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-          {error}
-        </p>
-      ) : null}
-
-      <div className="mb-6">
-        <label className="block text-sm font-bold text-[#24140e]">
-          Track
-          <select
-            className="mt-1 w-full max-w-md rounded-md border border-orange-100 px-3 py-2 text-sm sm:w-auto"
+      <AdminPageHeader
+        label="Batches"
+        title="Program Batches"
+        description="Manage batches under tracks and cohorts."
+        actions={
+          <Button onClick={() => setIsDialogOpen(true)} disabled={!selectedTrackId}>
+            <Plus className="h-4 w-4" />
+            Create Batch
+          </Button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Select
+            label="Track"
             value={selectedTrackId}
-            onChange={(e) => setSelectedTrackId(e.target.value)}
+            onChange={(event) => setSelectedTrackId(event.target.value)}
             disabled={isLoading}
           >
-            {tracks.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
+            {tracks.map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.title}
               </option>
             ))}
-          </select>
-        </label>
-      </div>
+          </Select>
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="">All statuses</option>
+            {BATCH_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </AdminPageHeader>
 
-      <div className="mb-8 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Create batch</h2>
-        <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleCreate}>
-          <label className="block text-sm font-bold text-[#24140e] sm:col-span-2">
-            Batch name
-            <input
+      {error ? <ErrorState message={error} onRetry={() => loadBatches(selectedTrackId)} /> : null}
+
+      {isLoading ? (
+        <LoadingState message="Loading batches..." />
+      ) : filteredBatches.length === 0 ? (
+        <EmptyState
+          title="No batches found."
+          description="Create your first batch for the selected track."
+          action={
+            <Button onClick={() => setIsDialogOpen(true)} disabled={!selectedTrackId}>
+              <Plus className="h-4 w-4" />
+              Create Batch
+            </Button>
+          }
+        />
+      ) : (
+        <Card className="rounded-xl" padding={false}>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50">
+                <TableHead>Batch name</TableHead>
+                <TableHead>Track</TableHead>
+                <TableHead>Cohort</TableHead>
+                <TableHead>Start date</TableHead>
+                <TableHead>End date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredBatches.map((batch) => (
+                <TableRow key={batch.id}>
+                  <TableCell className="font-semibold text-slate-900">{batch.name}</TableCell>
+                  <TableCell>{batch.track?.title ?? selectedTrack?.title ?? 'Track'}</TableCell>
+                  <TableCell>{batch.cohort?.name ?? batch.cohortName ?? 'Not assigned'}</TableCell>
+                  <TableCell>{formatDate(batch.startDate)}</TableCell>
+                  <TableCell>{formatDate(batch.endDate)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={batch.status} />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => handleDelete(batch.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Batch</DialogTitle>
+            <DialogDescription>
+              Add a scheduled batch for {selectedTrack?.title ?? 'the selected track'}.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="mt-5 grid gap-4" onSubmit={handleCreate}>
+            <Input
               required
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+              label="Batch name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
             />
-          </label>
-          <label className="block text-sm font-bold text-[#24140e]">
-            Start
-            <input
-              required
-              type="datetime-local"
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
-              value={form.startDate}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-            />
-          </label>
-          <label className="block text-sm font-bold text-[#24140e]">
-            End
-            <input
-              required
-              type="datetime-local"
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
-              value={form.endDate}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-            />
-          </label>
-          <label className="block text-sm font-bold text-[#24140e]">
-            Status
-            <select
-              className="mt-1 w-full rounded-md border border-orange-100 px-3 py-2 text-sm"
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                required
+                type="datetime-local"
+                label="Start"
+                value={form.startDate}
+                onChange={(event) => setForm({ ...form, startDate: event.target.value })}
+              />
+              <Input
+                required
+                type="datetime-local"
+                label="End"
+                value={form.endDate}
+                onChange={(event) => setForm({ ...form, endDate: event.target.value })}
+              />
+            </div>
+            <Select
+              label="Status"
               value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              onChange={(event) => setForm({ ...form, status: event.target.value })}
             >
-              {BATCH_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {BATCH_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
                 </option>
               ))}
-            </select>
-          </label>
-          <div className="flex items-end">
-            <button
-              type="submit"
-              disabled={isSaving || !selectedTrackId}
-              className="rounded-md bg-[#f26322] px-5 py-2 text-sm font-black text-white hover:bg-[#d94f13] disabled:opacity-60"
-            >
-              {isSaving ? 'Saving…' : 'Create batch'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-        <h2 className="text-lg font-black text-[#24140e]">Batches for selected track</h2>
-        {batches.length === 0 ? (
-          <p className="mt-4 text-sm font-medium text-[#6f5f57]">No batches yet.</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-orange-100">
-            {batches.map((b) => (
-              <li
-                key={b.id}
-                className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-black text-[#24140e]">{b.name}</p>
-                  <p className="text-xs font-bold uppercase text-[#f26322]">{b.status}</p>
-                  <p className="mt-1 text-sm text-[#6f5f57]">
-                    {new Date(b.startDate).toLocaleString()} →{' '}
-                    {new Date(b.endDate).toLocaleString()}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(b.id)}
-                  className="self-start rounded-md border border-orange-100 px-3 py-1 text-xs font-black text-[#b91c1c] hover:bg-red-50"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+            </Select>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving || !selectedTrackId}>
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isSaving ? 'Creating...' : 'Create Batch'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

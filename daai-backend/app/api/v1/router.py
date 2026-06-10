@@ -1,13 +1,21 @@
 from fastapi import APIRouter
 
 from app.api.v1.routes import (
+    admin_cohort_routes,
+    admin_curriculum_routes,
+    admin_assignment_v2_routes,
+    admin_session_routes,
+    application_routes,
     assignment_admin_routes,
+    admin_fellow_routes,
     auth_routes,
     batch_routes,
     enrollment_routes,
+    fellow_routes,
     fellows_admin_routes,
     health_routes,
     learning_fellow_routes,
+    learning_progress_routes,
     lesson_routes,
     module_routes,
     profile_routes,
@@ -22,6 +30,42 @@ api_router.include_router(
     auth_routes.router,
     prefix="/auth",
     tags=["Authentication"]
+)
+
+api_router.include_router(
+    application_routes.router,
+    prefix="/applications",
+    tags=["Applications"],
+)
+
+api_router.include_router(
+    admin_fellow_routes.router,
+    prefix="/admin",
+    tags=["Admin Fellow Management"],
+)
+
+api_router.include_router(
+    admin_cohort_routes.router,
+    prefix="/admin",
+    tags=["Admin Cohort Management"],
+)
+
+api_router.include_router(
+    admin_curriculum_routes.router,
+    prefix="/admin",
+    tags=["Admin Curriculum Management"],
+)
+
+api_router.include_router(
+    admin_assignment_v2_routes.router,
+    prefix="/admin",
+    tags=["Admin Assignment Management"],
+)
+
+api_router.include_router(
+    admin_session_routes.router,
+    prefix="/admin",
+    tags=["Admin Session Management"],
 )
 
 api_router.include_router(
@@ -67,6 +111,12 @@ api_router.include_router(
 )
 
 api_router.include_router(
+    fellow_routes.router,
+    prefix="/fellow",
+    tags=["Fellow"],
+)
+
+api_router.include_router(
     module_routes.router,
     prefix="/modules",
     tags=["Modules"],
@@ -82,6 +132,12 @@ api_router.include_router(
     learning_fellow_routes.router,
     prefix="/learning",
     tags=["Learning"],
+)
+
+api_router.include_router(
+    learning_progress_routes.router,
+    prefix="/learning-progress",
+    tags=["Learning Progress"],
 )
 
 api_router.include_router(

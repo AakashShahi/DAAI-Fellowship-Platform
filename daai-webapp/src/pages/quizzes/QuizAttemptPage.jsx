@@ -5,6 +5,7 @@ import {
   getQuizQuestions,
   submitQuiz,
 } from '../../services/quizService'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import useAuthStore from '../../store/authStore'
 import {
   canAccessQuiz,
@@ -36,6 +37,8 @@ export default function QuizAttemptPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
 
@@ -45,6 +48,11 @@ export default function QuizAttemptPage() {
   )
   const progressPercentage =
     questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0
+  const currentQuestion = questions[currentQuestionIndex]
+  const currentAnswer = currentQuestion
+    ? selectedAnswers[currentQuestion.id]
+    : undefined
+  const isLastQuestion = currentQuestionIndex === questions.length - 1
   const selectedTrack = getFellowTrack(user)
   const hasQuizAccess = canAccessQuiz(user, category)
 
@@ -62,6 +70,8 @@ export default function QuizAttemptPage() {
       setNotFound(false)
       setSelectedAnswers({})
       setHasTriedSubmit(false)
+      setCurrentQuestionIndex(0)
+      setIsConfirmOpen(false)
 
       try {
         const categories = await getQuizCategories()
@@ -104,20 +114,20 @@ export default function QuizAttemptPage() {
 
   if (!hasQuizAccess) {
     return (
-      <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
-        <section className="mx-auto max-w-4xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+      <div className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-4xl rounded-lg border border-red-200 bg-red-50 p-6 text-red-700 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
           <p className="text-sm font-black">{getQuizAccessMessage(user, category)}</p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Link
               to="/fellow/dashboard"
-              className="rounded-md bg-[#f26322] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#d94f13]"
+              className="rounded-md bg-[#4f46e5] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#4338ca]"
             >
               Go to overview
             </Link>
             {selectedTrack ? (
               <Link
                 to={selectedTrack.quizPath}
-                className="rounded-md border border-orange-100 bg-white px-5 py-3 text-center text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                className="rounded-md border border-slate-200 bg-white px-5 py-3 text-center text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
               >
                 Open {selectedTrack.label} quiz
               </Link>
@@ -136,17 +146,39 @@ export default function QuizAttemptPage() {
     setError('')
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setHasTriedSubmit(true)
+  const goToPreviousQuestion = () => {
+    setCurrentQuestionIndex((currentIndex) => Math.max(currentIndex - 1, 0))
+    setError('')
+  }
 
+  const goToNextQuestion = () => {
+    if (!currentAnswer) {
+      setError('Please choose an answer before moving to the next question.')
+      return
+    }
+
+    setCurrentQuestionIndex((currentIndex) =>
+      Math.min(currentIndex + 1, questions.length - 1),
+    )
+    setError('')
+  }
+
+  const openSubmitConfirmation = () => {
+    setHasTriedSubmit(true)
+    setIsConfirmOpen(true)
+  }
+
+  const handleSubmit = async () => {
+    setHasTriedSubmit(true)
     if (answeredCount !== questions.length) {
       setError('Please answer all questions before submitting.')
+      setIsConfirmOpen(false)
       return
     }
 
     setIsSubmitting(true)
     setError('')
+    setIsConfirmOpen(false)
 
     try {
       const result = await submitQuiz(category, selectedAnswers)
@@ -164,102 +196,138 @@ export default function QuizAttemptPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
-      <form className="mx-auto max-w-4xl" onSubmit={handleSubmit}>
-        <div className="mb-5 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-4xl">
+        <div className="mb-5 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+          <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
             Quiz Attempt
           </p>
-          <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+          <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
             {quizTitle}
           </h1>
           <p className="mt-3 text-sm font-medium">
             Questions are loaded from the backend. Your score will be calculated
             and saved by the server.
           </p>
-          <p className="mt-4 text-sm font-black text-[#24140e]">
+          <p className="mt-4 text-sm font-black text-[#0f172a]">
             {answeredCount} of {questions.length} answered
           </p>
           <div className="mt-3" aria-label="Quiz completion progress">
-            <div className="h-3 overflow-hidden rounded-full bg-orange-100">
+            <div className="h-3 overflow-hidden rounded-full bg-slate-200">
               <div
-                className="h-full rounded-full bg-[#f26322] transition-all duration-300"
+                className="h-full rounded-full bg-[#4f46e5] transition-all duration-300"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
-            <p className="mt-2 text-xs font-black uppercase tracking-wide text-[#f26322]">
+            <p className="mt-2 text-xs font-black uppercase tracking-wide text-[#4f46e5]">
               {progressPercentage}% complete
             </p>
           </div>
         </div>
 
         {isLoading ? (
-          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+          <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
             Loading questions...
           </p>
         ) : null}
 
         {!isLoading && !error && questions.length === 0 ? (
-          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+          <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
             No questions found for this category.
           </p>
         ) : null}
 
-        <div className="space-y-4">
-          {questions.map((question, questionIndex) => {
-            const isAnswered = Boolean(selectedAnswers[question.id])
-            const shouldHighlightUnanswered = hasTriedSubmit && !isAnswered
+        {!isLoading && questions.length > 0 ? (
+          <>
+            <div className="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="mb-3 text-xs font-black uppercase tracking-wide text-[#64748b]">
+                Question Navigator
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {questions.map((question, questionIndex) => {
+                  const isCurrent = questionIndex === currentQuestionIndex
+                  const isAnswered = Boolean(selectedAnswers[question.id])
 
-            return (
+                  return (
+                    <button
+                      key={question.id}
+                      type="button"
+                      className={[
+                        'h-10 w-10 rounded-md border text-sm font-black transition',
+                        isCurrent
+                          ? 'border-[#4f46e5] bg-[#4f46e5] text-white shadow-sm'
+                          : isAnswered
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                            : 'border-slate-200 bg-white text-[#475569] hover:bg-slate-50',
+                      ].join(' ')}
+                      onClick={() => {
+                        setCurrentQuestionIndex(questionIndex)
+                        setError('')
+                      }}
+                      aria-label={`Go to question ${questionIndex + 1}`}
+                    >
+                      {questionIndex + 1}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {currentQuestion ? (
               <fieldset
-                key={question.id}
                 className={[
-                  'rounded-lg border bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition',
-                  shouldHighlightUnanswered
+                  'rounded-lg border bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] transition',
+                  hasTriedSubmit && !currentAnswer
                     ? 'border-red-300 bg-red-50/40'
-                    : 'border-orange-100',
+                    : 'border-slate-200',
                 ].join(' ')}
               >
-                <legend className="text-base font-black text-[#24140e]">
-                  <span className="block text-xs font-black uppercase tracking-wide text-[#f26322]">
-                    Question {questionIndex + 1} of {questions.length}
+                <legend className="text-base font-black text-[#0f172a]">
+                  <span className="block text-xs font-black uppercase tracking-wide text-[#4f46e5]">
+                    Question {currentQuestionIndex + 1} of {questions.length}
                   </span>
-                  <span className="mt-2 block">{question.question}</span>
+                  <span className="mt-2 block">{currentQuestion.question}</span>
                 </legend>
 
-                {shouldHighlightUnanswered ? (
+                {hasTriedSubmit && !currentAnswer ? (
                   <p className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">
                     Please choose an answer for this question.
                   </p>
                 ) : null}
 
                 <div className="mt-4 grid gap-3">
-                  {question.options.map((option) => (
-                    <label
-                      key={option}
-                      className={[
-                        'flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm font-semibold transition',
-                        selectedAnswers[question.id] === option
-                          ? 'border-[#f26322] bg-[#fff1e8] text-[#24140e]'
-                          : 'border-orange-100 bg-white text-[#6f5f57] hover:border-[#ffb088]',
-                      ].join(' ')}
-                    >
-                      <input
-                        type="radio"
-                        name={question.id}
-                        value={option}
-                        checked={selectedAnswers[question.id] === option}
-                        onChange={() => handleAnswerChange(question.id, option)}
-                        className="mt-1 accent-[#f26322]"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
+                  {currentQuestion.options.map((option) => {
+                    const isSelected = currentAnswer === option
+
+                    return (
+                      <label
+                        key={option}
+                        className={[
+                          'flex cursor-pointer items-start gap-3 rounded-lg border p-4 text-sm font-semibold transition',
+                          isSelected
+                            ? 'border-[#4f46e5] bg-[#eef2ff] text-[#0f172a] shadow-sm'
+                            : 'border-slate-200 bg-white text-[#475569] hover:bg-slate-50',
+                        ].join(' ')}
+                      >
+                        <input
+                          type="radio"
+                          name={currentQuestion.id}
+                          value={option}
+                          checked={isSelected}
+                          onChange={() =>
+                            handleAnswerChange(currentQuestion.id, option)
+                          }
+                          className="mt-1 accent-indigo-600"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    )
+                  })}
                 </div>
               </fieldset>
-            )
-          })}
-        </div>
+            ) : null}
+          </>
+        ) : null}
 
         {error ? (
           <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">
@@ -267,19 +335,60 @@ export default function QuizAttemptPage() {
           </p>
         ) : null}
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium">
-            You can review your answers before submitting.
-          </p>
-          <button
-            type="submit"
-            disabled={isSubmitting || isLoading || questions.length === 0}
-            className="rounded-md bg-[#f26322] px-5 py-3 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
-          </button>
-        </div>
-      </form>
+        {questions.length > 0 ? (
+          <div className="mt-5">
+            <p className="mb-3 text-sm font-medium">
+              You can review your answers before submitting.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                disabled={currentQuestionIndex === 0 || isSubmitting || isLoading}
+                onClick={goToPreviousQuestion}
+                className="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-black text-[#475569] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Previous
+              </button>
+              {isLastQuestion ? (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isLoading || !currentAnswer}
+                  onClick={openSubmitConfirmation}
+                  className="rounded-md bg-[#4f46e5] px-5 py-3 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isSubmitting || isLoading || !currentAnswer}
+                  onClick={goToNextQuestion}
+                  className="rounded-md bg-[#4f46e5] px-5 py-3 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title="Submit quiz?"
+          message={[
+            `You answered ${answeredCount} of ${questions.length} questions. Once submitted, your score will be calculated and saved.`,
+            answeredCount !== questions.length
+              ? 'You still have unanswered questions.'
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          confirmLabel="Submit Quiz"
+          isLoading={isSubmitting}
+          onCancel={() => setIsConfirmOpen(false)}
+          onConfirm={handleSubmit}
+        />
+      </section>
     </div>
   )
 }

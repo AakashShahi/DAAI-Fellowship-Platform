@@ -33,7 +33,11 @@ export const useLogin = () => {
         throw new Error('Login response did not include an access token.')
       }
 
-      setAuth({ token, user: data.user ?? null })
+      setAuth({
+        token,
+        refreshToken: data.refresh_token ?? null,
+        user: data.user ?? null,
+      })
 
       return data
     } catch (loginError) {

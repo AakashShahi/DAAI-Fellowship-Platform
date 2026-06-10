@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   createAdminQuizQuestion,
-  getAdminQuizPerformance,
   getAdminQuizQuestions,
   getQuizCategories,
   updateAdminQuizQuestion,
@@ -37,7 +36,6 @@ const toFormState = (question) => ({
 export default function AdminQuizManagementPage() {
   const [categories, setCategories] = useState([])
   const [questions, setQuestions] = useState([])
-  const [performance, setPerformance] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [editingQuestionId, setEditingQuestionId] = useState('')
   const [selectedQuestion, setSelectedQuestion] = useState(null)
@@ -91,16 +89,14 @@ export default function AdminQuizManagementPage() {
 
     const loadAdminQuizData = async () => {
       try {
-        const [categoryData, questionData, performanceData] = await Promise.all([
+        const [categoryData, questionData] = await Promise.all([
           getQuizCategories(),
           getAdminQuizQuestions(),
-          getAdminQuizPerformance(),
         ])
 
         if (isMounted) {
           setCategories(categoryData)
           setQuestions(questionData)
-          setPerformance(performanceData)
           setForm((currentForm) => ({
             ...currentForm,
             category: categoryData[0]?.slug ?? '',
@@ -125,12 +121,8 @@ export default function AdminQuizManagementPage() {
   }, [])
 
   const refreshAdminData = async () => {
-    const [questionData, performanceData] = await Promise.all([
-      getAdminQuizQuestions(),
-      getAdminQuizPerformance(),
-    ])
+    const questionData = await getAdminQuizQuestions()
     setQuestions(questionData)
-    setPerformance(performanceData)
   }
 
   const handleFieldChange = (event) => {
@@ -252,23 +244,23 @@ export default function AdminQuizManagementPage() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+            <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
               Quiz Management
             </p>
-            <h1 className="mt-2 text-3xl font-black text-[#24140e]">
+            <h1 className="mt-2 text-3xl font-black text-[#0f172a]">
               Manage quiz questions
             </h1>
-            <p className="mt-3 text-sm font-medium text-[#6f5f57]">
+            <p className="mt-3 text-sm font-medium text-[#475569]">
               Create, edit, activate, deactivate, and review quiz performance.
             </p>
           </div>
           <button
             type="button"
             onClick={openCreateForm}
-            className="rounded-md bg-[#f26322] px-5 py-3 text-sm font-black text-white transition hover:bg-[#d94f13]"
+            className="rounded-md bg-[#4f46e5] px-5 py-3 text-sm font-black text-white transition hover:bg-[#4338ca]"
           >
             + Create Question
           </button>
@@ -276,7 +268,7 @@ export default function AdminQuizManagementPage() {
       </div>
 
       {isLoading ? (
-        <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+        <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
           Loading quiz management...
         </p>
       ) : null}
@@ -295,79 +287,35 @@ export default function AdminQuizManagementPage() {
 
       {!isLoading ? (
         <>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {performance.map((item) => (
-              <article
-                key={item.category}
-                className="rounded-lg border border-orange-100 bg-white p-4 shadow-[0_18px_45px_-30px_rgba(112,55,23,0.3)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-base font-black text-[#24140e]">
-                    {item.category_title}
-                  </h2>
-                  <span className="rounded-full bg-[#fff1e8] px-3 py-1 text-xs font-black text-[#f26322]">
-                    {item.total_questions} questions
-                  </span>
-                </div>
-                <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Attempts
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#24140e]">
-                      {item.attempts}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Avg
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#24140e]">
-                      {item.average_percentage}%
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-bold uppercase text-[#8b7b73]">
-                      Pass
-                    </dt>
-                    <dd className="mt-1 text-xl font-black text-[#24140e]">
-                      {item.pass_rate}%
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
-          </div>
-
-          <section className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>
-                <h2 className="text-2xl font-black text-[#24140e]">
+                <h2 className="text-2xl font-black text-[#0f172a]">
                   Question library
                 </h2>
-                <p className="mt-1 text-sm font-medium text-[#6f5f57]">
+                <p className="mt-1 text-sm font-medium text-[#475569]">
                   Showing {filteredQuestions.length} of {questions.length} questions
                 </p>
               </div>
 
               <div className="grid w-full gap-3 lg:grid-cols-[1.3fr_0.8fr_0.8fr_auto] xl:max-w-4xl">
-                <label className="block text-sm font-black text-[#24140e]">
+                <label className="block text-sm font-black text-[#0f172a]">
                   Search
                   <input
                     name="search"
                     value={filters.search}
                     onChange={handleFilterChange}
                     placeholder="Question, option, answer"
-                    className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   />
                 </label>
-                <label className="block text-sm font-black text-[#24140e]">
+                <label className="block text-sm font-black text-[#0f172a]">
                   Category
                   <select
                     name="category"
                     value={filters.category}
                     onChange={handleFilterChange}
-                    className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   >
                     <option value="all">All categories</option>
                     {categories.map((category) => (
@@ -377,13 +325,13 @@ export default function AdminQuizManagementPage() {
                     ))}
                   </select>
                 </label>
-                <label className="block text-sm font-black text-[#24140e]">
+                <label className="block text-sm font-black text-[#0f172a]">
                   Status
                   <select
                     name="status"
                     value={filters.status}
                     onChange={handleFilterChange}
-                    className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   >
                     <option value="all">All statuses</option>
                     <option value="active">Active only</option>
@@ -393,15 +341,15 @@ export default function AdminQuizManagementPage() {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="mt-7 rounded-md border border-orange-100 bg-white px-4 py-2 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                  className="mt-7 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
                 >
                   Clear
                 </button>
               </div>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-lg border border-orange-100">
-              <div className="hidden grid-cols-[1.5fr_0.75fr_0.65fr_0.65fr_1fr_0.9fr] gap-4 bg-[#fff8f3] px-4 py-3 text-xs font-black uppercase tracking-wide text-[#6f5f57] xl:grid">
+            <div className="mt-5 overflow-hidden rounded-lg border border-slate-200">
+              <div className="hidden grid-cols-[1.5fr_0.75fr_0.65fr_0.65fr_1fr_0.9fr] gap-4 bg-[#f8fafc] px-4 py-3 text-xs font-black uppercase tracking-wide text-[#475569] xl:grid">
                 <span>Question</span>
                 <span>Category</span>
                 <span>Difficulty</span>
@@ -411,7 +359,7 @@ export default function AdminQuizManagementPage() {
               </div>
 
               {filteredQuestions.length === 0 ? (
-                <p className="p-5 text-sm font-bold text-[#6f5f57]">
+                <p className="p-5 text-sm font-bold text-[#475569]">
                   No questions match the selected filters.
                 </p>
               ) : null}
@@ -419,21 +367,21 @@ export default function AdminQuizManagementPage() {
               {filteredQuestions.map((question) => (
                 <article
                   key={question.id}
-                  className="border-t border-orange-100 bg-white p-4 first:border-t-0 xl:grid xl:grid-cols-[1.5fr_0.75fr_0.65fr_0.65fr_1fr_0.9fr] xl:items-center xl:gap-4"
+                  className="border-t border-slate-200 bg-white p-4 first:border-t-0 xl:grid xl:grid-cols-[1.5fr_0.75fr_0.65fr_0.65fr_1fr_0.9fr] xl:items-center xl:gap-4"
                 >
                   <div>
-                    <p className="text-sm font-black text-[#24140e]">
+                    <p className="text-sm font-black text-[#0f172a]">
                       {question.question}
                     </p>
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-[#6f5f57] xl:mt-0">
-                    <span className="font-black text-[#24140e] xl:hidden">
+                  <p className="mt-3 text-sm font-semibold text-[#475569] xl:mt-0">
+                    <span className="font-black text-[#0f172a] xl:hidden">
                       Category:{' '}
                     </span>
                     {categoryBySlug[question.category]?.title ?? question.category}
                   </p>
                   <div className="mt-3 xl:mt-0">
-                    <span className="rounded-full bg-[#fff8f3] px-3 py-1 text-xs font-black text-[#6f5f57]">
+                    <span className="rounded-full bg-[#f8fafc] px-3 py-1 text-xs font-black text-[#475569]">
                       {question.difficulty}
                     </span>
                   </div>
@@ -450,7 +398,7 @@ export default function AdminQuizManagementPage() {
                     </span>
                   </div>
                   <p className="mt-3 truncate text-sm font-semibold text-green-700 xl:mt-0">
-                    <span className="font-black text-[#24140e] xl:hidden">
+                    <span className="font-black text-[#0f172a] xl:hidden">
                       Correct:{' '}
                     </span>
                     {question.correct_answer}
@@ -459,21 +407,21 @@ export default function AdminQuizManagementPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedQuestion(question)}
-                      className="rounded-md border border-orange-100 bg-white px-3 py-2 text-xs font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
                     >
                       View
                     </button>
                     <button
                       type="button"
                       onClick={() => openEditForm(question)}
-                      className="rounded-md bg-[#f26322] px-3 py-2 text-xs font-black text-white transition hover:bg-[#d94f13]"
+                      className="rounded-md bg-[#4f46e5] px-3 py-2 text-xs font-black text-white transition hover:bg-[#4338ca]"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => handleStatusToggle(question)}
-                      className="rounded-md border border-orange-100 bg-white px-3 py-2 text-xs font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
                     >
                       {question.is_active ? 'Deactivate' : 'Activate'}
                     </button>
@@ -486,21 +434,21 @@ export default function AdminQuizManagementPage() {
       ) : null}
 
       {isFormOpen ? (
-        <div className="fixed inset-0 z-50 bg-[#24140e]/40">
+        <div className="fixed inset-0 z-50 bg-[#0f172a]/40">
           <div className="ml-auto flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-[-20px_0_50px_-30px_rgba(36,20,14,0.5)] sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
                   {editingQuestionId ? 'Edit Question' : 'Create Question'}
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-[#24140e]">
+                <h2 className="mt-2 text-2xl font-black text-[#0f172a]">
                   {editingQuestionId ? 'Update quiz question' : 'New quiz question'}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
               >
                 Cancel
               </button>
@@ -513,13 +461,13 @@ export default function AdminQuizManagementPage() {
             ) : null}
 
             <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-              <label className="block text-sm font-black text-[#24140e]">
+              <label className="block text-sm font-black text-[#0f172a]">
                 Category
                 <select
                   name="category"
                   value={form.category}
                   onChange={handleFieldChange}
-                  className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                  className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   required
                 >
                   {categories.map((category) => (
@@ -530,69 +478,69 @@ export default function AdminQuizManagementPage() {
                 </select>
               </label>
 
-              <label className="block text-sm font-black text-[#24140e]">
+              <label className="block text-sm font-black text-[#0f172a]">
                 Question
                 <textarea
                   name="question"
                   value={form.question}
                   onChange={handleFieldChange}
-                  className="mt-2 min-h-24 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                  className="mt-2 min-h-24 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   required
                 />
               </label>
 
-              <label className="block text-sm font-black text-[#24140e]">
+              <label className="block text-sm font-black text-[#0f172a]">
                 Options
                 <textarea
                   name="optionsText"
                   value={form.optionsText}
                   onChange={handleFieldChange}
-                  className="mt-2 min-h-32 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                  className="mt-2 min-h-32 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   required
                 />
               </label>
 
-              <label className="block text-sm font-black text-[#24140e]">
+              <label className="block text-sm font-black text-[#0f172a]">
                 Correct answer
                 <input
                   name="correct_answer"
                   value={form.correct_answer}
                   onChange={handleFieldChange}
-                  className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                  className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   required
                 />
               </label>
 
-              <label className="block text-sm font-black text-[#24140e]">
+              <label className="block text-sm font-black text-[#0f172a]">
                 Explanation
                 <textarea
                   name="explanation"
                   value={form.explanation}
                   onChange={handleFieldChange}
-                  className="mt-2 min-h-24 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                  className="mt-2 min-h-24 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                 />
               </label>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-sm font-black text-[#24140e]">
+                <label className="block text-sm font-black text-[#0f172a]">
                   Difficulty
                   <select
                     name="difficulty"
                     value={form.difficulty}
                     onChange={handleFieldChange}
-                    className="mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-semibold text-[#24140e]"
+                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#0f172a]"
                   >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
                   </select>
                 </label>
-                <label className="mt-7 flex items-center gap-2 text-sm font-black text-[#24140e]">
+                <label className="mt-7 flex items-center gap-2 text-sm font-black text-[#0f172a]">
                   <input
                     type="checkbox"
                     name="is_active"
                     checked={form.is_active}
                     onChange={handleFieldChange}
-                    className="accent-[#f26322]"
+                    className="accent-indigo-600"
                   />
                   Active
                 </label>
@@ -602,14 +550,14 @@ export default function AdminQuizManagementPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-md bg-[#f26322] px-5 py-3 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="rounded-md bg-[#4f46e5] px-5 py-3 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isSaving ? 'Saving...' : 'Save Question'}
                 </button>
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-md border border-orange-100 bg-white px-5 py-3 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                  className="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
                 >
                   Cancel
                 </button>
@@ -620,14 +568,14 @@ export default function AdminQuizManagementPage() {
       ) : null}
 
       {selectedQuestion ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#24140e]/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/40 p-4">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white p-5 shadow-[0_24px_70px_-35px_rgba(36,20,14,0.65)] sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
                   Question Details
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-[#24140e]">
+                <h2 className="mt-2 text-2xl font-black text-[#0f172a]">
                   {categoryBySlug[selectedQuestion.category]?.title ??
                     selectedQuestion.category}
                 </h2>
@@ -635,14 +583,14 @@ export default function AdminQuizManagementPage() {
               <button
                 type="button"
                 onClick={() => setSelectedQuestion(null)}
-                className="rounded-md border border-orange-100 bg-white px-3 py-2 text-sm font-black text-[#f26322] transition hover:bg-[#fff1e8]"
+                className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-black text-[#4f46e5] transition hover:bg-[#eef2ff]"
               >
                 Close
               </button>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <span className="rounded-full bg-[#fff8f3] px-3 py-1 text-xs font-black text-[#6f5f57]">
+              <span className="rounded-full bg-[#f8fafc] px-3 py-1 text-xs font-black text-[#475569]">
                 {selectedQuestion.difficulty}
               </span>
               <span
@@ -657,12 +605,12 @@ export default function AdminQuizManagementPage() {
               </span>
             </div>
 
-            <p className="mt-5 text-lg font-black text-[#24140e]">
+            <p className="mt-5 text-lg font-black text-[#0f172a]">
               {selectedQuestion.question}
             </p>
 
             <div className="mt-5">
-              <h3 className="text-sm font-black uppercase tracking-wide text-[#f26322]">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[#4f46e5]">
                 Options
               </h3>
               <ol className="mt-3 space-y-2">
@@ -673,7 +621,7 @@ export default function AdminQuizManagementPage() {
                       'rounded-md border px-4 py-3 text-sm font-semibold',
                       option === selectedQuestion.correct_answer
                         ? 'border-green-200 bg-green-50 text-green-700'
-                        : 'border-orange-100 bg-white text-[#6f5f57]',
+                        : 'border-slate-200 bg-white text-[#475569]',
                     ].join(' ')}
                   >
                     <span className="mr-2 font-black">{optionIndex + 1}.</span>
@@ -683,8 +631,8 @@ export default function AdminQuizManagementPage() {
               </ol>
             </div>
 
-            <div className="mt-5 rounded-md border border-orange-100 bg-[#fff8f3] p-4">
-              <p className="text-sm font-black text-[#24140e]">
+            <div className="mt-5 rounded-md border border-slate-200 bg-[#f8fafc] p-4">
+              <p className="text-sm font-black text-[#0f172a]">
                 Correct answer
               </p>
               <p className="mt-1 text-sm font-semibold text-green-700">
@@ -693,10 +641,10 @@ export default function AdminQuizManagementPage() {
             </div>
 
             <div className="mt-5">
-              <h3 className="text-sm font-black uppercase tracking-wide text-[#f26322]">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[#4f46e5]">
                 Explanation
               </h3>
-              <p className="mt-2 text-sm font-medium text-[#6f5f57]">
+              <p className="mt-2 text-sm font-medium text-[#475569]">
                 {selectedQuestion.explanation || 'No explanation added.'}
               </p>
             </div>

@@ -1,20 +1,73 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import DashboardActionCard from '../../components/dashboard/DashboardActionCard'
-import DashboardStatCard from '../../components/dashboard/DashboardStatCard'
-import SelectedTrackOverview from '../../components/dashboard/SelectedTrackOverview'
-import TrackSelectionCard from '../../components/dashboard/TrackSelectionCard'
-import { LEARNING_TRACK_OPTIONS, LEARNING_TRACKS } from '../../constants/learningTracks'
-import { getMyEnrollment } from '../../services/fellowshipService'
-import { getFellowAssignmentsSummary } from '../../services/assignmentService'
-import { getFellowLearningSummary } from '../../services/learningService'
 import {
-  getMyQuizAttempts,
-  getQuizCategories,
-} from '../../services/quizService'
-import { getMyProfile, updateLearningTrack } from '../../services/profileService'
+  BookOpen,
+  CalendarCheck,
+  CheckCircle2,
+  Circle,
+  ClipboardList,
+  Clock3,
+  GraduationCap,
+  PlayCircle,
+} from 'lucide-react'
+import Badge from '../../components/ui/Badge'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import EmptyState from '../../components/ui/EmptyState'
+import ProgressBar from '../../components/ui/ProgressBar'
+import Skeleton from '../../components/ui/Skeleton'
+import {
+  getFellowAssignments,
+  getFellowAssignmentsSummary,
+} from '../../services/assignmentService'
+import { getMyCohort } from '../../services/cohortService'
+import { getMyEnrollment } from '../../services/fellowshipService'
+import {
+  getFellowLearningModules,
+  getFellowLearningSummary,
+} from '../../services/learningService'
+import { getMyLearningProgressByTrack } from '../../services/learningProgressService'
+import { getMyProfile } from '../../services/profileService'
+import { getMyQuizAttempts, getQuizCategories } from '../../services/quizService'
+import {
+  getFellowAttendanceSummary,
+  getFellowSessions,
+} from '../../services/sessionService'
 import useAuthStore from '../../store/authStore'
 import { getFellowTrack } from '../../utils/learningTrackAccess'
+
+const formatDate = (value) => {
+  if (!value) return 'Not scheduled'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Not scheduled'
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const unwrapData = (value) => value?.data ?? value
+
+const normalizeArray = (value, key) => {
+  const data = unwrapData(value)
+
+  if (Array.isArray(data)) return data
+  if (key && Array.isArray(data?.[key])) return data[key]
+  if (Array.isArray(data?.data)) return data.data
+
+  return []
+}
+
+const normalizeObject = (value, key) => {
+  const data = unwrapData(value)
+
+  if (key && data && Object.prototype.hasOwnProperty.call(data, key)) {
+    return data[key]
+  }
+  if (data?.data && !Array.isArray(data.data)) return data.data
+
+  return data ?? null
+}
 
 const getAttemptPercentage = (attempt) =>
   attempt?.total_questions
@@ -22,10 +75,10 @@ const getAttemptPercentage = (attempt) =>
     : 0
 
 const matchesTrack = (attempt, track) => {
-  const categoryText = [
-    attempt?.category,
-    attempt?.category_title,
-  ].filter(Boolean).join(' ').toLowerCase()
+  const categoryText = [attempt?.category, attempt?.category_title]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
 
   return track.categoryKeywords.some((keyword) =>
     categoryText.includes(keyword.toLowerCase()),
@@ -42,82 +95,225 @@ const getScoreStats = (attempts) => {
   return { averageScore, bestScore }
 }
 
+const isPendingAssignment = (assignment) => {
+  const status = String(assignment?.submissionStatus ?? assignment?.status ?? '')
+    .toLowerCase()
+  return !status || status.includes('not') || status.includes('pending')
+}
+
+function DashboardStat({ label, value, helper, icon: Icon, tone = 'indigo' }) {
+  const tones = {
+    indigo: 'bg-indigo-50 text-indigo-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    amber: 'bg-amber-50 text-amber-700',
+    sky: 'bg-sky-50 text-sky-700',
+  }
+
+  return (
+    <Card className="!p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+        </div>
+        <span className={`grid h-10 w-10 place-items-center rounded-full ${tones[tone]}`}>
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+      {helper ? <p className="mt-2 text-sm text-slate-600">{helper}</p> : null}
+    </Card>
+  )
+}
+
+function SectionHeader({ title, action }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+      {action}
+    </div>
+  )
+}
+
+function EmptyPanel({ children }) {
+  return (
+    <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-500">
+      {children}
+    </p>
+  )
+}
+
+function RequirementItem({ done, children }) {
+  const Icon = done ? CheckCircle2 : Circle
+
+  return (
+    <li className="flex items-center gap-3 text-sm font-medium text-slate-700">
+      <Icon
+        className={done ? 'h-5 w-5 text-emerald-600' : 'h-5 w-5 text-slate-300'}
+      />
+      <span>{children}</span>
+    </li>
+  )
+}
+
 export default function FellowDashboard() {
-  const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
   const [profile, setProfile] = useState(null)
-  const [categories, setCategories] = useState([])
   const [attempts, setAttempts] = useState([])
+  const [categories, setCategories] = useState([])
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
-  const [isSavingTrack, setIsSavingTrack] = useState(false)
   const [dashboardError, setDashboardError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
-  const [isChangingTrack, setIsChangingTrack] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const [programEnrollment, setProgramEnrollment] = useState(undefined)
+  const [learningProgress, setLearningProgress] = useState(null)
+  const [myCohort, setMyCohort] = useState(undefined)
   const [learningSummary, setLearningSummary] = useState(undefined)
-
+  const [learningModules, setLearningModules] = useState([])
   const [assignmentSummary, setAssignmentSummary] = useState(undefined)
+  const [assignments, setAssignments] = useState([])
+  const [attendanceSummary, setAttendanceSummary] = useState(undefined)
+  const [sessions, setSessions] = useState([])
+  const userLearningTrack = user?.learningTrack
+  const userSelectedTrack = user?.selectedTrack
 
   useEffect(() => {
     let isMounted = true
 
     const loadDashboard = async () => {
-      const [
-        enrollmentResult,
-        learningSummaryResult,
-        assignmentSummaryResult,
-        profileResult,
-        categoryResult,
-        attemptResult,
-      ] = await Promise.allSettled([
-        getMyEnrollment(),
-        getFellowLearningSummary(),
-        getFellowAssignmentsSummary(),
-        getMyProfile(),
-        getQuizCategories(),
-        getMyQuizAttempts(),
-      ])
+      setIsLoadingDashboard(true)
+      setDashboardError('')
 
-      if (isMounted) {
+      try {
+        const results = await Promise.allSettled([
+          getMyEnrollment(),
+          getFellowLearningSummary(),
+          getFellowLearningModules(),
+          getFellowAssignmentsSummary(),
+          getFellowAssignments(),
+          getFellowAttendanceSummary(),
+          getFellowSessions(),
+          getMyCohort(),
+          getMyProfile(),
+          getQuizCategories(),
+          getMyQuizAttempts(),
+        ])
+
+        if (!isMounted) return
+
+        const [
+          enrollmentResult,
+          learningSummaryResult,
+          learningModulesResult,
+          assignmentSummaryResult,
+          assignmentsResult,
+          attendanceSummaryResult,
+          sessionsResult,
+          cohortResult,
+          profileResult,
+          categoryResult,
+          attemptResult,
+        ] = results
+
         if (enrollmentResult.status === 'fulfilled') {
-          setProgramEnrollment(enrollmentResult.value?.enrollment ?? null)
+          setProgramEnrollment(normalizeObject(enrollmentResult.value, 'enrollment'))
         }
 
         if (learningSummaryResult.status === 'fulfilled') {
-          setLearningSummary(learningSummaryResult.value)
+          setLearningSummary(normalizeObject(learningSummaryResult.value))
+        }
+
+        if (learningModulesResult.status === 'fulfilled') {
+          setLearningModules(normalizeArray(learningModulesResult.value, 'modules'))
         }
 
         if (assignmentSummaryResult.status === 'fulfilled') {
-          setAssignmentSummary(assignmentSummaryResult.value)
+          setAssignmentSummary(normalizeObject(assignmentSummaryResult.value))
         }
 
+        if (assignmentsResult.status === 'fulfilled') {
+          setAssignments(normalizeArray(assignmentsResult.value, 'assignments'))
+        }
+
+        if (attendanceSummaryResult.status === 'fulfilled') {
+          setAttendanceSummary(normalizeObject(attendanceSummaryResult.value))
+        }
+
+        if (sessionsResult.status === 'fulfilled') {
+          setSessions(normalizeArray(sessionsResult.value, 'sessions'))
+        }
+
+        if (cohortResult.status === 'fulfilled') {
+          setMyCohort(normalizeObject(cohortResult.value, 'cohort'))
+        }
+
+        let profileData = null
         if (profileResult.status === 'fulfilled') {
-          setProfile(profileResult.value)
+          profileData = normalizeObject(profileResult.value)
+          setProfile(profileData)
           updateUser({
-            full_name: profileResult.value.fullName,
-            email: profileResult.value.email,
-            role: profileResult.value.role,
-            learningTrack: profileResult.value.learningTrack,
+            full_name: profileData?.fullName,
+            email: profileData?.email,
+            role: profileData?.role,
+            learningTrack: profileData?.learningTrack,
           })
         }
 
         if (categoryResult.status === 'fulfilled') {
-          setCategories(categoryResult.value)
+          setCategories(normalizeArray(categoryResult.value))
         }
 
         if (attemptResult.status === 'fulfilled') {
-          setAttempts(attemptResult.value)
+          setAttempts(normalizeArray(attemptResult.value))
         }
 
-        if (
-          profileResult.status === 'rejected' ||
-          categoryResult.status === 'rejected'
-        ) {
-          setDashboardError('Unable to load some dashboard details right now.')
+        const activeTrack = getFellowTrack({
+          ...user,
+          selectedTrack: userSelectedTrack,
+          learningTrack: profileData?.learningTrack ?? userLearningTrack,
+        })
+
+        if (activeTrack?.quizSlug) {
+          const progressResult = await getMyLearningProgressByTrack(
+            activeTrack.quizSlug,
+          ).then(
+            (value) => ({ status: 'fulfilled', value }),
+            (reason) => ({ status: 'rejected', reason }),
+          )
+
+          if (!isMounted) return
+
+          setLearningProgress(
+            progressResult.status === 'fulfilled'
+              ? normalizeObject(progressResult.value)
+              : null,
+          )
+        } else {
+          setLearningProgress(null)
         }
 
-        setIsLoadingDashboard(false)
+        const rejectedResult = results.find((result) => result.status === 'rejected')
+        if (rejectedResult) {
+          console.error('Failed to load part of fellow dashboard:', rejectedResult.reason)
+          const status = rejectedResult.reason?.response?.status
+          setDashboardError(
+            status === 401 || status === 403
+              ? 'Your session expired. Please login again.'
+              : 'Unable to load dashboard data. Please try refreshing the page.',
+          )
+        }
+      } catch (loadError) {
+        if (!isMounted) return
+        console.error('Failed to load fellow dashboard:', loadError)
+        const status = loadError?.response?.status
+        setDashboardError(
+          status === 401 || status === 403
+            ? 'Your session expired. Please login again.'
+            : 'Unable to load dashboard data. Please try refreshing the page.',
+        )
+      } finally {
+        if (isMounted) {
+          setIsLoadingDashboard(false)
+        }
       }
     }
 
@@ -126,445 +322,459 @@ export default function FellowDashboard() {
     return () => {
       isMounted = false
     }
-  }, [updateUser])
+  }, [reloadKey, updateUser, userLearningTrack, userSelectedTrack])
 
   const currentUser = {
     ...user,
     learningTrack: profile?.learningTrack ?? user?.learningTrack,
   }
   const selectedTrack = getFellowTrack(currentUser)
-
   const selectedTrackAttempts = useMemo(() => {
-    if (!selectedTrack) {
-      return []
-    }
-
+    if (!selectedTrack) return []
     return attempts.filter((attempt) => matchesTrack(attempt, selectedTrack))
   }, [attempts, selectedTrack])
-
-  const latestAttempt = selectedTrackAttempts[0]
-  const latestPercentage = getAttemptPercentage(latestAttempt)
   const { averageScore, bestScore } = getScoreStats(selectedTrackAttempts)
   const selectedCategory = categories.find(
     (category) => category.slug === selectedTrack?.quizSlug,
   )
-
-  const dashboardStats = [
-    {
-      label: 'Selected Track',
-      value: selectedTrack?.label ?? 'None',
-      helper: selectedTrack ? selectedTrack.pathLabel : 'Choose a learning track',
-    },
-    {
-      label: 'Attempts Completed',
-      value: selectedTrackAttempts.length,
-      helper: selectedTrack ? `${selectedTrack.label} attempts` : 'No track selected',
-    },
-    {
-      label: 'Best Score',
-      value: `${bestScore}%`,
-      helper: selectedTrackAttempts.length ? 'Highest track score' : 'No attempts yet',
-    },
-    {
-      label: 'Average Score',
-      value: `${averageScore}%`,
-      helper: selectedTrackAttempts.length
-        ? 'Across this track'
-        : 'Start to build progress',
-    },
-  ]
-
-  const fellowshipPanels = useMemo(() => {
-    if (!selectedTrack) {
-      return []
-    }
-
-    return [
-      {
-        title: 'Current track',
-        body: `${selectedTrack.title} — ${selectedTrack.pathLabel}.`,
-        cta: { label: 'Open track overview', to: selectedTrack.detailPath },
-      },
-      {
-        title: 'Progress',
-        body:
-          learningSummary?.enrolled && learningSummary.totalLessons > 0
-            ? `Lessons completed ${learningSummary.completedLessons} / ${learningSummary.totalLessons}. Modules fully done ${learningSummary.modulesFullyCompleted} / ${learningSummary.totalModules}. Quiz: best ${bestScore}% · avg ${averageScore}% (${selectedTrackAttempts.length} attempts).`
-            : `Best score ${bestScore}% · Average ${averageScore}% across ${selectedTrackAttempts.length} quiz attempt${
-                selectedTrackAttempts.length === 1 ? '' : 's'
-              }.`,
-      },
-      {
-        title: 'Continue learning',
-        body: 'Jump into published modules and lessons for your enrolled track.',
-        cta: {
-          label: programEnrollment ? 'Open learning' : 'Open course',
-          to: programEnrollment ? '/fellow/learning' : selectedTrack.detailPath,
-        },
-      },
-      {
-        title: 'Pending quizzes',
-        body: 'Complete required quizzes to stay on pace with the fellowship schedule.',
-        cta: { label: 'View quizzes', to: '/fellow/quizzes' },
-      },
-      {
-        title: 'Assignments',
-        body: assignmentSummary?.enrolled
-          ? `Open assignments: ${assignmentSummary.openCount}. Awaiting review: ${assignmentSummary.submittedPendingCount}. Needs revision: ${assignmentSummary.needsRevisionCount}. Reviewed: ${assignmentSummary.reviewedCount}.`
-          : 'Written assignments and deadlines appear when you are enrolled in a track.',
-        cta: {
-          label: assignmentSummary?.enrolled ? 'View assignments' : 'Assignments',
-          to: '/fellow/assignments',
-        },
-      },
-      {
-        title: 'Announcements',
-        body: 'Staff announcements, calendar updates, and cohort reminders will appear here.',
-        cta: { label: 'Announcements (soon)', to: '/fellow/announcements' },
-      },
-    ]
-  }, [
-    selectedTrack,
-    averageScore,
-    bestScore,
-    selectedTrackAttempts.length,
-    learningSummary,
-    programEnrollment,
-    assignmentSummary,
-  ])
-
-  const trackActions = selectedTrack
-    ? [
-        {
-          title: 'Active Course',
-          description: `${selectedTrack.title} is your selected fellowship course.`,
-          to: selectedTrack.detailPath,
-          cta: 'Open course',
-          status: selectedTrack.pathLabel,
-        },
-        {
-          title: `Start ${selectedTrack.label} Quiz`,
-          description: selectedCategory?.description ?? selectedTrack.description,
-          to: selectedTrack.quizPath,
-          cta: 'Start quiz',
-          status: 'Available',
-        },
-        {
-          title: 'Quiz Progress',
-          description: selectedTrackAttempts.length
-            ? `Best score ${bestScore}% and average score ${averageScore}%.`
-            : 'Start your first quiz to build progress.',
-          to: selectedTrack.quizPath,
-          cta: selectedTrackAttempts.length ? 'Retake quiz' : 'Start quiz',
-          status: `${selectedTrackAttempts.length} attempts`,
-        },
-        {
-          title: 'Recent Result',
-          description: latestAttempt
-            ? `Latest score: ${latestPercentage}% in ${latestAttempt.category_title}.`
-            : 'No results yet for your active course.',
-          to: '/fellow/quizzes/attempts',
-          cta: latestAttempt ? 'View result' : 'View results',
-          status: latestAttempt ? 'Latest' : 'Empty',
-        },
-        {
-          title: 'Learning Track Progress',
-          description:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
-              ? `${learningSummary.completedLessons} of ${learningSummary.totalLessons} lessons completed.`
-              : 'Track-specific learning milestones will appear here when modules are available.',
-          to: '/fellow/learning',
-          cta: 'View learning',
-          status:
-            learningSummary?.enrolled && learningSummary.totalLessons > 0
-              ? `${Math.round(
-                  (learningSummary.completedLessons / learningSummary.totalLessons) * 100,
-                )}%`
-              : 'Soon',
-          disabled: !learningSummary?.enrolled || !learningSummary?.totalLessons,
-        },
-        {
-          title: 'Assignments',
-          description:
-            assignmentSummary?.enrolled && assignmentSummary.openCount > 0
-              ? `${assignmentSummary.openCount} open · ${assignmentSummary.submittedPendingCount} awaiting review · ${assignmentSummary.needsRevisionCount} need revision.`
-              : 'Submit coursework and track your review status.',
-          to: '/fellow/assignments',
-          cta: 'Open assignments',
-          status: assignmentSummary?.enrolled ? 'Live' : 'Enroll',
-        },
-      ]
-    : []
-
-  const handleSelectTrack = async (trackValue) => {
-    setIsSavingTrack(true)
-    setDashboardError('')
-    setSuccessMessage('')
-
-    try {
-      const updatedProfile = await updateLearningTrack({
-        learningTrack: trackValue,
-      })
-
-      setProfile(updatedProfile)
-      updateUser({
-        full_name: updatedProfile.fullName,
-        email: updatedProfile.email,
-        role: updatedProfile.role,
-        learningTrack: updatedProfile.learningTrack,
-      })
-      setIsChangingTrack(false)
-      setSuccessMessage('Learning track saved.')
-
-      const savedTrack = LEARNING_TRACKS[updatedProfile.learningTrack]
-      if (savedTrack?.detailPath) {
-        navigate(savedTrack.detailPath)
-      }
-    } catch (error) {
-      const detail = error?.response?.data?.detail
-      setDashboardError(
-        typeof detail === 'string'
-          ? detail
-          : 'Unable to save learning track.',
-      )
-    } finally {
-      setIsSavingTrack(false)
-    }
+  const latestAttempt = selectedTrackAttempts[0] ?? null
+  const latestPercentage = latestAttempt ? getAttemptPercentage(latestAttempt) : 0
+  const learningProgressPercent =
+    learningProgress?.completionPercentage ??
+    learningSummary?.completionPercentage ??
+    0
+  const trackTitle =
+    programEnrollment?.track?.title ?? selectedTrack?.title ?? 'Not selected'
+  const cohortName = myCohort?.name ?? programEnrollment?.batch?.name ?? 'Not assigned'
+  const modulesCompleted = learningModules.filter(
+    (module) => (module.completionPercentage ?? 0) >= 100,
+  ).length
+  const nextModule =
+    learningModules.find((module) => (module.completionPercentage ?? 0) < 100) ??
+    learningModules[0] ??
+    null
+  const pendingAssignments = assignments.filter(isPendingAssignment).slice(0, 3)
+  const hasTrackQuizAttempt = selectedTrackAttempts.length > 0
+  const pendingTasks = [
+    ...pendingAssignments.map((assignment) => ({
+      id: assignment.id,
+      title: assignment.title,
+      type: 'Assignment',
+      meta: assignment.dueDate
+        ? `Due ${formatDate(assignment.dueDate)}`
+        : assignment.submissionStatus ?? 'Pending',
+      actionLabel: 'Submit Assignment',
+      actionTo: `/fellow/assignments/${assignment.id}`,
+    })),
+    ...(selectedTrack && !hasTrackQuizAttempt
+      ? [
+          {
+            id: selectedTrack.quizSlug,
+            title: selectedCategory?.title ?? `${selectedTrack.label} Quiz`,
+            type: 'Quiz',
+            meta: 'Not attempted',
+            actionLabel: 'Start Quiz',
+            actionTo: selectedTrack.quizPath,
+          },
+        ]
+      : []),
+  ].slice(0, 4)
+  const upcomingSessions = sessions
+    .filter((session) => String(session.status).toLowerCase() === 'scheduled')
+    .slice(0, 3)
+  const recentActivity = [
+    ...selectedTrackAttempts.slice(0, 2).map((attempt) => ({
+      id: `quiz-${attempt.id ?? attempt.submitted_at}`,
+      title: `${attempt.category_title ?? selectedCategory?.title ?? 'Quiz'} attempted`,
+      meta: `${getAttemptPercentage(attempt)}% score`,
+    })),
+    ...assignments
+      .filter((assignment) => !isPendingAssignment(assignment))
+      .slice(0, 2)
+      .map((assignment) => ({
+        id: `assignment-${assignment.id}`,
+        title: `${assignment.title} submitted`,
+        meta: assignment.submissionStatus ?? 'Submitted',
+      })),
+    ...sessions
+      .filter((session) => String(session.status).toLowerCase() === 'completed')
+      .slice(0, 1)
+      .map((session) => ({
+        id: `session-${session.id}`,
+        title: `${session.title} completed`,
+        meta: formatDate(session.sessionDate),
+      })),
+  ].slice(0, 5)
+  const assignmentPct =
+    assignmentSummary?.totalAssignments > 0
+      ? Math.round(
+          ((assignmentSummary.submittedAssignments ?? 0) /
+            assignmentSummary.totalAssignments) *
+            100,
+        )
+      : 0
+  const certificateChecks = {
+    modules: learningProgressPercent >= 100,
+    assignments:
+      (assignmentSummary?.totalAssignments ?? 0) > 0 &&
+      (assignmentSummary?.pendingAssignments ?? 0) === 0,
+    attendance: (attendanceSummary?.attendancePercentage ?? 0) >= 80,
+    quizzes: bestScore >= 60,
   }
 
-  const handleChangeTrack = () => {
-    const shouldContinue = window.confirm(
-      'Changing your track may reset or affect progress display. Continue?',
+  if (isLoadingDashboard) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-40 w-full" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      </div>
     )
-
-    if (shouldContinue) {
-      setIsChangingTrack(true)
-      setSuccessMessage('')
-    }
   }
 
-  const shouldShowSelection = !selectedTrack || isChangingTrack
+  if (!selectedTrack) {
+    return (
+      <EmptyState
+        title="Select your learning track"
+        description="Choose a fellowship track to unlock your personalized dashboard, quizzes, and learning path."
+        actionLabel="Select track"
+        actionTo="/fellow/select-track"
+      />
+    )
+  }
 
   return (
-    <div className="app-home">
-      <section className="fellow-dashboard">
-        {dashboardError ? (
-          <p className="dashboard-alert">{dashboardError}</p>
-        ) : null}
+    <div className="space-y-6">
+      {dashboardError ? (
+        <Card className="border-amber-200 bg-amber-50">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-semibold text-amber-900">{dashboardError}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      ) : null}
 
-        {successMessage ? (
-          <p className="dashboard-success">{successMessage}</p>
-        ) : null}
-
-        {!isLoadingDashboard && programEnrollment ? (
-          <div className="dashboard-section">
-            <div className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-              <p className="eyebrow">Program enrollment</p>
-              <h2 className="mt-1 text-xl font-black text-[#24140e]">
-                {programEnrollment.track.title}
-              </h2>
-              <p className="mt-2 text-sm font-medium text-[#6f5f57]">
-                Batch: <strong>{programEnrollment.batch.name}</strong> ·{' '}
-                {new Date(programEnrollment.batch.startDate).toLocaleDateString()} –{' '}
-                {new Date(programEnrollment.batch.endDate).toLocaleDateString()}
-              </p>
-              <Link className="text-button mt-3 inline-block" to="/fellow/my-track">
-                View track and batch details
-              </Link>
+      <Card className="border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-white">
+        <div className="grid gap-6 lg:grid-cols-[1fr_280px] lg:items-center">
+          <div>
+            <Badge tone="primary">Fellow Dashboard</Badge>
+            <h1 className="mt-4 text-2xl font-bold text-slate-900 sm:text-3xl">
+              Welcome back, {profile?.fullName ?? user?.full_name ?? 'Fellow'}
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Continue your learning journey and complete your pending tasks.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge tone="purple">Track: {trackTitle}</Badge>
+              <Badge tone="outline">Cohort: {cohortName}</Badge>
             </div>
           </div>
-        ) : null}
-
-        {!isLoadingDashboard && programEnrollment === null ? (
-          <div className="dashboard-section">
-            <div className="rounded-lg border border-dashed border-orange-200 bg-[#fffaf6] p-5">
-              <p className="eyebrow">Program enrollment</p>
-              <p className="mt-2 text-sm font-bold text-[#6f5f57]">
-                You are not enrolled in any fellowship track yet.
-              </p>
-              <p className="mt-2 text-sm text-[#6f5f57]">
-                Your official track and batch will appear here once staff enroll you.
-                You can still set a quiz practice track below.
-              </p>
-              <Link className="text-button mt-2 inline-block" to="/fellow/my-track">
-                Open My track
-              </Link>
-            </div>
-          </div>
-        ) : null}
-
-        {shouldShowSelection ? (
-          <section className="track-selection-shell">
-            <div className="track-selection-heading">
-              <p className="eyebrow">Choose Specialization</p>
-              <h1>Select your learning track</h1>
-              <p>
-                Pick one track to personalize your dashboard, quiz shortcuts,
-                progress display, and recommended next steps.
-              </p>
-            </div>
-
-            {isLoadingDashboard ? (
-              <p className="track-selection-loading">Loading track options...</p>
-            ) : null}
-
-            <div className="track-selection-grid">
-              {LEARNING_TRACK_OPTIONS.map((track) => (
-                <TrackSelectionCard
-                  key={track.value}
-                  track={track}
-                  isSaving={isSavingTrack}
-                  onSelect={handleSelectTrack}
-                />
-              ))}
-            </div>
-          </section>
-        ) : (
-          <>
-            <div className="fellow-hero">
+          <div className="rounded-xl border border-indigo-100 bg-white p-4 shadow-sm">
+            <div className="flex items-end justify-between gap-3">
               <div>
-                <p className="eyebrow">Fellow Dashboard</p>
-                <h1>{selectedTrack.title}</h1>
-                <p>
-                  Welcome back, {user?.full_name ?? 'Fellow'}. This is your hub
-                  for coursework, assessments, assignments, and program updates
-                  for the {selectedTrack.label} track.
+                <p className="text-sm font-medium text-slate-500">Overall progress</p>
+                <p className="mt-1 text-3xl font-bold text-slate-900">
+                  {learningProgressPercent}%
                 </p>
-                <div className="fellow-hero-actions">
-                  <Link className="outline-button" to={selectedTrack.detailPath}>
-                    View Course
-                  </Link>
-                  <Link className="secondary-button" to={selectedTrack.quizPath}>
-                    Start {selectedTrack.label} Quiz
-                  </Link>
-                  <Link className="outline-button" to="/fellow/quizzes/attempts">
-                    View Results
-                  </Link>
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={handleChangeTrack}
-                  >
-                    Change learning track
-                  </button>
-                </div>
               </div>
-              <div className="fellow-profile-summary">
-                <span className="fellow-avatar" aria-hidden="true">
-                  {(user?.full_name || user?.email || 'F').charAt(0)}
-                </span>
-                <div>
-                  <strong>{user?.full_name ?? 'Fellow Profile'}</strong>
-                  <span>{user?.email ?? 'Signed in'}</span>
-                  <em>{user?.role ?? 'FELLOW'}</em>
-                </div>
-              </div>
+              <GraduationCap className="h-10 w-10 text-indigo-600" />
             </div>
+            <div className="mt-4">
+              <ProgressBar value={learningProgressPercent} />
+            </div>
+          </div>
+        </div>
+      </Card>
 
-            <section className="dashboard-section">
-              <div className="dashboard-section-heading">
-                <p className="eyebrow">Program</p>
-                <h2>Your fellowship at a glance</h2>
-              </div>
-              <div className="fellowship-overview-grid">
-                {fellowshipPanels.map((panel) => (
-                  <article key={panel.title} className="fellowship-panel">
-                    <h3>{panel.title}</h3>
-                    <p>{panel.body}</p>
-                    {panel.cta ? (
-                      <Link className="text-button" to={panel.cta.to}>
-                        {panel.cta.label}
-                      </Link>
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            </section>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <DashboardStat
+          label="Modules Completed"
+          value={`${modulesCompleted}/${learningModules.length || 0}`}
+          helper={`${learningSummary?.completedLessons ?? 0}/${learningSummary?.totalLessons ?? 0} lessons`}
+          icon={BookOpen}
+        />
+        <DashboardStat
+          label="Assignments Due"
+          value={assignmentSummary?.pendingAssignments ?? pendingAssignments.length}
+          helper={`${assignmentSummary?.submittedAssignments ?? 0} submitted`}
+          icon={ClipboardList}
+          tone="amber"
+        />
+        <DashboardStat
+          label="Quizzes Completed"
+          value={selectedTrackAttempts.length}
+          helper={selectedTrackAttempts.length ? `Best score ${bestScore}%` : 'No attempts yet'}
+          icon={CheckCircle2}
+          tone="emerald"
+        />
+        <DashboardStat
+          label="Attendance Rate"
+          value={`${attendanceSummary?.attendancePercentage ?? 0}%`}
+          helper={`${attendanceSummary?.present ?? 0} present`}
+          icon={CalendarCheck}
+          tone="sky"
+        />
+      </div>
 
-            <section className="dashboard-section">
-              <div className="dashboard-section-heading">
-                <p className="eyebrow">Overview</p>
-                <h2>{selectedTrack.label} progress</h2>
-              </div>
-              <div className="fellow-stats-grid">
-                {dashboardStats.map((stat) => (
-                  <DashboardStatCard key={stat.label} {...stat} />
-                ))}
-              </div>
-            </section>
-
-            <SelectedTrackOverview
-              track={selectedTrack}
-              attemptsCount={selectedTrackAttempts.length}
-              bestScore={bestScore}
-              averageScore={averageScore}
-              latestAttempt={latestAttempt}
-              latestPercentage={latestPercentage}
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div className="space-y-6">
+          <Card>
+            <SectionHeader
+              title="Continue Learning"
+              action={
+                <Button to="/fellow/learning" variant="secondary" size="sm">
+                  Browse My Learning
+                </Button>
+              }
             />
-
-            <section className="dashboard-section">
-              <div className="dashboard-section-heading">
-                <p className="eyebrow">Next Actions</p>
-                <h2>Track shortcuts</h2>
+            {nextModule ? (
+              <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+                  Current Module
+                </p>
+                <h3 className="mt-2 text-xl font-bold text-slate-900">
+                  {nextModule.title}
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  Next Lesson:{' '}
+                  <span className="font-semibold text-slate-800">
+                    {nextModule.nextLessonTitle ??
+                      nextModule.lessons?.find?.((lesson) => !lesson.completed)?.title ??
+                      'Open module to continue'}
+                  </span>
+                </p>
+                <div className="mt-4">
+                  <ProgressBar
+                    value={nextModule.completionPercentage ?? learningProgressPercent}
+                    label="Module progress"
+                  />
+                </div>
+                <Button to={`/fellow/learning/${nextModule.id}`} className="mt-4">
+                  <PlayCircle className="h-4 w-4" />
+                  Continue Lesson
+                </Button>
               </div>
-              <div className="dashboard-actions selected-track-actions-grid">
-                {trackActions.map((action) => (
-                  <DashboardActionCard key={action.title} {...action} />
+            ) : (
+              <div className="mt-5">
+                <EmptyPanel>No active lesson found.</EmptyPanel>
+                <Button to="/fellow/learning" className="mt-4">
+                  Browse My Learning
+                </Button>
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <SectionHeader
+              title="Pending Tasks"
+              action={
+                <div className="flex gap-2">
+                  <Button to="/fellow/assignments" variant="secondary" size="sm">
+                    Assignments
+                  </Button>
+                  <Button to="/fellow/quizzes" variant="secondary" size="sm">
+                    Quizzes
+                  </Button>
+                </div>
+              }
+            />
+            {pendingTasks.length ? (
+              <div className="mt-4 space-y-3">
+                {pendingTasks.map((task) => (
+                  <div
+                    key={`${task.type}-${task.id}`}
+                    className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <Badge tone={task.type === 'Quiz' ? 'purple' : 'primary'}>
+                        {task.type}
+                      </Badge>
+                      <h3 className="mt-2 font-semibold text-slate-900">
+                        {task.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">{task.meta}</p>
+                    </div>
+                    <Button to={task.actionTo} size="sm">
+                      {task.actionLabel}
+                    </Button>
+                  </div>
                 ))}
               </div>
-            </section>
+            ) : (
+              <div className="mt-4">
+                <EmptyPanel>You have no pending tasks right now.</EmptyPanel>
+              </div>
+            )}
+          </Card>
 
-            <div className="fellow-dashboard-split">
-              <section className="recent-activity-card">
-                <p className="eyebrow">Recent Activity</p>
-                <h2>Latest {selectedTrack.label} quiz attempt</h2>
-                {isLoadingDashboard ? (
-                  <p>Loading activity...</p>
-                ) : latestAttempt ? (
-                  <div className="recent-activity-details">
-                    <strong>{latestAttempt.category_title}</strong>
-                    <span>Score: {latestPercentage}%</span>
-                    <span>
-                      Last activity:{' '}
-                      {new Date(latestAttempt.submitted_at).toLocaleString()}
-                    </span>
-                    <Link to={`/fellow/quizzes/attempts/${latestAttempt.id}`}>
-                      Open result
-                    </Link>
+          <Card>
+            <SectionHeader
+              title="Upcoming Sessions"
+              action={
+                <Button to="/fellow/sessions" variant="secondary" size="sm">
+                  View Sessions
+                </Button>
+              }
+            />
+            {upcomingSessions.length ? (
+              <div className="mt-4 space-y-3">
+                {upcomingSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="rounded-lg border border-slate-200 p-4"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h3 className="font-semibold text-slate-900">
+                          {session.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {formatDate(session.sessionDate)} · {session.startTime} -{' '}
+                          {session.endTime}
+                        </p>
+                      </div>
+                      <Badge tone="info">Upcoming</Badge>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {session.meetingLink ? (
+                        <Button href={session.meetingLink} size="sm">
+                          Meeting Link
+                        </Button>
+                      ) : null}
+                      <Button
+                        to={`/fellow/sessions/${session.id}`}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Details
+                      </Button>
+                    </div>
                   </div>
-                ) : (
-                  <p>
-                    No {selectedTrack.label} attempts yet. Start a quiz to see
-                    activity here.
-                  </p>
-                )}
-              </section>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4">
+                <EmptyPanel>No upcoming sessions scheduled.</EmptyPanel>
+              </div>
+            )}
+          </Card>
+        </div>
 
-              <section className="recommended-card">
-                <p className="eyebrow">Recommended</p>
-                <h2>
-                  {latestAttempt ? 'Review your latest result' : 'Start your first quiz'}
-                </h2>
-                <p>
-                  {latestAttempt
-                    ? `Your latest ${selectedTrack.label} score was ${latestPercentage}%. Review it before your next attempt.`
-                    : `Begin the ${selectedTrack.label} track with your first quiz attempt.`}
+        <div className="space-y-6">
+          <Card>
+            <SectionHeader title="Quiz Performance" />
+            <p className="mt-3 text-sm text-slate-600">
+              {selectedCategory?.description ?? selectedTrack.description}
+            </p>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Average</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">
+                  {averageScore}%
                 </p>
-                <Link
-                  className="secondary-button"
-                  to={
-                    latestAttempt
-                      ? `/fellow/quizzes/attempts/${latestAttempt.id}`
-                      : selectedTrack.quizPath
-                  }
-                >
-                  {latestAttempt ? 'Review result' : 'Start quiz'}
-                </Link>
-              </section>
+              </div>
+              <div className="rounded-lg bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">Latest</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">
+                  {latestAttempt ? `${latestPercentage}%` : '-'}
+                </p>
+              </div>
             </div>
-          </>
-        )}
-      </section>
+            <Button to={selectedTrack.quizPath} className="mt-4">
+              {selectedTrackAttempts.length ? 'Retake Quiz' : 'Start Quiz'}
+            </Button>
+          </Card>
+
+          <Card>
+            <SectionHeader title="Recent Activity" />
+            {recentActivity.length ? (
+              <div className="mt-4 space-y-3">
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex gap-3">
+                    <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-50 text-indigo-700">
+                      <Clock3 className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {activity.title}
+                      </p>
+                      <p className="text-sm text-slate-500">{activity.meta}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4">
+                <EmptyPanel>Your recent activity will appear here.</EmptyPanel>
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <SectionHeader
+              title="Certificate Eligibility"
+              action={
+                <Button to="/fellow/certificates" variant="secondary" size="sm">
+                  Certificates
+                </Button>
+              }
+            />
+            <p className="mt-3 text-sm text-slate-600">
+              Certificate readiness is based on completion criteria configured by
+              the program team.
+            </p>
+            <ul className="mt-4 space-y-3">
+              <RequirementItem done={certificateChecks.modules}>
+                Complete required modules
+              </RequirementItem>
+              <RequirementItem done={certificateChecks.assignments}>
+                Submit assignments
+              </RequirementItem>
+              <RequirementItem done={certificateChecks.attendance}>
+                Maintain attendance
+              </RequirementItem>
+              <RequirementItem done={certificateChecks.quizzes}>
+                Pass quizzes
+              </RequirementItem>
+            </ul>
+            <div className="mt-4">
+              <ProgressBar
+                value={
+                  (Object.values(certificateChecks).filter(Boolean).length / 4) *
+                  100
+                }
+                label="Readiness"
+              />
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {programEnrollment === null ? (
+        <Card className="border-dashed">
+          <p className="text-sm text-slate-600">
+            You are not enrolled in an official program track yet.{' '}
+            <Button to="/fellow/my-track" variant="secondary" size="sm">
+              Check enrollment status
+            </Button>
+          </p>
+        </Card>
+      ) : null}
     </div>
   )
 }

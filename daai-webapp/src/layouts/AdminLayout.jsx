@@ -1,11 +1,11 @@
-import DashboardLayout from './DashboardLayout'
 import { adminNavigation } from '../constants/navigation'
+import PortalLayout from './PortalLayout'
 
 export default function AdminLayout() {
   return (
-    <DashboardLayout
+    <PortalLayout
       navigation={adminNavigation}
-      sidebarTitle="Admin"
+      portalLabel="Admin"
       profilePath="/profile/settings"
     />
   )

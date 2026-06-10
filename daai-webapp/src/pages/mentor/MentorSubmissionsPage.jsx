@@ -54,11 +54,11 @@ export default function MentorSubmissionsPage() {
   return (
     <section>
       <div className="mb-6">
-        <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
           Mentoring
         </p>
-        <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">Submissions</h1>
-        <p className="mt-2 max-w-2xl text-sm font-medium text-[#6f5f57]">
+        <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">Submissions</h1>
+        <p className="mt-2 max-w-2xl text-sm font-medium text-[#475569]">
           Review fellow submissions and leave feedback for your cohort.
         </p>
       </div>
@@ -70,10 +70,10 @@ export default function MentorSubmissionsPage() {
       ) : null}
 
       <div className="mb-6 flex flex-wrap gap-4">
-        <label className="block text-sm font-bold text-[#24140e]">
+        <label className="block text-sm font-bold text-[#0f172a]">
           Track
           <select
-            className="mt-1 block w-56 rounded-md border border-orange-100 px-3 py-2 text-sm"
+            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
             value={trackId}
             onChange={(e) => setTrackId(e.target.value)}
           >
@@ -85,10 +85,10 @@ export default function MentorSubmissionsPage() {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-bold text-[#24140e]">
+        <label className="block text-sm font-bold text-[#0f172a]">
           Status
           <select
-            className="mt-1 block w-56 rounded-md border border-orange-100 px-3 py-2 text-sm"
+            className="mt-1 block w-56 rounded-md border border-slate-200 px-3 py-2 text-sm"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -103,15 +103,15 @@ export default function MentorSubmissionsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-[#6f5f57]">Loading…</p>
+        <p className="text-sm text-[#475569]">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-orange-200 bg-[#fffaf6] p-4 text-sm text-[#6f5f57]">
+        <p className="rounded-lg border border-dashed border-slate-200 bg-[#f8fafc] p-4 text-sm text-[#475569]">
           No submissions match these filters yet.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-orange-100 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-[#fffaf6] text-xs font-black uppercase text-[#6f5f57]">
+            <thead className="bg-[#f8fafc] text-xs font-black uppercase text-[#475569]">
               <tr>
                 <th className="px-4 py-3">Assignment</th>
                 <th className="px-4 py-3">Fellow</th>
@@ -121,22 +121,22 @@ export default function MentorSubmissionsPage() {
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-orange-100">
+            <tbody className="divide-y divide-slate-200">
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-3 font-bold text-[#24140e]">{r.assignmentTitle}</td>
-                  <td className="px-4 py-3 text-[#6f5f57]">
+                  <td className="px-4 py-3 font-bold text-[#0f172a]">{r.assignmentTitle}</td>
+                  <td className="px-4 py-3 text-[#475569]">
                     {r.fellowName}
                     <div className="text-xs">{r.fellowEmail}</div>
                   </td>
                   <td className="px-4 py-3">{r.status}</td>
                   <td className="px-4 py-3">{r.score ?? '—'}</td>
-                  <td className="px-4 py-3 text-xs text-[#6f5f57]">
+                  <td className="px-4 py-3 text-xs text-[#475569]">
                     {new Date(r.submittedAt).toLocaleString()}
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      className="font-black text-[#f26322]"
+                      className="font-black text-[#4f46e5]"
                       to={`/mentor/submissions/${r.id}`}
                     >
                       Review

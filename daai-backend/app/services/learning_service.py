@@ -26,6 +26,7 @@ from app.schema.learning_schema import (
     LessonResponse,
     LessonUpdate,
 )
+from app.services.learning_progress_service import LearningProgressService
 
 
 def _parse_oid(value: str, field: str) -> PydanticObjectId:
@@ -405,6 +406,10 @@ class FellowLearningService:
                 status.HTTP_400_BAD_REQUEST,
                 "Lesson progress already recorded",
             ) from exc
+
+        track = await Track.get(track_id)
+        if track is not None:
+            await LearningProgressService().sync_progress_for_track(user, track)
 
         return LessonCompleteResponse(ok=True, completed_at=now)
 

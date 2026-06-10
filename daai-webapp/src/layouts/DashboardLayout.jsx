@@ -8,11 +8,11 @@ export default function DashboardLayout({
   profilePath = '/profile/settings',
 }) {
   return (
-    <div className="min-h-screen bg-[#fff8f3] text-[#6f5f57]">
+    <div className="flex h-svh flex-col overflow-hidden bg-[#f8fafc] text-[#475569]">
       <TopNavbar profilePath={profilePath} />
-      <div className="lg:flex">
+      <div className="min-h-0 flex-1 lg:flex">
         <Sidebar items={navigation} sectionLabel={sidebarTitle} />
-        <main className="min-w-0 flex-1 p-4 lg:p-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

@@ -6,9 +6,9 @@ export default function Sidebar({
   sectionLabel = 'Admin',
 }) {
   return (
-    <aside className="border-orange-100 bg-[#fff8f3] lg:min-h-screen lg:w-72 lg:border-r">
+    <aside className="min-h-0 shrink-0 overflow-y-auto border-slate-200 bg-[#f8fafc] lg:h-full lg:w-72 lg:border-r">
       <div className="px-4 py-5 lg:px-5">
-        <p className="text-xs font-bold uppercase tracking-wide text-[#f26322]">
+        <p className="text-xs font-bold uppercase tracking-wide text-[#4f46e5]">
           {sectionLabel}
         </p>
         <nav className="mt-4 flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -20,8 +20,8 @@ export default function Sidebar({
                 [
                   'whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition',
                   isActive
-                    ? 'bg-[#f26322] text-white shadow-sm'
-                    : 'text-[#6f5f57] hover:bg-[#fff1e8] hover:text-[#24140e]',
+                    ? 'bg-[#4f46e5] text-white shadow-sm'
+                    : 'text-[#475569] hover:bg-[#eef2ff] hover:text-[#0f172a]',
                 ].join(' ')
               }
             >

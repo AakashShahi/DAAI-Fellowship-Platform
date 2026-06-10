@@ -7,10 +7,10 @@ import {
 import useAuthStore from '../store/authStore'
 
 const fieldClass =
-  'mt-2 w-full rounded-md border border-orange-100 bg-white px-3 py-2.5 text-sm font-medium text-[#24140e] outline-none transition placeholder:text-[#b49a8d] focus:border-[#f26322] focus:ring-2 focus:ring-[#ffd7c1] disabled:cursor-not-allowed disabled:bg-[#fff8f3] disabled:text-[#8d7a70]'
+  'mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-[#0f172a] outline-none transition placeholder:text-[#b49a8d] focus:border-[#4f46e5] focus:ring-2 focus:ring-[#ffd7c1] disabled:cursor-not-allowed disabled:bg-[#f8fafc] disabled:text-[#8d7a70]'
 
 const cardClass =
-  'rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]'
+  'rounded-lg border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]'
 
 const emptyProfile = {
   fullName: '',
@@ -250,7 +250,7 @@ export default function ProfileSettingsPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
         <section className="mx-auto max-w-6xl">
           <div className={cardClass}>
             <p className="text-sm font-bold">Loading profile settings...</p>
@@ -261,14 +261,14 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
         <div className="mb-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+            <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
               Profile Settings
             </p>
-            <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+            <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
               Manage your account
             </h1>
             <p className="mt-2 max-w-2xl text-sm font-medium">
@@ -286,7 +286,7 @@ export default function ProfileSettingsPage() {
         <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
           <aside className={cardClass}>
             <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center lg:flex-col lg:items-start">
-              <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#f26322] text-3xl font-black uppercase text-white">
+              <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#4f46e5] text-3xl font-black uppercase text-white">
                 {displayProfile.avatarUrl ? (
                   <img
                     src={displayProfile.avatarUrl}
@@ -298,13 +298,13 @@ export default function ProfileSettingsPage() {
                 )}
               </div>
               <div className="min-w-0">
-                <h2 className="break-words text-2xl font-black text-[#24140e]">
+                <h2 className="break-words text-2xl font-black text-[#0f172a]">
                   {displayProfile.fullName || 'User Profile'}
                 </h2>
                 <p className="mt-1 break-words text-sm font-semibold">
                   {displayProfile.email}
                 </p>
-                <span className="mt-3 inline-flex rounded-full bg-[#fff1e8] px-3 py-1 text-xs font-black text-[#f26322]">
+                <span className="mt-3 inline-flex rounded-full bg-[#eef2ff] px-3 py-1 text-xs font-black text-[#4f46e5]">
                   {displayProfile.role || 'USER'}
                 </span>
               </div>
@@ -314,10 +314,10 @@ export default function ProfileSettingsPage() {
           <div className="space-y-5">
             <form onSubmit={handleProfileSubmit} className={cardClass}>
               <div className="mb-5">
-                <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
                   Personal Information
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-[#24140e]">
+                <h2 className="mt-2 text-2xl font-black text-[#0f172a]">
                   Profile details
                 </h2>
               </div>
@@ -330,7 +330,7 @@ export default function ProfileSettingsPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block md:col-span-2">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Full name
                   </span>
                   <input
@@ -344,7 +344,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Email
                   </span>
                   <input
@@ -355,7 +355,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Role
                   </span>
                   <input
@@ -366,7 +366,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Phone
                   </span>
                   <input
@@ -380,7 +380,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Location
                   </span>
                   <input
@@ -394,7 +394,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block md:col-span-2">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Bio
                   </span>
                   <textarea
@@ -416,7 +416,7 @@ export default function ProfileSettingsPage() {
                 <button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="rounded-md bg-[#f26322] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#d94f13] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="rounded-md bg-[#4f46e5] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isSavingProfile ? 'Saving...' : 'Save Profile'}
                 </button>
@@ -425,10 +425,10 @@ export default function ProfileSettingsPage() {
 
             <form onSubmit={handlePasswordSubmit} className={cardClass}>
               <div className="mb-5">
-                <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+                <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
                   Account Security
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-[#24140e]">
+                <h2 className="mt-2 text-2xl font-black text-[#0f172a]">
                   Change password
                 </h2>
               </div>
@@ -441,7 +441,7 @@ export default function ProfileSettingsPage() {
 
               <div className="grid gap-4 md:grid-cols-3">
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Current password
                   </span>
                   <input
@@ -456,7 +456,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     New password
                   </span>
                   <input
@@ -471,7 +471,7 @@ export default function ProfileSettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-[#24140e]">
+                  <span className="text-sm font-black text-[#0f172a]">
                     Confirm password
                   </span>
                   <input
@@ -490,7 +490,7 @@ export default function ProfileSettingsPage() {
                 <button
                   type="submit"
                   disabled={isUpdatingPassword}
-                  className="rounded-md bg-[#24140e] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#3a261d] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="rounded-md bg-[#0f172a] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#3a261d] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isUpdatingPassword ? 'Updating...' : 'Update Password'}
                 </button>

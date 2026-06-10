@@ -59,13 +59,13 @@ export default function QuizListPage() {
   const isFellowWithoutTrack = user?.role === 'FELLOW' && !selectedTrack
 
   return (
-    <div className="min-h-screen bg-[#fff8f3] px-4 py-8 text-[#6f5f57] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-8 text-[#475569] sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
-        <div className="mb-6 rounded-lg border border-orange-100 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
-          <p className="text-xs font-black uppercase tracking-wide text-[#f26322]">
+        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
+          <p className="text-xs font-black uppercase tracking-wide text-[#4f46e5]">
             Quizzes
           </p>
-          <h1 className="mt-2 text-3xl font-black text-[#24140e] lg:text-4xl">
+          <h1 className="mt-2 text-3xl font-black text-[#0f172a] lg:text-4xl">
             {selectedTrack ? `${selectedTrack.label} Quiz` : 'Choose a quiz category'}
           </h1>
           <p className="mt-3 max-w-2xl text-sm font-medium">
@@ -76,7 +76,7 @@ export default function QuizListPage() {
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Link
               to="/fellow/quizzes/attempts"
-              className="inline-flex justify-center rounded-md bg-[#f26322] px-4 py-2 text-sm font-black text-white transition hover:bg-[#d94f13]"
+              className="inline-flex justify-center rounded-md bg-[#4f46e5] px-4 py-2 text-sm font-black text-white transition hover:bg-[#4338ca]"
             >
               My Attempts
             </Link>
@@ -84,7 +84,7 @@ export default function QuizListPage() {
         </div>
 
         {isLoading ? (
-          <p className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold">
+          <p className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold">
             Loading quiz categories...
           </p>
         ) : null}
@@ -96,9 +96,9 @@ export default function QuizListPage() {
         ) : null}
 
         {isFellowWithoutTrack ? (
-          <div className="rounded-lg border border-orange-100 bg-white p-5 text-sm font-bold shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)]">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm font-bold shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)]">
             Select your learning track before opening quizzes.
-            <Link className="ml-2 text-[#f26322] hover:text-[#d94f13]" to="/fellow/dashboard">
+            <Link className="ml-2 text-[#4f46e5] hover:text-[#4338ca]" to="/fellow/dashboard">
               Go to dashboard
             </Link>
           </div>
@@ -109,22 +109,22 @@ export default function QuizListPage() {
             <Link
               key={category.slug}
               to={`/fellow/quizzes/${category.slug}`}
-              className="rounded-lg border border-orange-100 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(112,55,23,0.35)] transition hover:-translate-y-0.5 hover:border-[#ffb088]"
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-[#c7d2fe]"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-[#24140e]">
+                  <h2 className="text-xl font-black text-[#0f172a]">
                     {category.title}
                   </h2>
-                  <p className="mt-2 text-sm font-medium text-[#6f5f57]">
+                  <p className="mt-2 text-sm font-medium text-[#475569]">
                     {category.description}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 sm:justify-end">
-                  <span className="rounded-full bg-[#fff1e8] px-3 py-1 text-xs font-black text-[#f26322]">
+                  <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-xs font-black text-[#4f46e5]">
                     {category.difficulty_label}
                   </span>
-                  <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-[#6f5f57]">
+                  <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-black text-[#475569]">
                     {questionCounts[category.slug] ?? 0} questions
                   </span>
                 </div>

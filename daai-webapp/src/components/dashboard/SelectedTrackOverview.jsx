@@ -4,7 +4,8 @@ export default function SelectedTrackOverview({
   track,
   attemptsCount,
   bestScore,
-  averageScore,
+  learningProgressPercent,
+  learningStatus,
   latestAttempt,
   latestPercentage,
 }) {
@@ -18,11 +19,11 @@ export default function SelectedTrackOverview({
 
       <div className="selected-track-progress">
         <div>
-          <strong>{averageScore}%</strong>
-          <span>Average score</span>
+          <strong>{learningProgressPercent}%</strong>
+          <span>{learningStatus}</span>
         </div>
         <div className="track-progress-bar" aria-label={`${track.label} progress`}>
-          <span style={{ width: `${averageScore}%` }} />
+          <span style={{ width: `${learningProgressPercent}%` }} />
         </div>
       </div>
 
