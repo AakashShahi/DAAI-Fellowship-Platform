@@ -166,9 +166,3 @@ api_router.include_router(
     prefix="/dashboard",
     tags=["Dashboard"],
 )
-
-api_router.include_router(
-    admin_announcement_routes.router,
-    prefix="/admin",
-    tags=["Admin Announcements"],
-)
