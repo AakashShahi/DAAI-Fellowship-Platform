@@ -11,6 +11,7 @@ from app.api.v1.routes import (
     admin_fellow_routes,
     auth_routes,
     batch_routes,
+    chatbot_routes,
     enrollment_routes,
     fellow_routes,
     fellows_admin_routes,
@@ -164,4 +165,10 @@ api_router.include_router(
     dashboard_routes.router,
     prefix="/dashboard",
     tags=["Dashboard"],
+)
+
+api_router.include_router(
+    chatbot_routes.router,
+    prefix="/chatbot",
+    tags=["Chatbot"],
 )
