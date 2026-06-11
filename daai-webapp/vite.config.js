@@ -10,4 +10,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
   ],
+  optimizeDeps: {
+    include: ['recharts', 'lodash']
+  }
 })

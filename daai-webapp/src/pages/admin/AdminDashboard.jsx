@@ -1,227 +1,170 @@
-import { useEffect, useState } from 'react'
-import { Calendar, FileText, GraduationCap, Users } from 'lucide-react'
-import AdminPageHeader from '../../components/admin/AdminPageHeader'
-import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
-import StatusBadge from '../../components/admin/StatusBadge'
-import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import React, { useState, useEffect } from 'react'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/Table'
-import { getAdminTrackStats } from '../../services/adminFellowService'
-import { getApplications } from '../../services/applicationService'
-import { getAdminCohorts, getAdminCohortStats } from '../../services/cohortService'
-import { getAssignmentStatsAdmin } from '../../services/assignmentService'
-import { getAdminSessionStats } from '../../services/sessionService'
+  Users,
+  Briefcase,
+  Layers,
+  CalendarCheck,
+  Search,
+  Bell,
+  Sun
+} from 'lucide-react'
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+} from 'recharts'
+import useAuthStore from '../../store/authStore'
+import { getAdminDashboard } from '../../services/dashboardService'
+import { StatsCard } from '../../components/dashboard/StatsCard'
+import { GraphCard } from '../../components/dashboard/GraphCard'
+import { ProfileSidebar } from '../../components/dashboard/ProfileSidebar'
+import ComingSoonPage from '../ComingSoonPage'
 
-const emptyTrackStats = { totalFellows: 0 }
-const emptyCohortStats = { active: 0 }
-const emptyAssignmentStats = { pendingReviews: 0 }
-const emptySessionStats = { scheduled: 0 }
-
-function StatCard({ icon: Icon, label, value, helper }) {
-  return (
-    <Card className="rounded-xl">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
-          {helper ? <p className="mt-1 text-xs font-medium text-slate-500">{helper}</p> : null}
-        </div>
-        <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </Card>
-  )
-}
+const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#f43f5e']
 
 export default function AdminDashboard() {
-  const [trackStats, setTrackStats] = useState(emptyTrackStats)
-  const [cohortStats, setCohortStats] = useState(emptyCohortStats)
-  const [assignmentStats, setAssignmentStats] = useState(emptyAssignmentStats)
-  const [sessionStats, setSessionStats] = useState(emptySessionStats)
-  const [applications, setApplications] = useState([])
-  const [cohorts, setCohorts] = useState([])
+  const user = useAuthStore((state) => state.user)
+  const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  const loadDashboard = async () => {
-    setIsLoading(true)
-    setError('')
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
     try {
-      const [
-        trackData,
-        cohortData,
-        assignmentData,
-        sessionData,
-        applicationData,
-        cohortList,
-      ] = await Promise.all([
-        getAdminTrackStats(),
-        getAdminCohortStats(),
-        getAssignmentStatsAdmin(),
-        getAdminSessionStats(),
-        getApplications(),
-        getAdminCohorts({ status: 'active' }),
-      ])
-      setTrackStats(trackData)
-      setCohortStats(cohortData)
-      setAssignmentStats(assignmentData)
-      setSessionStats(sessionData)
-      setApplications(applicationData.slice(0, 5))
-      setCohorts(cohortList.filter((cohort) => cohort.status === 'active').slice(0, 5))
-    } catch {
-      setError('Failed to load dashboard data.')
+      const res = await getAdminDashboard()
+      setData(res)
+    } catch (e) {
+      console.error(e)
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadDashboard()
-  }, [])
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-500">Loading Admin Dashboard...</div>
+  }
+
+  if (!data) return <ComingSoonPage />
 
   return (
-    <section>
-      <AdminPageHeader
-        label="Admin Dashboard"
-        title="Overview"
-        description="Monitor fellows, cohorts, applications, and learning activity."
-      />
-
-      {error ? <ErrorState message={error} onRetry={loadDashboard} /> : null}
-
-      {isLoading ? (
-        <LoadingState message="Loading dashboard..." />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              icon={Users}
-              label="Total Fellows"
-              value={trackStats.totalFellows ?? 0}
-              helper="Registered fellow accounts"
-            />
-            <StatCard
-              icon={GraduationCap}
-              label="Active Cohorts"
-              value={cohortStats.active ?? 0}
-              helper="Running now"
-            />
-            <StatCard
-              icon={FileText}
-              label="Pending Reviews"
-              value={assignmentStats.pendingReviews ?? 0}
-              helper="Submissions awaiting review"
-            />
-            <StatCard
-              icon={Calendar}
-              label="Upcoming Sessions"
-              value={sessionStats.scheduled ?? 0}
-              helper="Scheduled sessions"
-            />
+    <div className="flex flex-col xl:flex-row min-h-screen bg-slate-50/50 p-6 xl:p-8 gap-8 font-sans">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col gap-8 max-w-7xl">
+        {/* Header */}
+        <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+              Morning, {user?.full_name?.split(' ')[0]} <Sun className="text-orange-400" size={28} />
+            </h1>
+            <p className="text-slate-500 mt-1">System Overview Dashboard</p>
           </div>
-
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Card className="rounded-xl" padding={false}>
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
-                <div>
-                  <h2 className="text-lg font-black text-slate-900">Recent Applications</h2>
-                  <p className="text-sm text-slate-500">Latest submitted applications.</p>
-                </div>
-                <Button to="/admin/applications" variant="outline" size="sm">
-                  View all
-                </Button>
-              </div>
-              {applications.length ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Applicant</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Submitted</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applications.map((application) => (
-                      <TableRow key={application.id}>
-                        <TableCell className="font-semibold text-slate-900">
-                          {application.fullName}
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge status={application.status} />
-                        </TableCell>
-                        <TableCell>
-                          {application.createdAt
-                            ? new Date(application.createdAt).toLocaleDateString()
-                            : 'Unknown'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="p-5">
-                  <EmptyState
-                    title="No applications found."
-                    description="Submitted applications will appear here."
-                  />
-                </div>
-              )}
-            </Card>
-
-            <Card className="rounded-xl" padding={false}>
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
-                <div>
-                  <h2 className="text-lg font-black text-slate-900">Active Cohorts</h2>
-                  <p className="text-sm text-slate-500">Currently running cohorts.</p>
-                </div>
-                <Button to="/admin/cohorts" variant="outline" size="sm">
-                  View all
-                </Button>
-              </div>
-              {cohorts.length ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Cohort</TableHead>
-                      <TableHead>Track</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cohorts.map((cohort) => (
-                      <TableRow key={cohort.id}>
-                        <TableCell className="font-semibold text-slate-900">
-                          {cohort.name}
-                        </TableCell>
-                        <TableCell>{cohort.track}</TableCell>
-                        <TableCell>
-                          <StatusBadge status={cohort.status} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="p-5">
-                  <EmptyState
-                    title="No active cohorts found."
-                    description="Active cohorts will appear here once they are running."
-                  />
-                </div>
-              )}
-            </Card>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-all"
+              />
+            </div>
+            <button className="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center hover:bg-orange-100 transition-colors">
+              <Bell size={20} />
+            </button>
           </div>
+        </header>
+
+        {/* Top Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard icon={Briefcase} title="Total Staff" value={data.stats[0]?.value} helper="Active staff" color="blue" />
+          <StatsCard icon={Users} title="Total Fellows" value={data.stats[1]?.value} helper="Registered fellows" color="purple" />
+          <StatsCard icon={Layers} title="Total Cohorts" value={data.stats[2]?.value} helper="Active cohorts" color="orange" />
+          <StatsCard icon={CalendarCheck} title="Total Sessions" value={data.stats[3]?.value} helper="Conducted sessions" color="green" />
         </div>
-      )}
-    </section>
+
+        {/* Graphs Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GraphCard title="Staff Distribution">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.staff_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={40}>
+                  {data.staff_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </GraphCard>
+
+          <GraphCard title="Fellow Growth">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.fellows_growth_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} dot={{ strokeWidth: 4, r: 6, fill: '#fff' }} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+
+        {/* Graphs Row 2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GraphCard title="Platform Attendance Overview">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.attendance_chart}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data.attendance_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </GraphCard>
+          
+          <GraphCard title="Instructor Performance">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.instructor_performance_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" domain={[0, 5]} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24}>
+                  {data.instructor_performance_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <ProfileSidebar 
+        user={user} 
+        upcomingClasses={[
+          { title: "System Maintenance", type: "Internal", date: "Tomorrow 2:00 AM" },
+        ]} 
+        todoList={[
+          { title: "Review platform metrics", completed: false },
+          { title: "Approve new HR account", completed: true },
+        ]} 
+      />
+    </div>
   )
 }

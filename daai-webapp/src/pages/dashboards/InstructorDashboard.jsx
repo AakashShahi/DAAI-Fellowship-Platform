@@ -1,187 +1,153 @@
-import { useEffect, useState } from 'react'
-import { Calendar, FileText, CheckCircle, GraduationCap, ClipboardList, PenTool } from 'lucide-react'
-import AdminPageHeader from '../../components/admin/AdminPageHeader'
-import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
-import StatCard from '../../components/admin/StatCard'
-import StatusBadge from '../../components/admin/StatusBadge'
-import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import React, { useState, useEffect } from 'react'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/Table'
-import { getAdminCohorts } from '../../services/cohortService'
-import { getAdminSessionStats } from '../../services/sessionService'
-import { getAssignmentStatsAdmin } from '../../services/assignmentService'
+  Users,
+  CalendarCheck,
+  CheckCircle,
+  Star,
+  Search,
+  Bell,
+  Sun
+} from 'lucide-react'
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+} from 'recharts'
+import useAuthStore from '../../store/authStore'
+import { getInstructorDashboard } from '../../services/dashboardService'
+import { StatsCard } from '../../components/dashboard/StatsCard'
+import { GraphCard } from '../../components/dashboard/GraphCard'
+import { ProfileSidebar } from '../../components/dashboard/ProfileSidebar'
+import ComingSoonPage from '../ComingSoonPage'
 
-const emptySessionStats = { scheduled: 0 }
-const emptyAssignmentStats = { pendingReviews: 0 }
+const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#f43f5e', '#8b5cf6']
 
 export default function InstructorDashboard() {
-  const [cohorts, setCohorts] = useState([])
-  const [sessionStats, setSessionStats] = useState(emptySessionStats)
-  const [assignmentStats, setAssignmentStats] = useState(emptyAssignmentStats)
+  const user = useAuthStore((state) => state.user)
+  const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  const loadDashboard = async () => {
-    setIsLoading(true)
-    setError('')
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
     try {
-      const [cohortList, sessionData, assignmentData] = await Promise.all([
-        getAdminCohorts({ status: 'active' }),
-        getAdminSessionStats(), // Replace with getInstructorSessionStats if available
-        getAssignmentStatsAdmin(), // Replace with getInstructorAssignmentStats if available
-      ])
-      
-      setCohorts((cohortList || []).filter((cohort) => cohort.status === 'active').slice(0, 5))
-      setSessionStats(sessionData || emptySessionStats)
-      setAssignmentStats(assignmentData || emptyAssignmentStats)
-    } catch {
-      setError('Failed to load Instructor dashboard data.')
+      const res = await getInstructorDashboard()
+      setData(res)
+    } catch (e) {
+      console.error(e)
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadDashboard()
-  }, [])
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-500">Loading Instructor Dashboard...</div>
+  }
+
+  if (!data) return <ComingSoonPage />
 
   return (
-    <section>
-      <AdminPageHeader
-        label="Instructor Dashboard"
-        title="Teaching Hub"
-        description="Manage your cohorts, upcoming sessions, and review fellow assignments."
-        actions={
-          <>
-            <Button to="/instructor/assignments/new" className="gap-2">
-              <PenTool className="h-4 w-4" />
-              New Assignment
-            </Button>
-          </>
-        }
-      />
-
-      {error ? <ErrorState message={error} onRetry={loadDashboard} /> : null}
-
-      {isLoading ? (
-        <LoadingState message="Loading dashboard..." />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="My Cohorts"
-              value={cohorts.length ?? 0}
-              helper="Active cohorts assigned"
-              trend="Current Semester"
-            />
-            <StatCard
-              label="Upcoming Sessions"
-              value={sessionStats.scheduled ?? 0}
-              helper="Scheduled for this week"
-            />
-            <StatCard
-              label="Pending Reviews"
-              value={assignmentStats.pendingReviews ?? 0}
-              helper="Submissions to grade"
-              trend="Requires Action"
-            />
-            <StatCard
-              label="Avg. Class Attendance"
-              value="92%"
-              helper="For your sessions"
-              trend="Above average"
-            />
+    <div className="flex flex-col xl:flex-row min-h-screen bg-slate-50/50 p-6 xl:p-8 gap-8 font-sans">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col gap-8 max-w-7xl">
+        {/* Header */}
+        <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+              Morning, {user?.full_name?.split(' ')[0]} <Sun className="text-orange-400" size={28} />
+            </h1>
+            <p className="text-slate-500 mt-1">Teaching & Learning Hub</p>
           </div>
-
-          <div className="grid gap-6 xl:grid-cols-3">
-            <Card className="col-span-2 rounded-xl" padding={false}>
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
-                <div>
-                  <h2 className="text-lg font-black text-slate-900">My Active Cohorts</h2>
-                  <p className="text-sm text-slate-500">Cohorts you are currently instructing.</p>
-                </div>
-                <Button to="/instructor/cohorts" variant="outline" size="sm">
-                  View all
-                </Button>
-              </div>
-              {cohorts.length ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Cohort Name</TableHead>
-                      <TableHead>Track</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cohorts.map((cohort) => (
-                      <TableRow key={cohort.id}>
-                        <TableCell className="font-semibold text-slate-900">
-                          {cohort.name}
-                        </TableCell>
-                        <TableCell>{cohort.track}</TableCell>
-                        <TableCell>
-                          <StatusBadge status={cohort.status} />
-                        </TableCell>
-                        <TableCell className="text-right">
-                           <Button to={`/instructor/cohorts/${cohort.id}`} variant="ghost" size="sm" className="text-indigo-600">
-                             Manage
-                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="p-5">
-                  <EmptyState
-                    title="No active cohorts found."
-                    description="You have not been assigned to any active cohorts yet."
-                  />
-                </div>
-              )}
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="rounded-xl">
-                <h2 className="mb-4 text-lg font-black text-slate-900">Quick Actions</h2>
-                <div className="flex flex-col gap-3">
-                  <Button to="/instructor/attendance" variant="outline" className="justify-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-slate-400" />
-                    Mark Attendance
-                  </Button>
-                  <Button to="/instructor/assignments" variant="outline" className="justify-start gap-3">
-                    <FileText className="h-5 w-5 text-slate-400" />
-                    Upload Assignments
-                  </Button>
-                  <Button to="/instructor/grades" variant="outline" className="justify-start gap-3">
-                    <ClipboardList className="h-5 w-5 text-slate-400" />
-                    Grade Submissions
-                  </Button>
-                </div>
-              </Card>
-
-              <Card className="rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <GraduationCap className="h-6 w-6 text-indigo-600" />
-                  <h3 className="text-lg font-bold text-slate-900">Teaching Tips</h3>
-                </div>
-                <p className="text-sm text-slate-600">
-                  Try to grade assignments within 48 hours of submission. Quick feedback helps fellows improve faster and stay engaged with the material.
-                </p>
-              </Card>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-all"
+              />
             </div>
+            <button className="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center hover:bg-orange-100 transition-colors">
+              <Bell size={20} />
+            </button>
           </div>
+        </header>
+
+        {/* Top Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard icon={CalendarCheck} title="My Sessions" value={data.stats[0]?.value} helper="Total conducted" color="blue" />
+          <StatsCard icon={CheckCircle} title="Pending Reviews" value={data.stats[1]?.value} helper="Assignments to grade" color="orange" />
+          <StatsCard icon={Users} title="Avg Attendance" value={data.stats[2]?.value} helper="In your sessions" color="green" />
+          <StatsCard icon={Star} title="Course Rating" value={data.stats[3]?.value} helper="From fellow feedback" color="purple" />
         </div>
-      )}
-    </section>
+
+        {/* Graphs Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GraphCard title="Assignment Completion">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.assignment_completion_chart}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data.assignment_completion_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </GraphCard>
+
+          <GraphCard title="Fellow Progress by Module">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.fellow_progress_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={40}>
+                  {data.fellow_progress_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+
+        {/* Graphs Row 2 */}
+        <div className="grid grid-cols-1 gap-6">
+          <GraphCard title="Attendance Trend" className="w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.attendance_trend_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={4} dot={{ strokeWidth: 4, r: 6, fill: '#fff' }} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <ProfileSidebar 
+        user={user} 
+        upcomingClasses={data.upcoming_sessions} 
+        todoList={[
+          { title: "Grade React Final Assignments", completed: false },
+          { title: "Upload Module 3 Materials", completed: false },
+          { title: "Review attendance records", completed: true }
+        ]} 
+      />
+    </div>
   )
 }

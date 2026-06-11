@@ -1,140 +1,174 @@
-import { useEffect, useState } from 'react'
-import { Calendar, Users, UserCheck, Activity, Plus } from 'lucide-react'
-import AdminPageHeader from '../../components/admin/AdminPageHeader'
-import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
-import StatCard from '../../components/admin/StatCard'
-import StaffTable from '../../components/admin/StaffTable'
-import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
-import { getStaffList } from '../../services/staffService'
-import { getAdminTrackStats } from '../../services/adminFellowService'
+import React, { useState, useEffect } from 'react'
+import {
+  Users,
+  CalendarCheck,
+  UserCheck,
+  Briefcase,
+  Search,
+  Bell,
+  Sun
+} from 'lucide-react'
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+} from 'recharts'
+import useAuthStore from '../../store/authStore'
+import { getHrDashboard } from '../../services/dashboardService'
+import { StatsCard } from '../../components/dashboard/StatsCard'
+import { GraphCard } from '../../components/dashboard/GraphCard'
+import { ProfileSidebar } from '../../components/dashboard/ProfileSidebar'
+import ComingSoonPage from '../ComingSoonPage'
 
-const emptyTrackStats = { totalFellows: 0 }
+const COLORS = ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6']
 
 export default function HrDashboard() {
-  const [instructors, setInstructors] = useState([])
-  const [trackStats, setTrackStats] = useState(emptyTrackStats)
+  const user = useAuthStore((state) => state.user)
+  const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  const loadDashboard = async () => {
-    setIsLoading(true)
-    setError('')
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
     try {
-      const [instructorData, trackData] = await Promise.all([
-        getStaffList({ role: 'INSTRUCTOR', pageSize: 5 }),
-        getAdminTrackStats(),
-      ])
-      
-      setInstructors(instructorData?.items || [])
-      setTrackStats(trackData || emptyTrackStats)
-    } catch {
-      setError('Failed to load HR dashboard data.')
+      const res = await getHrDashboard()
+      setData(res)
+    } catch (e) {
+      console.error(e)
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadDashboard()
-  }, [])
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-500">Loading HR Dashboard...</div>
+  }
+
+  if (!data) return <ComingSoonPage />
 
   return (
-    <section>
-      <AdminPageHeader
-        label="HR Dashboard"
-        title="Staff & Fellow Management"
-        description="Manage onboarding, track attendance, and monitor engagement across cohorts."
-        actions={
-          <>
-            <Button to="/admin/staff/new" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Staff
-            </Button>
-          </>
-        }
-      />
-
-      {error ? <ErrorState message={error} onRetry={loadDashboard} /> : null}
-
-      {isLoading ? (
-        <LoadingState message="Loading dashboard..." />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Total Instructors"
-              value={instructors.length > 0 ? '12' : '0'} // Mocking total for demo, since API returns paginated
-              helper="Active teaching staff"
-              trend="+2 this month"
-            />
-            <StatCard
-              label="Total Fellows"
-              value={trackStats.totalFellows ?? 0}
-              helper="Registered fellow accounts"
-            />
-            <StatCard
-              label="Avg. Attendance"
-              value="87%"
-              helper="Across all active cohorts"
-              trend="+4% from last week"
-            />
-            <StatCard
-              label="Leave Requests"
-              value="5"
-              helper="Pending HR approval"
-            />
+    <div className="flex flex-col xl:flex-row min-h-screen bg-slate-50/50 p-6 xl:p-8 gap-8 font-sans">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col gap-8 max-w-7xl">
+        {/* Header */}
+        <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+              Morning, {user?.full_name?.split(' ')[0]} <Sun className="text-orange-400" size={28} />
+            </h1>
+            <p className="text-slate-500 mt-1">HR Operations Dashboard</p>
           </div>
-
-          <div className="grid gap-6 xl:grid-cols-3">
-            <Card className="col-span-2 rounded-xl" padding={false}>
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-5">
-                <div>
-                  <h2 className="text-lg font-black text-slate-900">Recent Instructors</h2>
-                  <p className="text-sm text-slate-500">Latest teaching staff members added.</p>
-                </div>
-                <Button to="/hr/instructors" variant="outline" size="sm">
-                  View all
-                </Button>
-              </div>
-              <StaffTable staff={instructors} isUpdating={false} onToggleStatus={() => {}} />
-            </Card>
-
-            <div className="space-y-6">
-              <Card className="rounded-xl">
-                <h2 className="mb-4 text-lg font-black text-slate-900">Quick Actions</h2>
-                <div className="flex flex-col gap-3">
-                  <Button to="/hr/staff" variant="outline" className="justify-start gap-3">
-                    <UserCheck className="h-5 w-5 text-slate-400" />
-                    Onboard New Staff
-                  </Button>
-                  <Button to="/hr/fellows" variant="outline" className="justify-start gap-3">
-                    <Users className="h-5 w-5 text-slate-400" />
-                    Manage Fellows
-                  </Button>
-                  <Button to="/hr/attendance" variant="outline" className="justify-start gap-3">
-                    <Calendar className="h-5 w-5 text-slate-400" />
-                    Review Attendance
-                  </Button>
-                  <Button to="/hr/activity-logs" variant="outline" className="justify-start gap-3">
-                    <Activity className="h-5 w-5 text-slate-400" />
-                    View Activity Logs
-                  </Button>
-                </div>
-              </Card>
-
-              <Card className="rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-md">
-                <h3 className="text-lg font-bold">HR Guidelines</h3>
-                <p className="mt-2 text-sm text-indigo-100">
-                  Ensure all new instructors complete their profile setup and are assigned to their respective cohorts before the semester begins.
-                </p>
-              </Card>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-all"
+              />
             </div>
+            <button className="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center hover:bg-orange-100 transition-colors">
+              <Bell size={20} />
+            </button>
           </div>
+        </header>
+
+        {/* Top Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard icon={Briefcase} title="Total Instructors" value={data.stats[0]?.value} helper="Active teaching staff" color="blue" />
+          <StatsCard icon={Users} title="HR Staff" value={data.stats[1]?.value} helper="Human Resources" color="purple" />
+          <StatsCard icon={CalendarCheck} title="Leave Requests" value={data.stats[2]?.value} helper="Pending approval" color="orange" />
+          <StatsCard icon={UserCheck} title="Avg Attendance" value={data.stats[3]?.value} helper="Across all cohorts" color="green" />
         </div>
-      )}
-    </section>
+
+        {/* Graphs Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GraphCard title="Attendance Rate">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.attendance_chart}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data.attendance_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </GraphCard>
+
+          <GraphCard title="Absence Breakdown">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.absence_breakdown_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={40}>
+                  {data.absence_breakdown_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+
+        {/* Graphs Row 2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GraphCard title="Fellow Onboarding (Quarterly)">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.onboarding_stats_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} dot={{ strokeWidth: 4, r: 6, fill: '#fff' }} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </GraphCard>
+
+          <GraphCard title="Instructor Assignment Load">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.instructor_load_chart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24}>
+                  {data.instructor_load_chart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </GraphCard>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <ProfileSidebar 
+        user={user} 
+        upcomingClasses={[
+          { title: "HR Weekly Sync", type: "Internal", date: "Today 2:00 PM" },
+          { title: "Onboarding Orientation", type: "Meeting", date: "Tomorrow 10:00 AM" }
+        ]} 
+        todoList={[
+          { title: "Review leave request #104", completed: false },
+          { title: "Send offer to new instructor", completed: false },
+          { title: "Update employee handbook", completed: true }
+        ]} 
+      />
+    </div>
   )
 }
-
-
