@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     HOST: str = "127.0.0.1"
     PORT: int = 8000
+    
+    FRONTEND_URL: str = "http://localhost:5173"
 
     MONGODB_URL: str = Field(
         default="mongodb://localhost:27017",

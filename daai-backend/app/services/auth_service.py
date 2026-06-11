@@ -143,7 +143,7 @@ class AuthService:
             expires_at=expires_at,
         )
         
-        setup_link = f"http://localhost:5173/set-password?token={setup_token}"
+        setup_link = f"{settings.FRONTEND_URL.rstrip('/')}/set-password?token={setup_token}"
 
         await self.email_service.send_email(
             to_email=str(user.email),
