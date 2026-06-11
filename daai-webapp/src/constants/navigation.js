@@ -1,5 +1,6 @@
 export const adminNavigation = [
   { label: 'Dashboard', to: '/admin/dashboard' },
+  { label: 'Staff', to: '/admin/staff' },
   { label: 'Fellows', to: '/admin/fellows' },
   { label: 'Cohorts', to: '/admin/cohorts' },
   { label: 'Applications', to: '/admin/applications' },

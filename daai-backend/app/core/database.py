@@ -5,6 +5,7 @@ from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.core.config import settings
+from app.models.activity_log_model import ActivityLog
 from app.models.assignment_model import Assignment
 from app.models.attendance_model import Attendance
 from app.models.application_model import FellowshipApplication
@@ -56,6 +57,7 @@ async def init_db() -> AsyncDatabase:
             ProgramCohort,
             Session,
             Attendance,
+            ActivityLog,
         ],
     )
 

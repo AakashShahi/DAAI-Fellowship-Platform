@@ -14,6 +14,7 @@ from app.api.v1.routes import (
     admin_assignment_v2_routes,
     admin_session_routes,
     admin_fellow_routes,
+    admin_staff_routes,
     fellow_routes,
     profile_routes,
     quiz_routes,
@@ -75,3 +76,4 @@ app.include_router(admin_cohort_routes.router, prefix="/api/admin", tags=["Admin
 app.include_router(admin_curriculum_routes.router, prefix="/api/admin", tags=["Admin Curriculum Management"])
 app.include_router(admin_assignment_v2_routes.router, prefix="/api/admin", tags=["Admin Assignment Management"])
 app.include_router(admin_session_routes.router, prefix="/api/admin", tags=["Admin Session Management"])
+app.include_router(admin_staff_routes.router, prefix="/api/admin", tags=["Admin Staff Management"])

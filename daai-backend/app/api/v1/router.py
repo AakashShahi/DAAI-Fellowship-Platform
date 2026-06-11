@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.routes import (
     admin_cohort_routes,
     admin_curriculum_routes,
+    admin_staff_routes,
     admin_assignment_v2_routes,
     admin_session_routes,
     application_routes,
@@ -150,4 +151,10 @@ api_router.include_router(
     submission_review_routes.router,
     prefix="/submissions",
     tags=["Submissions"],
+)
+
+api_router.include_router(
+    admin_staff_routes.router,
+    prefix="/admin",
+    tags=["Admin Staff Management"],
 )

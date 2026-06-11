@@ -13,6 +13,10 @@ import AdminDashboard from '../pages/admin/AdminDashboard'
 import AdminEnrollmentsPage from '../pages/admin/AdminEnrollmentsPage'
 import AdminLessonsPage from '../pages/admin/AdminLessonsPage'
 import AdminModulesPage from '../pages/admin/AdminModulesPage'
+import StaffListPage from '../pages/admin/StaffListPage'
+import StaffCreatePage from '../pages/admin/StaffCreatePage'
+import StaffEditPage from '../pages/admin/StaffEditPage'
+import StaffDetailPage from '../pages/admin/StaffDetailPage'
 import ModuleDetailPage from '../pages/admin/ModuleDetailPage'
 import ModuleFormPage from '../pages/admin/ModuleFormPage'
 import AdminQuizManagementPage from '../pages/admin/AdminQuizManagementPage'
@@ -48,6 +52,10 @@ export const adminRoutesElement = (
     <Route path="dashboard" element={<AdminDashboard />} />
     <Route path="applications" element={<ApplicationsPage />} />
     <Route path="applications/:applicationId" element={<ApplicationDetailPage />} />
+    <Route path="staff" element={<StaffListPage />} />
+    <Route path="staff/new" element={<StaffCreatePage />} />
+    <Route path="staff/:staffId" element={<StaffDetailPage />} />
+    <Route path="staff/:staffId/edit" element={<StaffEditPage />} />
     <Route path="fellows" element={<FellowsPage />} />
     <Route path="cohorts" element={<CohortsPage />} />
     <Route path="cohorts/new" element={<CohortCreatePage />} />
