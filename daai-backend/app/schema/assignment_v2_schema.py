@@ -26,9 +26,12 @@ class SubmissionLinkPayload(CamelModel):
     @field_validator("url")
     @classmethod
     def validate_url(cls, value: str) -> str:
-        parsed = urlparse(value)
-        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError("Submission link must be a valid URL")
+        if value:
+            if not value.startswith(("http://", "https://")):
+                value = "https://" + value
+            parsed = urlparse(value)
+            if not bool(parsed.netloc):
+                raise ValueError("Submission link must be a valid URL")
         return value
 
 

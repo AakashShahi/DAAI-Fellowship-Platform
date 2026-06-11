@@ -4,8 +4,8 @@ export function Card({ children, className, padding = true, ...props }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-slate-200 bg-white text-slate-950 shadow-sm',
-        padding && 'p-5 sm:p-6',
+        'rounded-2xl border border-slate-100 bg-white text-slate-950 shadow-sm',
+        padding && 'p-6',
         className,
       )}
       {...props}

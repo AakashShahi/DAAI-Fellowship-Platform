@@ -224,16 +224,18 @@ class StaffService:
                 detail="A user with this email already exists",
             )
 
-        unusable_password = _generate_unusable_password()
+        # If admin provides a password, use it directly and activate immediately
+        admin_provided_password = bool(data.password)
+        initial_password = data.password if admin_provided_password else _generate_unusable_password()
 
         try:
             user = await self.staff_repo.create(
                 full_name=data.full_name,
                 email=data.email,
-                hashed_password=hash_password(unusable_password),
+                hashed_password=hash_password(initial_password),
                 role=data.role,
                 phone=data.phone,
-                is_active=False,
+                is_active=admin_provided_password,  # active immediately if password given
             )
         except DuplicateKeyError as exc:
             raise HTTPException(
@@ -241,57 +243,66 @@ class StaffService:
                 detail="A user with this email already exists",
             ) from exc
 
-        # Generate password setup token
-        from app.services.auth_service import AuthService
-        from datetime import timedelta
-        
-        setup_token = secrets.token_urlsafe(PASSWORD_SETUP_TOKEN_BYTES)
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=PASSWORD_SETUP_EXPIRE_MINUTES)
-        
-        await self.user_repo.set_password_reset_token(
-            user,
-            token_hash=AuthService._hash_reset_token(setup_token),
-            expires_at=expires_at,
-        )
-
         await self._log(
             actor,
             ActivityAction.STAFF_CREATED,
             target=user,
-            description=f"Created staff member {user.full_name} with role {user.role.value}",
+            description=f"Created {'fellow' if data.role.value == 'FELLOW' else 'staff member'} {user.full_name} with role {user.role.value}"
+            + (" (admin-set password)" if admin_provided_password else ""),
         )
 
-        setup_link = f"http://localhost:5173/set-password?token={setup_token}"
+        # If no password was provided, send a setup link
+        if not admin_provided_password:
+            from app.services.auth_service import AuthService
+            from datetime import timedelta
 
-        result = await self.email_service.send_email(
-            to_email=str(user.email),
-            subject="Welcome to DAAI Fellowship Platform - Set Your Password",
-            body=(
-                f"Hello {user.full_name},\n\n"
-                f"An account has been created for you on the DAAI Fellowship Platform.\n\n"
-                f"Email: {user.email}\n\n"
-                f"Please click the link below to set your password and activate your account:\n"
-                f"{setup_link}\n\n"
-                f"This link will expire in 24 hours.\n\n"
-                f"— DAAI Fellowship Team"
-            ),
-        )
+            setup_token = secrets.token_urlsafe(PASSWORD_SETUP_TOKEN_BYTES)
+            expires_at = datetime.now(timezone.utc) + timedelta(minutes=PASSWORD_SETUP_EXPIRE_MINUTES)
 
-        # In dev/local or when SMTP is not configured, surface the link so admins can share it
-        is_dev = settings.APP_ENV.lower() in {"development", "local", "test"}
-        link_skipped = not result.sent
-        if link_skipped or is_dev:
-            logger.warning(
-                "[DEV] Password setup link for %s: %s",
-                user.email,
-                setup_link,
+            await self.user_repo.set_password_reset_token(
+                user,
+                token_hash=AuthService._hash_reset_token(setup_token),
+                expires_at=expires_at,
             )
 
+            setup_link = f"http://localhost:5173/set-password?token={setup_token}"
+
+            result = await self.email_service.send_email(
+                to_email=str(user.email),
+                subject="Welcome to DAAI Fellowship Platform - Set Your Password",
+                body=(
+                    f"Hello {user.full_name},\n\n"
+                    f"An account has been created for you on the DAAI Fellowship Platform.\n\n"
+                    f"Email: {user.email}\n\n"
+                    f"Please click the link below to set your password and activate your account:\n"
+                    f"{setup_link}\n\n"
+                    f"This link will expire in 24 hours.\n\n"
+                    f"— DAAI Fellowship Team"
+                ),
+            )
+
+            is_dev = settings.APP_ENV.lower() in {"development", "local", "test"}
+            link_skipped = not result.sent
+            if link_skipped or is_dev:
+                logger.warning(
+                    "[DEV] Password setup link for %s: %s",
+                    user.email,
+                    setup_link,
+                )
+
+            return StaffCreateResponse(
+                message=f"Account for '{user.full_name}' created. A password setup email has been sent.",
+                staff=_user_to_list_item(user),
+                temporary_password="",
+                setup_link=setup_link if (is_dev or link_skipped) else None,
+            )
+
+        # Password was admin-provided — account is active immediately
         return StaffCreateResponse(
-            message=f"Staff member '{user.full_name}' created successfully. An email with password setup instructions has been sent.",
+            message=f"Account for '{user.full_name}' created successfully. They can log in with the provided credentials.",
             staff=_user_to_list_item(user),
             temporary_password="",
-            setup_link=setup_link if (is_dev or link_skipped) else None,
+            setup_link=None,
         )
 
     # ── update ───────────────────────────────────────────────────

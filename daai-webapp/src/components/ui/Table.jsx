@@ -17,7 +17,7 @@ export function TableBody({ className, ...props }) {
 }
 
 export function TableRow({ className, ...props }) {
-  return <tr className={cn('border-b border-slate-200 transition-colors hover:bg-slate-50', className)} {...props} />
+  return <tr className={cn('border-b border-slate-100 transition-colors hover:bg-slate-50', className)} {...props} />
 }
 
 export function TableHead({ className, ...props }) {

@@ -33,7 +33,7 @@ export default function StaffTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50">

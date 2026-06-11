@@ -48,29 +48,16 @@ export default function AdminDashboard() {
   if (!data) return <ComingSoonPage />
 
   return (
-    <div className="flex flex-col xl:flex-row min-h-screen bg-slate-50/50 p-6 xl:p-8 gap-8 font-sans">
+    <div className="flex flex-col xl:flex-row gap-6 font-sans">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col gap-8 max-w-7xl">
+      <div className="flex-1 flex flex-col gap-6 max-w-7xl">
         {/* Header */}
         <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
               Morning, {user?.full_name?.split(' ')[0]} <Sun className="text-orange-400" size={28} />
             </h1>
             <p className="text-slate-500 mt-1">System Overview Dashboard</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm w-64 transition-all"
-              />
-            </div>
-            <button className="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center hover:bg-orange-100 transition-colors">
-              <Bell size={20} />
-            </button>
           </div>
         </header>
 
@@ -157,8 +144,8 @@ export default function AdminDashboard() {
       {/* Right Sidebar */}
       <ProfileSidebar 
         user={user} 
-        upcomingClasses={[
-          { title: "System Maintenance", type: "Internal", date: "Tomorrow 2:00 AM" },
+        upcomingClasses={data.upcoming_sessions?.length > 0 ? data.upcoming_sessions : [
+          { title: "No upcoming sessions", type: "Internal", date: "-" },
         ]} 
         todoList={[
           { title: "Review platform metrics", completed: false },

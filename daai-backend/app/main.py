@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.database import close_mongo_connection, init_db
@@ -47,11 +49,25 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    import time
+    with open("422_error.log", "a") as f:
+        f.write(f"\n--- {time.time()} ---\n")
+        f.write(str(exc.errors()) + "\n" + str(exc.body))
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": exc.body},
+    )
 
 @app.get("/")
 async def root():
     return {"message": "DAAI Backend Running"}
 
+from app.schema.session_schema import SessionCreate
+@app.post("/test-422")
+async def test_422(payload: SessionCreate):
+    return {"status": "ok"}
 
 app.include_router(api_router, prefix="/api/v1")
 Path("uploads").mkdir(parents=True, exist_ok=True)

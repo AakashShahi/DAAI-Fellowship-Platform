@@ -9,6 +9,7 @@ from app.api.v1.routes import (
     application_routes,
     assignment_admin_routes,
     admin_fellow_routes,
+    admin_announcement_routes,
     auth_routes,
     batch_routes,
     enrollment_routes,
