@@ -23,6 +23,7 @@ from app.api.v1.routes import (
     quiz_routes,
     submission_review_routes,
     track_routes,
+    dashboard_routes,
 )
 
 api_router = APIRouter()
@@ -157,4 +158,10 @@ api_router.include_router(
     admin_staff_routes.router,
     prefix="/admin",
     tags=["Admin Staff Management"],
+)
+
+api_router.include_router(
+    dashboard_routes.router,
+    prefix="/dashboard",
+    tags=["Dashboard"],
 )
