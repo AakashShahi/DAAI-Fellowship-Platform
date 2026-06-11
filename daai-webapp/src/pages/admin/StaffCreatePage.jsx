@@ -57,7 +57,8 @@ export default function StaffCreatePage() {
 
   // ── Step 2: show setup link after creation ─────────────────────
   if (createdResult) {
-    const { staff, setup_link } = createdResult
+    const { staff } = createdResult
+    const setup_link = createdResult.setup_link?.replace('http://localhost:5173', window.location.origin)
     return (
       <section className="mx-auto max-w-3xl">
         <AdminPageHeader
