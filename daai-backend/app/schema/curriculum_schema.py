@@ -35,8 +35,13 @@ class LessonCreatePayload(CamelModel):
     video_url: str = Field(default="", max_length=2000)
     resource_links: list[ResourceLink] = Field(default_factory=list)
     order: int = Field(default=0, ge=0)
-    estimated_duration_minutes: int = Field(default=0, ge=0)
+    estimated_duration_minutes: int = Field(default=0, ge=0, alias="estimatedDurationMinutes")
+    estimated_minutes: int = Field(default=0, ge=0)  # legacy alias from AdminLessonsPage
     is_published: bool = False
+    # Allow frontend to pass status string (DRAFT / PUBLISHED / ARCHIVED)
+    status: str | None = Field(default=None)
+
+    model_config = {"populate_by_name": True}
 
     @field_validator("title", "description", "content", "video_url", mode="before")
     @classmethod
@@ -44,6 +49,16 @@ class LessonCreatePayload(CamelModel):
         if isinstance(value, str):
             return value.strip()
         return value
+
+    @property
+    def resolved_duration(self) -> int:
+        return self.estimated_duration_minutes or self.estimated_minutes or 0
+
+    @property
+    def resolved_is_published(self) -> bool:
+        if self.status is not None:
+            return self.status.upper() == "PUBLISHED"
+        return self.is_published
 
 
 class LessonUpdatePayload(CamelModel):
@@ -104,7 +119,10 @@ class LessonResponse(CamelModel):
     resource_links: list[ResourceLink]
     order: int
     estimated_duration_minutes: int
+    # Frontend reads both names — provide both for compatibility
+    estimated_minutes: int = 0
     is_published: bool
+    status: str = "DRAFT"
     created_at: datetime
     updated_at: datetime
 

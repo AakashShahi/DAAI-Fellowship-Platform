@@ -23,13 +23,20 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/Table'
-import { getTracks } from '../../services/fellowshipService'
 import {
   createLesson,
   deleteLesson,
   getLessonsAdmin,
   getModulesAdmin,
 } from '../../services/learningService'
+
+// Use the curriculum track values (not old Track ObjectIds)
+const CURRICULUM_TRACKS = [
+  { value: 'qa', label: 'QA' },
+  { value: 'aws-practitioner', label: 'AWS Practitioner' },
+  { value: 'aws-architect', label: 'AWS Architect' },
+  { value: 'salesforce', label: 'Salesforce' },
+]
 
 const STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
 const emptyForm = {
@@ -43,32 +50,17 @@ const emptyForm = {
 }
 
 export default function AdminLessonsPage() {
-  const [tracks, setTracks] = useState([])
-  const [trackId, setTrackId] = useState('')
+  const [trackValue, setTrackValue] = useState(CURRICULUM_TRACKS[0].value)
   const [modules, setModules] = useState([])
   const [moduleId, setModuleId] = useState('')
   const [lessons, setLessons] = useState([])
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
 
   const selectedModule = modules.find((module) => module.id === moduleId)
-
-  const loadTracks = async () => {
-    setError('')
-    setIsLoading(true)
-    try {
-      const data = await getTracks()
-      setTracks(data)
-      if (data[0]?.id) setTrackId(data[0].id)
-    } catch {
-      setError('Failed to load tracks.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const refreshLessons = async (id = moduleId) => {
     if (!id) {
@@ -79,25 +71,26 @@ export default function AdminLessonsPage() {
     setLessons(list)
   }
 
+  // Load modules for the selected track
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadTracks()
-  }, [])
-
-  useEffect(() => {
-    if (!trackId) return
     const run = async () => {
+      setIsLoading(true)
+      setError('')
       try {
-        const data = await getModulesAdmin(trackId)
+        // Use the new admin/modules endpoint with curriculum track value
+        const data = await getModulesAdmin(trackValue)
         setModules(data)
         setModuleId(data[0]?.id ?? '')
       } catch {
         setModules([])
         setModuleId('')
+        setError('Failed to load modules for this track.')
+      } finally {
+        setIsLoading(false)
       }
     }
     run()
-  }, [trackId])
+  }, [trackValue])
 
   useEffect(() => {
     const run = async () => {
@@ -125,7 +118,8 @@ export default function AdminLessonsPage() {
         resourceUrl: form.resourceUrl,
         moduleId,
         order: Number(form.order) || 0,
-        estimatedMinutes: Number(form.estimatedMinutes) || 0,
+        estimatedDurationMinutes: Number(form.estimatedMinutes) || 0,
+        isPublished: form.status === 'PUBLISHED',
         status: form.status,
       })
       setForm(emptyForm)
@@ -167,13 +161,13 @@ export default function AdminLessonsPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <Select
             label="Track"
-            value={trackId}
-            onChange={(event) => setTrackId(event.target.value)}
+            value={trackValue}
+            onChange={(event) => setTrackValue(event.target.value)}
             disabled={isLoading}
           >
-            {tracks.map((track) => (
-              <option key={track.id} value={track.id}>
-                {track.title}
+            {CURRICULUM_TRACKS.map((track) => (
+              <option key={track.value} value={track.value}>
+                {track.label}
               </option>
             ))}
           </Select>
@@ -181,12 +175,17 @@ export default function AdminLessonsPage() {
             label="Module"
             value={moduleId}
             onChange={(event) => setModuleId(event.target.value)}
+            disabled={isLoading || modules.length === 0}
           >
-            {modules.map((module) => (
-              <option key={module.id} value={module.id}>
-                {module.order}. {module.title}
-              </option>
-            ))}
+            {modules.length === 0 ? (
+              <option value="">No modules for this track</option>
+            ) : (
+              modules.map((module) => (
+                <option key={module.id} value={module.id}>
+                  {module.order}. {module.title}
+                </option>
+              ))
+            )}
           </Select>
         </div>
       </AdminPageHeader>

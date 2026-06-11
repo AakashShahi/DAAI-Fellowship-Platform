@@ -73,6 +73,9 @@ def _resource_links(lesson: Lesson) -> list[LessonResourceLink]:
 
 
 def _lesson_response(lesson: Lesson) -> LessonResponse:
+    duration = _lesson_duration(lesson)
+    is_pub = lesson.status == LessonStatus.PUBLISHED
+    status_str = "PUBLISHED" if is_pub else ("ARCHIVED" if lesson.status == LessonStatus.ARCHIVED else "DRAFT")
     return LessonResponse(
         id=str(lesson.id),
         title=lesson.title,
@@ -81,8 +84,10 @@ def _lesson_response(lesson: Lesson) -> LessonResponse:
         video_url=lesson.video_url,
         resource_links=_resource_links(lesson),
         order=lesson.order,
-        estimated_duration_minutes=_lesson_duration(lesson),
-        is_published=lesson.status == LessonStatus.PUBLISHED,
+        estimated_duration_minutes=duration,
+        estimated_minutes=duration,
+        is_published=is_pub,
+        status=status_str,
         created_at=lesson.created_at,
         updated_at=lesson.updated_at,
     )
@@ -244,8 +249,9 @@ class CurriculumAdminService:
         data: LessonCreatePayload,
     ) -> LessonResponse:
         module = await LearningModule.get(_parse_oid(module_id, "module"))
-        if module is None or module.track is None:
+        if module is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Module not found")
+        duration = data.resolved_duration
         now = datetime.now(timezone.utc)
         lesson = Lesson(
             title=data.title,
@@ -256,11 +262,11 @@ class CurriculumAdminService:
                 LessonResourceLink(**link.model_dump()) for link in data.resource_links
             ],
             module_id=module.id,
-            track=module.track,
+            track=module.track,  # may be None for old-style modules
             order=data.order,
-            estimated_minutes=data.estimated_duration_minutes,
-            estimated_duration_minutes=data.estimated_duration_minutes,
-            status=LessonStatus.PUBLISHED if data.is_published else LessonStatus.DRAFT,
+            estimated_minutes=duration,
+            estimated_duration_minutes=duration,
+            status=LessonStatus.PUBLISHED if data.resolved_is_published else LessonStatus.DRAFT,
             created_at=now,
             updated_at=now,
         )
