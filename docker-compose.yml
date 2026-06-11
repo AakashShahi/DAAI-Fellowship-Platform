@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: daai_mongodb
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - daai_network
+
+  backend:
+    build:
+      context: ./daai-backend
+      dockerfile: Dockerfile
+    container_name: daai_backend
+    restart: always
+    env_file:
+      - ./daai-backend/.env
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/daai_fellowship
+    depends_on:
+      - mongodb
+    networks:
+      - daai_network
+
+  frontend:
+    build:
+      context: ./daai-webapp
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api/v1
+    container_name: daai_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - daai_network
+
+volumes:
+  mongo_data:
+
+networks:
+  daai_network:
+    driver: bridge

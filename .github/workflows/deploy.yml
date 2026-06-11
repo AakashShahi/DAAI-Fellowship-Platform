@@ -1,0 +1,36 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_IP }}
+          username: ubuntu
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/DAAI-Fellowship-Platform
+
+            # Pull latest code
+            git pull origin main
+
+            # Write backend .env from GitHub secret
+            echo "${{ secrets.BACKEND_ENV }}" > daai-backend/.env
+
+            # Rebuild and restart containers
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
+
+            echo "Deployment complete"
