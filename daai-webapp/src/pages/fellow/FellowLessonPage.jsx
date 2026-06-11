@@ -6,6 +6,17 @@ import {
   getFellowLessonDetail,
 } from '../../services/learningService'
 
+const getEmbedUrl = (url) => {
+  if (!url) return null
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/)
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`
+  
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/)
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+  
+  return null
+}
+
 export default function FellowLessonPage() {
   const { moduleId, lessonId } = useParams()
   const [lesson, setLesson] = useState(null)
@@ -79,10 +90,24 @@ export default function FellowLessonPage() {
       <p className="mt-3 text-sm font-medium text-[#475569]">{lesson.description}</p>
 
       {lesson.videoUrl ? (
-        <div className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white p-4">
-          <a className="text-sm font-black text-[#4f46e5] underline" href={lesson.videoUrl} target="_blank" rel="noreferrer">
-            Open video
-          </a>
+        <div className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          {getEmbedUrl(lesson.videoUrl) ? (
+            <div className="aspect-video w-full overflow-hidden bg-black">
+              <iframe
+                src={getEmbedUrl(lesson.videoUrl)}
+                title="Lesson Video"
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="p-4">
+              <a className="text-sm font-black text-[#4f46e5] underline" href={lesson.videoUrl} target="_blank" rel="noreferrer">
+                Open video
+              </a>
+            </div>
+          )}
         </div>
       ) : null}
 
