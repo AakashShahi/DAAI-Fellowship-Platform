@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export const CourseList = ({ title, courses }) => {
   return (
@@ -9,7 +10,11 @@ export const CourseList = ({ title, courses }) => {
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {courses.map((course) => (
-          <div key={course.id} className="min-w-[260px] bg-slate-50 p-4 rounded-xl border border-slate-100 flex-shrink-0 hover:border-blue-200 transition-colors">
+          <Link 
+            to={`/fellow/learning/${course.id}`} 
+            key={course.id} 
+            className="block min-w-[260px] bg-slate-50 p-4 rounded-xl border border-slate-100 flex-shrink-0 hover:border-blue-200 hover:shadow-sm transition-all"
+          >
             <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mb-3">
               <span className="text-2xl">📚</span>
             </div>
@@ -39,7 +44,7 @@ export const CourseList = ({ title, courses }) => {
               </div>
               <span className="text-xs font-medium text-slate-600">{course.progress}%</span>
             </div>
-          </div>
+          </Link>
         ))}
         {courses.length === 0 && (
           <div className="text-sm text-slate-500 py-4">No active courses found.</div>
