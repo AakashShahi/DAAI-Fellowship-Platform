@@ -17,7 +17,10 @@ import {
   Target,
   X,
   UserCheck,
+  UserPlus,
   Users,
+  ScrollText,
+  Star,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
@@ -44,6 +47,15 @@ const navigationIcons = {
   Settings,
   Submissions: Inbox,
   Tracks: Target,
+  Staff: Users,
+  // HR specific
+  'Staff Onboarding': UserPlus,
+  'Fellow Management': Users,
+  'Instructor Assignment': GraduationCap,
+  'HR Activity Logs': ScrollText,
+  // Instructor specific
+  'My Cohorts': GraduationCap,
+  Grades: Star,
 }
 
 export default function PortalSidebar({ items, sectionLabel, isOpen = false, onClose }) {

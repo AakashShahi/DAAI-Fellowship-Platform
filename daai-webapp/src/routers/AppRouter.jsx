@@ -8,6 +8,7 @@ import { adminRoutesElement } from './AdminRoutes'
 import { fellowRoutesElement } from './FellowRoutes'
 import LegacyPrefixRedirect from './LegacyPrefixRedirect'
 import { hrRoutesElement } from './HrRoutes'
+import { instructorRoutesElement } from './InstructorRoutes'
 import { publicRouteElements } from './PublicRoutes'
 import { protect, protectRole } from './routeGuards'
 
@@ -57,11 +58,8 @@ export default function AppRouter() {
         {adminRoutesElement}
         {fellowRoutesElement}
         {hrRoutesElement}
+        {instructorRoutesElement}
 
-        <Route
-          path="/instructor/dashboard"
-          element={protectRole([ROLES.INSTRUCTOR], <InstructorDashboard />)}
-        />
         <Route
           path="/employer/dashboard"
           element={protectRole([ROLES.EMPLOYER], <EmployerDashboard />)}

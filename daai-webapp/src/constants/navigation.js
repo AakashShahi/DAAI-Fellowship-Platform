@@ -34,10 +34,20 @@ export const fellowNavigation = [
 
 export const hrNavigation = [
   { label: 'Dashboard', to: '/hr/dashboard' },
-  { label: 'Cohorts', to: '/hr/cohorts' },
-  { label: 'Fellows', to: '/hr/fellows' },
-  { label: 'Review assignments', to: '/hr/assignments/review' },
-  { label: 'Sessions', to: '/hr/sessions' },
-  { label: 'Feedback', to: '/hr/feedback' },
+  { label: 'Staff Onboarding', to: '/hr/staff' },
+  { label: 'Attendance', to: '/hr/attendance' },
+  { label: 'Fellow Management', to: '/hr/fellows' },
+  { label: 'Instructor Assignment', to: '/hr/instructors' },
+  { label: 'HR Activity Logs', to: '/hr/activity-logs' },
+  { label: 'Profile', to: '/profile/settings' },
+]
+
+export const instructorNavigation = [
+  { label: 'Dashboard', to: '/instructor/dashboard' },
+  { label: 'My Cohorts', to: '/instructor/cohorts' },
+  { label: 'Sessions', to: '/instructor/sessions' },
+  { label: 'Assignments', to: '/instructor/assignments' },
+  { label: 'Attendance', to: '/instructor/attendance' },
+  { label: 'Grades', to: '/instructor/grades' },
   { label: 'Profile', to: '/profile/settings' },
 ]

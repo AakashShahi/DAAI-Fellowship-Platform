@@ -3,8 +3,6 @@ import { ROLES } from '../constants/roles'
 import HrLayout from '../layouts/HrLayout'
 import ComingSoonPage from '../pages/ComingSoonPage'
 import HrDashboard from '../pages/dashboards/HrDashboard'
-import MentorSubmissionReviewPage from '../pages/mentor/MentorSubmissionReviewPage'
-import MentorSubmissionsPage from '../pages/mentor/MentorSubmissionsPage'
 import { protectRole } from './routeGuards'
 
 export const hrRoutesElement = (
@@ -14,18 +12,21 @@ export const hrRoutesElement = (
   >
     <Route index element={<Navigate to="/hr/dashboard" replace />} />
     <Route path="dashboard" element={<HrDashboard />} />
-    <Route path="assignments/review" element={<MentorSubmissionsPage />} />
-    <Route path="submissions" element={<Navigate to="/hr/assignments/review" replace />} />
     <Route
-      path="submissions/:submissionId"
-      element={<MentorSubmissionReviewPage />}
-    />
-    <Route
-      path="cohorts"
+      path="staff"
       element={
         <ComingSoonPage
-          title="Assigned cohorts"
-          description="View cohorts and session schedules."
+          title="Staff Onboarding"
+          description="Manage new staff onboarding processes."
+        />
+      }
+    />
+    <Route
+      path="attendance"
+      element={
+        <ComingSoonPage
+          title="Attendance"
+          description="View attendance rate and absence breakdown."
         />
       }
     />
@@ -33,29 +34,28 @@ export const hrRoutesElement = (
       path="fellows"
       element={
         <ComingSoonPage
-          title="Fellow management"
-          description="A roster of fellows you support, progress snapshots, and notes will live here."
+          title="Fellow Management"
+          description="Manage fellows and their lifecycle."
         />
       }
     />
     <Route
-      path="sessions"
+      path="instructors"
       element={
         <ComingSoonPage
-          title="Sessions"
-          description="Schedule and session history will connect here."
+          title="Instructor Assignment"
+          description="Assign instructors to cohorts and sessions."
         />
       }
     />
     <Route
-      path="feedback"
+      path="activity-logs"
       element={
         <ComingSoonPage
-          title="Feedback"
-          description="Structured feedback and review notes."
+          title="HR Activity Logs"
+          description="View HR activity logs and history."
         />
       }
     />
-    <Route path="resources" element={<Navigate to="/hr/feedback" replace />} />
   </Route>
 )
