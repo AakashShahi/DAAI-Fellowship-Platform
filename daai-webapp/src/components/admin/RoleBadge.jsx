@@ -3,8 +3,8 @@ import Badge from '../ui/Badge'
 const ROLE_CONFIG = {
   SUPER_ADMIN: { label: 'Super Admin', tone: 'danger' },
   ADMIN: { label: 'Admin', tone: 'purple' },
-  TRAINER: { label: 'Instructor', tone: 'info' },
-  MENTOR: { label: 'HR', tone: 'warning' },
+  INSTRUCTOR: { label: 'Instructor', tone: 'info' },
+  HR: { label: 'HR', tone: 'warning' },
   FELLOW: { label: 'Fellow', tone: 'success' },
   EMPLOYER: { label: 'Employer', tone: 'default' },
 }

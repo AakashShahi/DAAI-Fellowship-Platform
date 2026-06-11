@@ -8,6 +8,7 @@ import {
   toggleStaffStatus,
   updateStaff,
 } from '../services/staffService'
+import { sendPasswordSetupLink } from '../services/authService'
 
 const getErrorMessage = (error, fallback) => {
   const detail = error?.response?.data?.detail
@@ -125,6 +126,22 @@ export function useStaffMutations() {
     }
   }
 
+  const handleSendSetupLink = async (email) => {
+    setIsLoading(true)
+    clearMessages()
+    try {
+      const result = await sendPasswordSetupLink(email)
+      setSuccessMessage(result.message ?? 'Password setup link sent successfully.')
+      return result
+    } catch (err) {
+      const msg = getErrorMessage(err, 'Failed to send setup link')
+      setError(msg)
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     isLoading,
     error,
@@ -133,6 +150,7 @@ export function useStaffMutations() {
     handleCreate,
     handleUpdate,
     handleToggleStatus,
+    handleSendSetupLink,
   }
 }
 

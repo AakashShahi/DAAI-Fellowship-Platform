@@ -55,8 +55,8 @@ async def current_submission_reviewer(user: User = Depends(current_user)) -> Use
     if user.role not in {
         UserRole.SUPER_ADMIN,
         UserRole.ADMIN,
-        UserRole.TRAINER,
-        UserRole.MENTOR,
+        UserRole.INSTRUCTOR,
+        UserRole.HR,
     }:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -71,8 +71,8 @@ async def current_track_catalog_reader(user: User = Depends(current_user)) -> Us
     if user.role not in {
         UserRole.SUPER_ADMIN,
         UserRole.ADMIN,
-        UserRole.TRAINER,
-        UserRole.MENTOR,
+        UserRole.INSTRUCTOR,
+        UserRole.HR,
     }:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

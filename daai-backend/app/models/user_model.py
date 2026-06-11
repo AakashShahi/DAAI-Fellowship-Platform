@@ -9,8 +9,8 @@ from pymongo import ASCENDING, IndexModel
 class UserRole(str, Enum):
     SUPER_ADMIN = "SUPER_ADMIN"
     ADMIN = "ADMIN"
-    TRAINER = "TRAINER"
-    MENTOR = "MENTOR"
+    INSTRUCTOR = "INSTRUCTOR"
+    HR = "HR"
     FELLOW = "FELLOW"
     EMPLOYER = "EMPLOYER"
 

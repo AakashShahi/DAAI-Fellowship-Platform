@@ -32,12 +32,12 @@ export const fellowNavigation = [
   { label: 'Profile', to: '/fellow/profile/settings', end: true },
 ]
 
-export const mentorNavigation = [
-  { label: 'Dashboard', to: '/mentor/dashboard' },
-  { label: 'Cohorts', to: '/mentor/cohorts' },
-  { label: 'Fellows', to: '/mentor/fellows' },
-  { label: 'Review assignments', to: '/mentor/assignments/review' },
-  { label: 'Sessions', to: '/mentor/sessions' },
-  { label: 'Feedback', to: '/mentor/feedback' },
+export const hrNavigation = [
+  { label: 'Dashboard', to: '/hr/dashboard' },
+  { label: 'Cohorts', to: '/hr/cohorts' },
+  { label: 'Fellows', to: '/hr/fellows' },
+  { label: 'Review assignments', to: '/hr/assignments/review' },
+  { label: 'Sessions', to: '/hr/sessions' },
+  { label: 'Feedback', to: '/hr/feedback' },
   { label: 'Profile', to: '/profile/settings' },
 ]

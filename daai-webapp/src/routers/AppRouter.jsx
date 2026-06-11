@@ -2,12 +2,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ROLES } from '../constants/roles'
 import EmployerDashboard from '../pages/dashboards/EmployerDashboard'
 import ProfileSettingsPage from '../pages/ProfileSettingsPage'
-import TrainerDashboard from '../pages/dashboards/TrainerDashboard'
+import InstructorDashboard from '../pages/dashboards/InstructorDashboard'
 import DashboardRedirect from '../routes/DashboardRedirect'
 import { adminRoutesElement } from './AdminRoutes'
 import { fellowRoutesElement } from './FellowRoutes'
 import LegacyPrefixRedirect from './LegacyPrefixRedirect'
-import { mentorRoutesElement } from './MentorRoutes'
+import { hrRoutesElement } from './HrRoutes'
 import { publicRouteElements } from './PublicRoutes'
 import { protect, protectRole } from './routeGuards'
 
@@ -56,11 +56,11 @@ export default function AppRouter() {
 
         {adminRoutesElement}
         {fellowRoutesElement}
-        {mentorRoutesElement}
+        {hrRoutesElement}
 
         <Route
-          path="/trainer/dashboard"
-          element={protectRole([ROLES.TRAINER], <TrainerDashboard />)}
+          path="/instructor/dashboard"
+          element={protectRole([ROLES.INSTRUCTOR], <InstructorDashboard />)}
         />
         <Route
           path="/employer/dashboard"

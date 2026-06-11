@@ -1,3 +1,4 @@
+import logging
 import math
 import secrets
 import string
@@ -6,6 +7,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from pymongo.errors import DuplicateKeyError
 
+from app.core.config import settings
 from app.models.activity_log_model import ActivityAction
 from app.models.user_model import User, UserRole
 from app.repositories.activity_log_repository import ActivityLogRepository
@@ -24,29 +26,32 @@ from app.schema.staff_schema import (
 )
 from app.services.email_service import EmailService
 from app.utils.password import hash_password
+from app.repositories.user_repository import UserRepository
 
+PASSWORD_SETUP_TOKEN_BYTES = 32
+PASSWORD_SETUP_EXPIRE_MINUTES = 24 * 60  # 24 hours
 
-TEMPORARY_PASSWORD_LENGTH = 12
+logger = logging.getLogger(__name__)
 
 # ── RBAC creation rules ──────────────────────────────────────────
-# Maps the logged-in user's role to the set of roles they can create.
 ROLE_CREATION_RULES: dict[UserRole, set[UserRole]] = {
     UserRole.SUPER_ADMIN: {
         UserRole.ADMIN,
-        UserRole.TRAINER,
-        UserRole.MENTOR,
+        UserRole.INSTRUCTOR,
+        UserRole.HR,
         UserRole.FELLOW,
     },
     UserRole.ADMIN: {
         UserRole.ADMIN,
-        UserRole.TRAINER,
-        UserRole.MENTOR,
+        UserRole.INSTRUCTOR,
+        UserRole.HR,
         UserRole.FELLOW,
     },
-    UserRole.MENTOR: {
+    UserRole.HR: {
+        UserRole.INSTRUCTOR,
         UserRole.FELLOW,
     },
-    UserRole.TRAINER: set(),
+    UserRole.INSTRUCTOR: set(),
     UserRole.FELLOW: set(),
     UserRole.EMPLOYER: set(),
 }
@@ -55,13 +60,12 @@ ROLE_CREATION_RULES: dict[UserRole, set[UserRole]] = {
 STAFF_MANAGER_ROLES: set[UserRole] = {
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.MENTOR,
+    UserRole.HR,
 }
 
 
-def _generate_temporary_password() -> str:
-    alphabet = string.ascii_letters + string.digits + "!@#$%"
-    return "".join(secrets.choice(alphabet) for _ in range(TEMPORARY_PASSWORD_LENGTH))
+def _generate_unusable_password() -> str:
+    return "!" + secrets.token_urlsafe(32)
 
 
 def _user_to_list_item(user: User) -> StaffListItem:
@@ -116,6 +120,7 @@ class StaffService:
         self.staff_repo = staff_repo or StaffRepository()
         self.log_repo = log_repo or ActivityLogRepository()
         self.email_service = email_service or EmailService()
+        self.user_repo = UserRepository()
 
     # ── helpers ──────────────────────────────────────────────────
 
@@ -219,21 +224,35 @@ class StaffService:
                 detail="A user with this email already exists",
             )
 
-        temp_password = _generate_temporary_password()
+        unusable_password = _generate_unusable_password()
 
         try:
             user = await self.staff_repo.create(
                 full_name=data.full_name,
                 email=data.email,
-                hashed_password=hash_password(temp_password),
+                hashed_password=hash_password(unusable_password),
                 role=data.role,
                 phone=data.phone,
+                is_active=False,
             )
         except DuplicateKeyError as exc:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="A user with this email already exists",
             ) from exc
+
+        # Generate password setup token
+        from app.services.auth_service import AuthService
+        from datetime import timedelta
+        
+        setup_token = secrets.token_urlsafe(PASSWORD_SETUP_TOKEN_BYTES)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=PASSWORD_SETUP_EXPIRE_MINUTES)
+        
+        await self.user_repo.set_password_reset_token(
+            user,
+            token_hash=AuthService._hash_reset_token(setup_token),
+            expires_at=expires_at,
+        )
 
         await self._log(
             actor,
@@ -242,23 +261,37 @@ class StaffService:
             description=f"Created staff member {user.full_name} with role {user.role.value}",
         )
 
-        await self.email_service.send_email(
+        setup_link = f"http://localhost:5173/set-password?token={setup_token}"
+
+        result = await self.email_service.send_email(
             to_email=str(user.email),
-            subject="Welcome to DAAI Fellowship Platform",
+            subject="Welcome to DAAI Fellowship Platform - Set Your Password",
             body=(
                 f"Hello {user.full_name},\n\n"
-                f"Your account has been created on the DAAI Fellowship Platform.\n\n"
-                f"Email: {user.email}\n"
-                f"Temporary Password: {temp_password}\n\n"
-                f"Please log in and change your password.\n\n"
+                f"An account has been created for you on the DAAI Fellowship Platform.\n\n"
+                f"Email: {user.email}\n\n"
+                f"Please click the link below to set your password and activate your account:\n"
+                f"{setup_link}\n\n"
+                f"This link will expire in 24 hours.\n\n"
                 f"— DAAI Fellowship Team"
             ),
         )
 
+        # In dev/local or when SMTP is not configured, surface the link so admins can share it
+        is_dev = settings.APP_ENV.lower() in {"development", "local", "test"}
+        link_skipped = not result.sent
+        if link_skipped or is_dev:
+            logger.warning(
+                "[DEV] Password setup link for %s: %s",
+                user.email,
+                setup_link,
+            )
+
         return StaffCreateResponse(
-            message=f"Staff member '{user.full_name}' created successfully",
+            message=f"Staff member '{user.full_name}' created successfully. An email with password setup instructions has been sent.",
             staff=_user_to_list_item(user),
-            temporary_password=temp_password,
+            temporary_password="",
+            setup_link=setup_link if (is_dev or link_skipped) else None,
         )
 
     # ── update ───────────────────────────────────────────────────

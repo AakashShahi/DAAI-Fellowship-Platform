@@ -19,3 +19,13 @@ export const resetPassword = async (payload) => {
   const response = await axiosClient.post('/auth/reset-password', payload)
   return response.data
 }
+
+export const setPassword = async (payload) => {
+  const response = await axiosClient.post('/auth/set-password', payload)
+  return response.data
+}
+
+export const sendPasswordSetupLink = async (email) => {
+  const response = await axiosClient.post('/auth/send-password-setup-link', { email })
+  return response.data
+}

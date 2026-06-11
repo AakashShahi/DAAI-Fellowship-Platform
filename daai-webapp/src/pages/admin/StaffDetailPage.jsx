@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Pencil, MapPin, Mail, Phone, Calendar } from 'lucide-react'
+import { ArrowLeft, Pencil, MapPin, Mail, Phone, Send } from 'lucide-react'
 
-import { useStaffDetail, useStaffActivityLogs } from '../../hooks/useStaff'
+import { useStaffDetail, useStaffActivityLogs, useStaffMutations } from '../../hooks/useStaff'
 import { ErrorState, LoadingState } from '../../components/admin/AdminStates'
 import AdminPageHeader from '../../components/admin/AdminPageHeader'
 import Card from '../../components/ui/Card'
@@ -22,6 +23,21 @@ export default function StaffDetailPage() {
   const { staffId } = useParams()
   const { data: staff, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useStaffDetail(staffId)
   const { data: logsData, isLoading: logsLoading, error: logsError } = useStaffActivityLogs(staffId)
+  const { handleSendSetupLink, isLoading: isSending } = useStaffMutations()
+  const [linkSent, setLinkSent] = useState(false)
+  const [linkError, setLinkError] = useState('')
+
+  const onResendSetupLink = async () => {
+    if (!staff?.email) return
+    setLinkSent(false)
+    setLinkError('')
+    try {
+      await handleSendSetupLink(staff.email)
+      setLinkSent(true)
+    } catch {
+      setLinkError('Failed to send setup link. Please try again.')
+    }
+  }
 
   if (staffLoading) {
     return (
@@ -53,16 +69,39 @@ export default function StaffDetailPage() {
         Back to Staff List
       </Link>
 
+      {linkSent && (
+        <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          ✓ Password setup link sent to {staff.email}
+        </p>
+      )}
+      {linkError && (
+        <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {linkError}
+        </p>
+      )}
+
       <AdminPageHeader
         label="Staff Detail"
         title={staff.full_name}
         actions={
-          <Button asChild variant="outline">
-            <Link to={`/admin/staff/${staff.id}/edit`}>
-              <Pencil className="h-4 w-4" />
-              Edit Profile
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {!staff.is_active && (
+              <Button
+                variant="outline"
+                onClick={onResendSetupLink}
+                disabled={isSending}
+              >
+                <Send className="h-4 w-4" />
+                {isSending ? 'Sending...' : 'Resend Setup Link'}
+              </Button>
+            )}
+            <Button asChild variant="outline">
+              <Link to={`/admin/staff/${staff.id}/edit`}>
+                <Pencil className="h-4 w-4" />
+                Edit Profile
+              </Link>
+            </Button>
+          </div>
         }
       >
         <div className="flex flex-wrap items-center gap-3">

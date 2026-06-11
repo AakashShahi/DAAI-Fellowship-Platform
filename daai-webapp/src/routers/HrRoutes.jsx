@@ -1,21 +1,21 @@
 import { Navigate, Route } from 'react-router-dom'
 import { ROLES } from '../constants/roles'
-import MentorLayout from '../layouts/MentorLayout'
+import HrLayout from '../layouts/HrLayout'
 import ComingSoonPage from '../pages/ComingSoonPage'
-import MentorDashboard from '../pages/dashboards/MentorDashboard'
+import HrDashboard from '../pages/dashboards/HrDashboard'
 import MentorSubmissionReviewPage from '../pages/mentor/MentorSubmissionReviewPage'
 import MentorSubmissionsPage from '../pages/mentor/MentorSubmissionsPage'
 import { protectRole } from './routeGuards'
 
-export const mentorRoutesElement = (
+export const hrRoutesElement = (
   <Route
-    path="/mentor"
-    element={protectRole([ROLES.MENTOR, ROLES.TRAINER], <MentorLayout />)}
+    path="/hr"
+    element={protectRole([ROLES.HR], <HrLayout />)}
   >
-    <Route index element={<Navigate to="/mentor/dashboard" replace />} />
-    <Route path="dashboard" element={<MentorDashboard />} />
+    <Route index element={<Navigate to="/hr/dashboard" replace />} />
+    <Route path="dashboard" element={<HrDashboard />} />
     <Route path="assignments/review" element={<MentorSubmissionsPage />} />
-    <Route path="submissions" element={<Navigate to="/mentor/assignments/review" replace />} />
+    <Route path="submissions" element={<Navigate to="/hr/assignments/review" replace />} />
     <Route
       path="submissions/:submissionId"
       element={<MentorSubmissionReviewPage />}
@@ -25,7 +25,7 @@ export const mentorRoutesElement = (
       element={
         <ComingSoonPage
           title="Assigned cohorts"
-          description="View cohorts you mentor and session schedules."
+          description="View cohorts and session schedules."
         />
       }
     />
@@ -33,7 +33,7 @@ export const mentorRoutesElement = (
       path="fellows"
       element={
         <ComingSoonPage
-          title="Assigned fellows"
+          title="Fellow management"
           description="A roster of fellows you support, progress snapshots, and notes will live here."
         />
       }
@@ -42,8 +42,8 @@ export const mentorRoutesElement = (
       path="sessions"
       element={
         <ComingSoonPage
-          title="Mentoring sessions"
-          description="Schedule 1:1s, office hours, and session history will connect here."
+          title="Sessions"
+          description="Schedule and session history will connect here."
         />
       }
     />
@@ -51,11 +51,11 @@ export const mentorRoutesElement = (
       path="feedback"
       element={
         <ComingSoonPage
-          title="Fellow feedback"
-          description="Structured feedback and review notes for assignments and capstones."
+          title="Feedback"
+          description="Structured feedback and review notes."
         />
       }
     />
-    <Route path="resources" element={<Navigate to="/mentor/feedback" replace />} />
+    <Route path="resources" element={<Navigate to="/hr/feedback" replace />} />
   </Route>
 )
