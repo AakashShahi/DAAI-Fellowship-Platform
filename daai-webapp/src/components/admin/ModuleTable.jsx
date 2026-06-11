@@ -29,7 +29,9 @@ export default function ModuleTable({ modules, onArchive, isBusy }) {
             {modules.map((module) => (
               <tr key={module.id}>
                 <td className="px-4 py-4 font-black text-[#0f172a]">
-                  {module.title}
+                  <Link to={`/admin/modules/${module.id}`} className="hover:text-[#4f46e5] hover:underline transition">
+                    {module.title}
+                  </Link>
                 </td>
                 <td className="px-4 py-4">
                   <TrackBadge selectedTrack={module.track} />

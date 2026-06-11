@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import AdminPageHeader from '../../components/admin/AdminPageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../components/admin/AdminStates'
 import StatusBadge from '../../components/admin/StatusBadge'
@@ -23,13 +23,21 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/Table'
-import { getTracks } from '../../services/fellowshipService'
 import {
   createLesson,
   deleteLesson,
   getLessonsAdmin,
   getModulesAdmin,
+  updateLesson,
 } from '../../services/learningService'
+
+// Use the curriculum track values (not old Track ObjectIds)
+const CURRICULUM_TRACKS = [
+  { value: 'qa', label: 'QA' },
+  { value: 'aws-practitioner', label: 'AWS Practitioner' },
+  { value: 'aws-architect', label: 'AWS Architect' },
+  { value: 'salesforce', label: 'Salesforce' },
+]
 
 const STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
 const emptyForm = {
@@ -43,32 +51,18 @@ const emptyForm = {
 }
 
 export default function AdminLessonsPage() {
-  const [tracks, setTracks] = useState([])
-  const [trackId, setTrackId] = useState('')
+  const [trackValue, setTrackValue] = useState(CURRICULUM_TRACKS[0].value)
   const [modules, setModules] = useState([])
   const [moduleId, setModuleId] = useState('')
   const [lessons, setLessons] = useState([])
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingLessonId, setEditingLessonId] = useState(null)
   const [form, setForm] = useState(emptyForm)
 
   const selectedModule = modules.find((module) => module.id === moduleId)
-
-  const loadTracks = async () => {
-    setError('')
-    setIsLoading(true)
-    try {
-      const data = await getTracks()
-      setTracks(data)
-      if (data[0]?.id) setTrackId(data[0].id)
-    } catch {
-      setError('Failed to load tracks.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const refreshLessons = async (id = moduleId) => {
     if (!id) {
@@ -79,25 +73,26 @@ export default function AdminLessonsPage() {
     setLessons(list)
   }
 
+  // Load modules for the selected track
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadTracks()
-  }, [])
-
-  useEffect(() => {
-    if (!trackId) return
     const run = async () => {
+      setIsLoading(true)
+      setError('')
       try {
-        const data = await getModulesAdmin(trackId)
+        // Use the new admin/modules endpoint with curriculum track value
+        const data = await getModulesAdmin(trackValue)
         setModules(data)
         setModuleId(data[0]?.id ?? '')
       } catch {
         setModules([])
         setModuleId('')
+        setError('Failed to load modules for this track.')
+      } finally {
+        setIsLoading(false)
       }
     }
     run()
-  }, [trackId])
+  }, [trackValue])
 
   useEffect(() => {
     const run = async () => {
@@ -112,31 +107,60 @@ export default function AdminLessonsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId])
 
-  const handleCreate = async (event) => {
+  const handleSave = async (event) => {
     event.preventDefault()
     if (!moduleId) return
     setIsSaving(true)
     setError('')
     try {
-      await createLesson({
+      const payload = {
         title: form.title,
         content: form.content,
         videoUrl: form.videoUrl,
         resourceUrl: form.resourceUrl,
         moduleId,
         order: Number(form.order) || 0,
-        estimatedMinutes: Number(form.estimatedMinutes) || 0,
+        estimatedDurationMinutes: Number(form.estimatedMinutes) || 0,
+        isPublished: form.status === 'PUBLISHED',
         status: form.status,
-      })
+      }
+      
+      if (editingLessonId) {
+        await updateLesson(moduleId, editingLessonId, payload)
+      } else {
+        await createLesson(payload)
+      }
+      
       setForm(emptyForm)
+      setEditingLessonId(null)
       setIsDialogOpen(false)
       await refreshLessons(moduleId)
     } catch (err) {
       const detail = err?.response?.data?.detail
-      setError(typeof detail === 'string' ? detail : 'Unable to create lesson.')
+      setError(typeof detail === 'string' ? detail : `Unable to ${editingLessonId ? 'update' : 'create'} lesson.`)
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleOpenCreate = () => {
+    setForm(emptyForm)
+    setEditingLessonId(null)
+    setIsDialogOpen(true)
+  }
+
+  const handleOpenEdit = (lesson) => {
+    setForm({
+      title: lesson.title || '',
+      content: lesson.content || '',
+      videoUrl: lesson.videoUrl || '',
+      resourceUrl: lesson.resourceLinks?.[0]?.url || '',
+      order: lesson.order || 0,
+      estimatedMinutes: lesson.estimatedMinutes || lesson.estimatedDurationMinutes || 0,
+      status: lesson.status || (lesson.isPublished ? 'PUBLISHED' : 'DRAFT'),
+    })
+    setEditingLessonId(lesson.id)
+    setIsDialogOpen(true)
   }
 
   const handleDelete = async (id) => {
@@ -158,7 +182,7 @@ export default function AdminLessonsPage() {
         title="Learning Lessons"
         description="Manage lessons, content, and learning materials."
         actions={
-          <Button onClick={() => setIsDialogOpen(true)} disabled={!moduleId}>
+          <Button onClick={handleOpenCreate} disabled={!moduleId}>
             <Plus className="h-4 w-4" />
             Create Lesson
           </Button>
@@ -167,13 +191,13 @@ export default function AdminLessonsPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <Select
             label="Track"
-            value={trackId}
-            onChange={(event) => setTrackId(event.target.value)}
+            value={trackValue}
+            onChange={(event) => setTrackValue(event.target.value)}
             disabled={isLoading}
           >
-            {tracks.map((track) => (
-              <option key={track.id} value={track.id}>
-                {track.title}
+            {CURRICULUM_TRACKS.map((track) => (
+              <option key={track.value} value={track.value}>
+                {track.label}
               </option>
             ))}
           </Select>
@@ -181,12 +205,17 @@ export default function AdminLessonsPage() {
             label="Module"
             value={moduleId}
             onChange={(event) => setModuleId(event.target.value)}
+            disabled={isLoading || modules.length === 0}
           >
-            {modules.map((module) => (
-              <option key={module.id} value={module.id}>
-                {module.order}. {module.title}
-              </option>
-            ))}
+            {modules.length === 0 ? (
+              <option value="">No modules for this track</option>
+            ) : (
+              modules.map((module) => (
+                <option key={module.id} value={module.id}>
+                  {module.order}. {module.title}
+                </option>
+              ))
+            )}
           </Select>
         </div>
       </AdminPageHeader>
@@ -200,7 +229,7 @@ export default function AdminLessonsPage() {
           title="No lessons found."
           description="Create your first lesson for the selected module."
           action={
-            <Button onClick={() => setIsDialogOpen(true)} disabled={!moduleId}>
+            <Button onClick={handleOpenCreate} disabled={!moduleId}>
               <Plus className="h-4 w-4" />
               Create Lesson
             </Button>
@@ -234,15 +263,26 @@ export default function AdminLessonsPage() {
                     <StatusBadge status={lesson.status} />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                      onClick={() => handleDelete(lesson.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-[#4f46e5]"
+                        onClick={() => handleOpenEdit(lesson)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => handleDelete(lesson.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -251,15 +291,15 @@ export default function AdminLessonsPage() {
         </Card>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && setIsDialogOpen(false)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Create Lesson</DialogTitle>
+            <DialogTitle>{editingLessonId ? 'Edit Lesson' : 'Create Lesson'}</DialogTitle>
             <DialogDescription>
-              Add a lesson under {selectedModule?.title ?? 'the selected module'}.
+              {editingLessonId ? 'Update lesson details.' : `Add a lesson under ${selectedModule?.title ?? 'the selected module'}.`}
             </DialogDescription>
           </DialogHeader>
-          <form className="mt-5 space-y-4" onSubmit={handleCreate}>
+          <form className="mt-5 space-y-4" onSubmit={handleSave}>
             <Input
               required
               label="Title"
@@ -317,7 +357,7 @@ export default function AdminLessonsPage() {
               </Button>
               <Button type="submit" disabled={isSaving || !moduleId}>
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {isSaving ? 'Creating...' : 'Create Lesson'}
+                {isSaving ? 'Saving...' : editingLessonId ? 'Update Lesson' : 'Create Lesson'}
               </Button>
             </div>
           </form>

@@ -80,23 +80,17 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
         )}
       >
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:w-64 lg:shrink-0 lg:px-5">
-          <div className="flex items-center justify-between gap-3 px-1">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
-                {sectionLabel}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">DAAI Admin</p>
-            </div>
+          <div className="flex justify-end lg:hidden">
             <button
               type="button"
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
               aria-label="Close menu"
               onClick={onClose}
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-          <nav className="mt-4 flex flex-col gap-2">
+          <nav className="flex flex-col gap-2">
             {items.map((item) => {
               const Icon = navigationIcons[item.label] || FileText
 
