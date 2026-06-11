@@ -48,6 +48,7 @@ class StaffCreateResponse(BaseModel):
     message: str
     staff: StaffListItem
     temporary_password: str
+    setup_link: str | None = None  # Populated in dev/local env when SMTP is not configured
 
 
 class StaffUpdateResponse(BaseModel):

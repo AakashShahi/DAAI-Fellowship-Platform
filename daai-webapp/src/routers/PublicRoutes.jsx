@@ -9,6 +9,7 @@ import PathwayDetailPage from '../pages/public/PathwayDetailPage'
 import ForgotPassword from '../pages/ForgotPassword'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
+import SetPassword from '../pages/SetPassword'
 
 export const publicRouteElements = (
   <>
@@ -28,6 +29,9 @@ export const publicRouteElements = (
     </Route>
     <Route path="/register" element={<PublicLayout />}>
       <Route index element={<Register />} />
+    </Route>
+    <Route path="/set-password" element={<PublicLayout />}>
+      <Route index element={<SetPassword />} />
     </Route>
   </>
 )

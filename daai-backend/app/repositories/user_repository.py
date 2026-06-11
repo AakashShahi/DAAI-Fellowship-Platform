@@ -20,6 +20,9 @@ class UserRepository:
     async def get_by_email(self, email: str) -> User | None:
         return await User.find_one(User.email == email.lower())
 
+    async def get_by_password_reset_token_hash(self, token_hash: str) -> User | None:
+        return await User.find_one(User.password_reset_token_hash == token_hash)
+
     async def create(self, user_data: UserCreate) -> User:
         user = User(
             full_name=user_data.full_name,

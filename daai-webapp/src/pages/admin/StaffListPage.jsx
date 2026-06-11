@@ -101,8 +101,8 @@ export default function StaffListPage() {
               <option value="">All Roles</option>
               <option value="SUPER_ADMIN">{getRoleLabel('SUPER_ADMIN')}</option>
               <option value="ADMIN">{getRoleLabel('ADMIN')}</option>
-              <option value="TRAINER">{getRoleLabel('TRAINER')}</option>
-              <option value="MENTOR">{getRoleLabel('MENTOR')}</option>
+              <option value="INSTRUCTOR">{getRoleLabel('INSTRUCTOR')}</option>
+              <option value="HR">{getRoleLabel('HR')}</option>
               <option value="FELLOW">{getRoleLabel('FELLOW')}</option>
               <option value="EMPLOYER">{getRoleLabel('EMPLOYER')}</option>
             </Select>

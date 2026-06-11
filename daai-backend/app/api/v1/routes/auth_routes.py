@@ -11,6 +11,8 @@ from app.schema.auth_schema import (
     ForgotPasswordResponse,
     MessageResponse,
     ResetPasswordRequest,
+    SendPasswordSetupLinkRequest,
+    SetPasswordRequest,
     TokenResponse,
 )
 from app.schema.user_schema import UserCreate, UserLogin, UserResponse
@@ -90,6 +92,20 @@ async def reset_password(password_data: ResetPasswordRequest):
     auth_service = AuthService()
     await auth_service.reset_password(password_data)
     return MessageResponse(message="Password has been reset successfully.")
+
+
+@router.post("/send-password-setup-link", response_model=MessageResponse)
+async def send_password_setup_link(request: SendPasswordSetupLinkRequest):
+    auth_service = AuthService()
+    await auth_service.send_password_setup_link(request.email)
+    return MessageResponse(message="Password setup link has been sent successfully.")
+
+
+@router.post("/set-password", response_model=MessageResponse)
+async def set_password(password_data: SetPasswordRequest):
+    auth_service = AuthService()
+    await auth_service.set_password(password_data)
+    return MessageResponse(message="Password has been set successfully. You can now log in.")
 
 
 @router.get("/me", response_model=UserResponse)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.dependencies.auth_dependency import current_user
+from app.dependencies.auth_dependency import current_user, current_staff_user
 from app.models.user_model import User, UserRole
 from app.schema.cohort_schema import (
     CohortCreate,
@@ -29,7 +29,7 @@ async def current_admin_only(user: User = Depends(current_user)) -> User:
 async def list_admin_cohorts(
     track: str | None = Query(default=None),
     status: str | None = Query(default=None),
-    _admin: User = Depends(current_admin_only),
+    _admin: User = Depends(current_staff_user),
 ):
     return await CohortService().list_cohorts(track=track, status_filter=status)
 

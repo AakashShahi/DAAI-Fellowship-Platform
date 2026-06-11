@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.dependencies.auth_dependency import current_user
+from app.dependencies.auth_dependency import current_user, current_staff_user
 from app.models.user_model import User, UserRole
 from app.schema.session_schema import (
     AttendanceBulkUpdate,
@@ -70,5 +70,5 @@ async def mark_attendance(
 
 
 @router.get("/session-stats", response_model=SessionStatsResponse)
-async def session_stats(_admin: User = Depends(current_admin_only)):
+async def get_session_stats(_admin: User = Depends(current_staff_user)):
     return await SessionAdminService().stats()

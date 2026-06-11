@@ -28,6 +28,7 @@ class StaffRepository:
         hashed_password: str,
         role: UserRole,
         phone: str | None = None,
+        is_active: bool = True,
     ) -> User:
         user = User(
             full_name=full_name,
@@ -35,6 +36,7 @@ class StaffRepository:
             hashed_password=hashed_password,
             role=role,
             phone=phone,
+            is_active=is_active,
         )
         await user.insert()
         return user

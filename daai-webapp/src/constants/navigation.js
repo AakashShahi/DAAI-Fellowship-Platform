@@ -32,12 +32,22 @@ export const fellowNavigation = [
   { label: 'Profile', to: '/fellow/profile/settings', end: true },
 ]
 
-export const mentorNavigation = [
-  { label: 'Dashboard', to: '/mentor/dashboard' },
-  { label: 'Cohorts', to: '/mentor/cohorts' },
-  { label: 'Fellows', to: '/mentor/fellows' },
-  { label: 'Review assignments', to: '/mentor/assignments/review' },
-  { label: 'Sessions', to: '/mentor/sessions' },
-  { label: 'Feedback', to: '/mentor/feedback' },
+export const hrNavigation = [
+  { label: 'Dashboard', to: '/hr/dashboard' },
+  { label: 'Staff Onboarding', to: '/hr/staff' },
+  { label: 'Attendance', to: '/hr/attendance' },
+  { label: 'Fellow Management', to: '/hr/fellows' },
+  { label: 'Instructor Assignment', to: '/hr/instructors' },
+  { label: 'HR Activity Logs', to: '/hr/activity-logs' },
+  { label: 'Profile', to: '/profile/settings' },
+]
+
+export const instructorNavigation = [
+  { label: 'Dashboard', to: '/instructor/dashboard' },
+  { label: 'My Cohorts', to: '/instructor/cohorts' },
+  { label: 'Sessions', to: '/instructor/sessions' },
+  { label: 'Assignments', to: '/instructor/assignments' },
+  { label: 'Attendance', to: '/instructor/attendance' },
+  { label: 'Grades', to: '/instructor/grades' },
   { label: 'Profile', to: '/profile/settings' },
 ]

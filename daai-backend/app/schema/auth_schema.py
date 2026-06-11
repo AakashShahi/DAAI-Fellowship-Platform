@@ -34,3 +34,20 @@ class ResetPasswordRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class SendPasswordSetupLinkRequest(BaseModel):
+    email: EmailStr
+
+
+class SetPasswordRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=256)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_bcrypt_password_length(cls, password: str) -> str:
+        if len(password.encode("utf-8")) > BCRYPT_MAX_PASSWORD_BYTES:
+            raise ValueError("Password cannot be longer than 72 bytes")
+
+        return password
