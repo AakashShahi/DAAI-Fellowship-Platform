@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import { ErrorState, LoadingState } from '../../components/admin/AdminStates'
+import CreateFellowModal from '../../components/admin/CreateFellowModal'
 import FellowsTable from '../../components/admin/FellowsTable'
 import Button from '../../components/ui/Button'
 import Card, {
@@ -56,6 +57,7 @@ export default function FellowsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isProfileLoading, setIsProfileLoading] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -375,7 +377,7 @@ export default function FellowsPage() {
             </span>
           </label>
           <div className="flex flex-wrap gap-2">
-            <Button disabled>
+            <Button onClick={() => setShowCreateModal(true)}>
               <Plus className="h-4 w-4" />
               Add Fellow
             </Button>
@@ -423,6 +425,16 @@ export default function FellowsPage() {
         onCancel={() => setConfirmation(null)}
         onConfirm={confirmation?.onConfirm}
       />
+      {showCreateModal && (
+        <CreateFellowModal
+          onClose={() => setShowCreateModal(false)}
+          onSave={() => {
+            setShowCreateModal(false)
+            setSuccessMessage('Fellow created successfully! They have been sent an email with password setup instructions.')
+            refreshFellows()
+          }}
+        />
+      )}
     </section>
   )
 }

@@ -73,7 +73,7 @@ export default function PortalSidebar({ items, sectionLabel, isOpen = false, onC
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 max-w-[82vw] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-all duration-200 ease-out lg:static lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none',
+          'fixed inset-y-0 left-0 z-50 flex w-72 max-w-[82vw] flex-col overflow-hidden border-r border-slate-100 bg-white shadow-xl transition-all duration-200 ease-out lg:static lg:h-full lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-none',
           isOpen
             ? 'translate-x-0 lg:w-64 lg:opacity-100'
             : '-translate-x-full lg:w-0 lg:border-r-0 lg:opacity-0',

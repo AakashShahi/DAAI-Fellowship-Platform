@@ -21,6 +21,7 @@ from app.models.session_model import Session
 from app.models.submission_model import Submission
 from app.models.track_model import Track
 from app.models.user_model import User
+from app.models.announcement_model import Announcement
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ async def init_db() -> AsyncDatabase:
             Session,
             Attendance,
             ActivityLog,
+            Announcement,
         ],
     )
 

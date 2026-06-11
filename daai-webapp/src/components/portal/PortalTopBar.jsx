@@ -28,7 +28,7 @@ export default function PortalTopBar({
     .join('')
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <Button

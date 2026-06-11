@@ -1,0 +1,5 @@
+[{'type': 'datetime_from_date_parsing', 'loc': ('body', 'sessionDate'), 'msg': 'Input should be a valid datetime or date, input is too short', 'input': '', 'ctx': {'error': 'input is too short'}}]
+{'title': 'Test Session', 'description': 'Test', 'cohortId': '65b4f3b1e3b2a2b4b4e3b1c1', 'sessionDate': '', 'startTime': '10:00', 'endTime': '11:00', 'meetingLink': '', 'recordingLink': '', 'status': 'scheduled'}
+--- 1781184150.3275 ---
+[{'type': 'value_error', 'loc': ('body', 'meetingLink'), 'msg': 'Value error, Link must be a valid URL', 'input': 'fb.com', 'ctx': {'error': ValueError('Link must be a valid URL')}}]
+{'title': 'test', 'description': 'test', 'cohortId': '6a11366004a4a021da0a3cb0', 'sessionDate': '2027-05-12T00:00:00.000Z', 'startTime': '06:06', 'endTime': '08:08', 'meetingLink': 'fb.com', 'recordingLink': '', 'status': 'scheduled'}

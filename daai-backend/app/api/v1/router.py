@@ -9,6 +9,7 @@ from app.api.v1.routes import (
     application_routes,
     assignment_admin_routes,
     admin_fellow_routes,
+    admin_announcement_routes,
     auth_routes,
     batch_routes,
     enrollment_routes,
@@ -164,4 +165,10 @@ api_router.include_router(
     dashboard_routes.router,
     prefix="/dashboard",
     tags=["Dashboard"],
+)
+
+api_router.include_router(
+    admin_announcement_routes.router,
+    prefix="/admin",
+    tags=["Admin Announcements"],
 )

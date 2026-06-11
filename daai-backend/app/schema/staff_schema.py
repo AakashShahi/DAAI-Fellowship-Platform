@@ -13,6 +13,7 @@ class StaffCreate(BaseModel):
     email: EmailStr
     phone: str | None = Field(default=None, max_length=30)
     role: UserRole
+    password: str | None = Field(default=None, min_length=8)
 
 
 class StaffUpdate(BaseModel):

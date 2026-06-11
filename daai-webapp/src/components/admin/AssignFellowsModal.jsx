@@ -14,9 +14,8 @@ export default function AssignFellowsModal({
   )
   const [selectedIds, setSelectedIds] = useState(initialSelectedIds)
 
-  const eligibleFellows = fellows.filter(
-    (fellow) => fellow.selectedTrack === cohort.track,
-  )
+  // Removing strict track filtering to allow assigning any enrolled fellow
+  const eligibleFellows = fellows
 
   const toggleFellow = (fellowId) => {
     setSelectedIds((current) => {
@@ -48,7 +47,7 @@ export default function AssignFellowsModal({
         <div className="max-h-[52vh] overflow-y-auto p-5">
           {eligibleFellows.length === 0 ? (
             <p className="rounded-lg border border-slate-200 bg-[#f8fafc] p-4 text-sm font-bold text-[#475569]">
-              No fellows have selected this track yet.
+              No eligible fellows found for this track.
             </p>
           ) : (
             <div className="grid gap-3">

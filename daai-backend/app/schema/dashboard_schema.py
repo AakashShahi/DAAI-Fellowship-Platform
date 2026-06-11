@@ -34,6 +34,7 @@ class AdminDashboardResponse(BaseModel):
     attendance_chart: list[ChartDataPoint]
     usage_heatmap: list[dict[str, Any]]
     recent_activity: list[ActivityItem]
+    upcoming_sessions: list[dict[str, Any]] = []
 
 class HrDashboardResponse(BaseModel):
     stats: list[DashboardStats]
@@ -42,6 +43,7 @@ class HrDashboardResponse(BaseModel):
     onboarding_stats_chart: list[ChartDataPoint]
     instructor_load_chart: list[ChartDataPoint]
     staff_list: list[dict[str, Any]]
+    upcoming_sessions: list[dict[str, Any]] = []
 
 class InstructorDashboardResponse(BaseModel):
     stats: list[DashboardStats]

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from beanie import PydanticObjectId
 from bson.errors import InvalidId
 from pymongo import DESCENDING
+from beanie.operators import NotIn
 
 from app.models.user_model import User, UserRole
 
@@ -75,7 +76,9 @@ class StaffRepository:
         page: int = 1,
         page_size: int = 10,
     ) -> tuple[list[User], int]:
-        query_filters = []
+        query_filters = [
+            NotIn(User.role, [UserRole.FELLOW, UserRole.EMPLOYER])
+        ]
 
         if role_filter is not None:
             query_filters.append(User.role == role_filter)

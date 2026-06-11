@@ -13,8 +13,10 @@ AttendanceStatusWithNotMarked = Literal["not-marked", "present", "absent", "late
 
 
 def _is_valid_url(value: str) -> bool:
+    if not value.startswith(("http://", "https://")):
+        value = "https://" + value
     parsed = urlparse(value)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+    return bool(parsed.netloc)
 
 
 class SessionCreate(CamelModel):
@@ -36,8 +38,11 @@ class SessionCreate(CamelModel):
     @field_validator("meeting_link", "recording_link")
     @classmethod
     def validate_optional_url(cls, value: str) -> str:
-        if value and not _is_valid_url(value):
-            raise ValueError("Link must be a valid URL")
+        if value:
+            if not value.startswith(("http://", "https://")):
+                value = "https://" + value
+            if not _is_valid_url(value):
+                raise ValueError("Link must be a valid URL")
         return value
 
 
@@ -60,8 +65,11 @@ class SessionUpdate(CamelModel):
     @field_validator("meeting_link", "recording_link")
     @classmethod
     def validate_optional_url(cls, value: str | None) -> str | None:
-        if value and not _is_valid_url(value):
-            raise ValueError("Link must be a valid URL")
+        if value:
+            if not value.startswith(("http://", "https://")):
+                value = "https://" + value
+            if not _is_valid_url(value):
+                raise ValueError("Link must be a valid URL")
         return value
 
 

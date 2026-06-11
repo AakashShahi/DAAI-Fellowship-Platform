@@ -12,6 +12,7 @@ from app.schema.dashboard_schema import (
 from app.models.user_model import User, UserRole
 from app.models.program_cohort_model import ProgramCohort, CohortStatus
 from app.models.session_model import Session, SessionStatus
+from app.models.enrollment_model import Enrollment, EnrollmentStatus
 from app.models.attendance_model import Attendance, AttendanceStatus
 
 class DashboardService:
@@ -51,6 +52,25 @@ class DashboardService:
             ChartDataPoint(name="Absent", value=absent_count or 15, fill="#ef4444"),
         ]
 
+        recent_sessions = await Session.find_all().sort("-created_at").limit(3).to_list()
+        recent_activity_items = []
+        for s in recent_sessions:
+            recent_activity_items.append(ActivityItem(
+                id=str(s.id),
+                title=f"Session: {s.title}",
+                date=s.created_at.strftime("%b %d, %Y"),
+                type="session"
+            ))
+            
+        upcoming_sessions_query = await Session.find({"status": SessionStatus.SCHEDULED}).sort("session_date").limit(3).to_list()
+        upcoming_sessions_data = []
+        for session in upcoming_sessions_query:
+            upcoming_sessions_data.append({
+                "title": session.title,
+                "date": session.session_date.strftime("%b %d, %Y"),
+                "time": f"{session.start_time} - {session.end_time}"
+            })
+            
         return AdminDashboardResponse(
             stats=[
                 DashboardStats(label="Total Staff", value=total_staff, helper="Active staff"),
@@ -71,15 +91,25 @@ class DashboardService:
             ],
             attendance_chart=attendance_chart,
             usage_heatmap=[{"date": "2026-05-01", "count": 10}, {"date": "2026-05-02", "count": 20}],
-            recent_activity=[
+            recent_activity=recent_activity_items or [
                 ActivityItem(id="1", title="New cohort created", date="Today", type="cohort"),
                 ActivityItem(id="2", title="Staff member joined", date="Yesterday", type="staff"),
             ],
+            upcoming_sessions=upcoming_sessions_data,
         )
 
     async def get_hr_dashboard(self) -> HrDashboardResponse:
         hr_count = await User.find({"role": UserRole.HR}).count()
         instructor_count = await User.find({"role": UserRole.INSTRUCTOR}).count()
+
+        upcoming_sessions_query = await Session.find({"status": SessionStatus.SCHEDULED}).sort("session_date").limit(3).to_list()
+        upcoming_sessions_data = []
+        for session in upcoming_sessions_query:
+            upcoming_sessions_data.append({
+                "title": session.title,
+                "date": session.session_date.strftime("%b %d, %Y"),
+                "time": f"{session.start_time} - {session.end_time}"
+            })
 
         return HrDashboardResponse(
             stats=[
@@ -107,11 +137,25 @@ class DashboardService:
                 ChartDataPoint(name="Jane S.", value=5, fill="#6366f1"),
             ],
             staff_list=[],
+            upcoming_sessions=upcoming_sessions_data,
         )
 
     async def get_instructor_dashboard(self, instructor: User) -> InstructorDashboardResponse:
         sessions = await Session.find({"created_by": instructor.id}).to_list()
         
+        upcoming_sessions = await Session.find({
+            "created_by": instructor.id,
+            "status": SessionStatus.SCHEDULED
+        }).sort("session_date").limit(3).to_list()
+        
+        upcoming_sessions_data = []
+        for session in upcoming_sessions:
+            upcoming_sessions_data.append({
+                "title": session.title,
+                "date": session.session_date.strftime("%b %d, %Y"),
+                "time": f"{session.start_time} - {session.end_time}"
+            })
+            
         return InstructorDashboardResponse(
             stats=[
                 DashboardStats(label="My Sessions", value=len(sessions), helper="Total conducted"),
@@ -137,12 +181,27 @@ class DashboardService:
                 {"name": "Cohort Alpha", "status": "Active"},
                 {"name": "Cohort Beta", "status": "Active"},
             ],
-            upcoming_sessions=[
-                {"title": "React Basics", "date": "Tomorrow", "time": "10:00 AM"},
-            ],
+            upcoming_sessions=upcoming_sessions_data,
         )
 
     async def get_fellow_dashboard(self, fellow: User) -> FellowDashboardResponse:
+        enrollments = await Enrollment.find({"fellow_id": fellow.id, "status": EnrollmentStatus.ACTIVE}).to_list()
+        cohort_ids = [e.batch_id for e in enrollments]
+        
+        upcoming_classes = []
+        if cohort_ids:
+            sessions = await Session.find({
+                "cohort_id": {"$in": cohort_ids},
+                "status": SessionStatus.SCHEDULED
+            }).sort("session_date").limit(3).to_list()
+            
+            for session in sessions:
+                upcoming_classes.append({
+                    "title": session.title,
+                    "type": "Online" if session.meeting_link else "In-Person",
+                    "date": f"{session.session_date.strftime('%b %d')} at {session.start_time}"
+                })
+                
         return FellowDashboardResponse(
             stats=[
                 DashboardStats(label="Enrolled Courses", value=4, helper="Active"),
@@ -161,10 +220,7 @@ class DashboardService:
                 CourseProgressItem(id="1", title="UI Design: From zero to hero", lessons_count=15, duration="2h 4m", progress=65),
                 CourseProgressItem(id="2", title="After Effects: Cheat Sheet", lessons_count=12, duration="1h 30m", progress=40),
             ],
-            upcoming_classes=[
-                {"title": "Web Design", "type": "Online", "date": "Today, 10:00 AM"},
-                {"title": "HTML Basic", "type": "Online", "date": "Tomorrow, 2:00 PM"},
-            ],
+            upcoming_classes=upcoming_classes,
             todo_list=[
                 {"title": "Follow up for the final project", "completed": False},
                 {"title": "Submit React Assignment", "completed": True},

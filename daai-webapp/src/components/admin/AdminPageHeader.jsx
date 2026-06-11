@@ -9,7 +9,7 @@ export default function AdminPageHeader({
   compact = false,
 }) {
   return (
-    <Card className={compact ? 'mb-5 rounded-xl p-4 sm:p-5' : 'mb-6 rounded-xl'}>
+    <div className={`bg-white shadow-sm border border-slate-100 ${compact ? 'mb-5 rounded-2xl p-4 sm:p-5' : 'mb-6 p-6 rounded-2xl'}`}>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-indigo-600">
@@ -27,6 +27,6 @@ export default function AdminPageHeader({
         {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
       </div>
       {children ? <div className={compact ? 'mt-4' : 'mt-5'}>{children}</div> : null}
-    </Card>
+    </div>
   )
 }
