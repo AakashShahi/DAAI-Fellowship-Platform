@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.dependencies.auth_dependency import current_user
+from app.dependencies.auth_dependency import current_user, current_staff_user
 from app.models.user_model import User, UserRole
 from app.schema.admin_fellow_schema import (
     AdminFellowListItem,
@@ -56,5 +56,5 @@ async def update_admin_fellow_track(
 
 
 @router.get("/track-stats", response_model=AdminTrackStatsResponse)
-async def get_admin_track_stats(_admin: User = Depends(current_admin_only)):
+async def get_admin_track_stats(_admin: User = Depends(current_staff_user)):
     return await AdminFellowService().get_track_stats()

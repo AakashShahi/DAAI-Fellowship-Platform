@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.dependencies.auth_dependency import current_user
+from app.dependencies.auth_dependency import current_user, current_staff_user
 from app.models.user_model import User, UserRole
 from app.schema.assignment_v2_schema import (
     AssignmentCreateV2,
@@ -70,5 +70,5 @@ async def review_submission(
 
 
 @router.get("/assignment-stats", response_model=AssignmentStatsResponse)
-async def assignment_stats(_admin: User = Depends(current_admin_only)):
+async def get_assignment_stats(_admin: User = Depends(current_staff_user)):
     return await AssignmentV2AdminService().stats()

@@ -80,3 +80,18 @@ async def current_track_catalog_reader(user: User = Depends(current_user)) -> Us
         )
 
     return user
+
+async def current_staff_user(user: User = Depends(current_user)) -> User:
+    """Allows Super Admin, Admin, HR, and Instructor to access endpoints."""
+    if user.role not in {
+        UserRole.SUPER_ADMIN,
+        UserRole.ADMIN,
+        UserRole.INSTRUCTOR,
+        UserRole.HR,
+    }:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Staff access required",
+        )
+
+    return user

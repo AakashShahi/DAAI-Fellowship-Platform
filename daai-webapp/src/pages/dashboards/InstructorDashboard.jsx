@@ -38,9 +38,9 @@ export default function InstructorDashboard() {
         getAssignmentStatsAdmin(), // Replace with getInstructorAssignmentStats if available
       ])
       
-      setCohorts(cohortList.filter((cohort) => cohort.status === 'active').slice(0, 5))
-      setSessionStats(sessionData)
-      setAssignmentStats(assignmentData)
+      setCohorts((cohortList || []).filter((cohort) => cohort.status === 'active').slice(0, 5))
+      setSessionStats(sessionData || emptySessionStats)
+      setAssignmentStats(assignmentData || emptyAssignmentStats)
     } catch {
       setError('Failed to load Instructor dashboard data.')
     } finally {

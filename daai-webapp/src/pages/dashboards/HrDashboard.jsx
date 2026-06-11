@@ -26,8 +26,8 @@ export default function HrDashboard() {
         getAdminTrackStats(),
       ])
       
-      setInstructors(instructorData.items || [])
-      setTrackStats(trackData)
+      setInstructors(instructorData?.items || [])
+      setTrackStats(trackData || emptyTrackStats)
     } catch {
       setError('Failed to load HR dashboard data.')
     } finally {
